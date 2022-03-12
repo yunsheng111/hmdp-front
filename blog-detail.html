@@ -187,7 +187,6 @@
     created() {
       let id = util.getUrlParam("id");
       this.queryBlogById(id);
-      this.queryLoginUser();
     },
     methods: {
       init() {
@@ -217,7 +216,7 @@
             this.$nextTick(this.init);
             this.queryShopById(data.shopId)
             this.queryLikeList(id);
-            this.isFollowed();
+            this.queryLoginUser();
           })
           .catch(this.$message.error)
       },
@@ -275,6 +274,9 @@
           .then(({ data }) => {
             // 保存用户
             this.user = data;
+            if(this.user.id !== this.blog.userId){
+              this.isFollowed();
+            }
           })
           .catch(console.log)
       },

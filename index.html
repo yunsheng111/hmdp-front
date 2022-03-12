@@ -107,7 +107,10 @@
             b.liked = data.liked;
             b.isLike = data.isLike;
           })
-          .catch(this.$message.error)
+          .catch(() => {
+            this.$message.error
+            b.liked ++;
+          })
       },
       onScroll(e) {
         let scrollTop = e.target.scrollTop;
