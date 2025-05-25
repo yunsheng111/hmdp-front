@@ -108,29 +108,85 @@
       right: -40px;
     }
     
-    /* 操作按钮样式 */
+    /* 操作按钮样式 - 已优化 */
     .blog-operations {
       margin-left: auto;
     }
     
-    .blog-operations .el-button {
-      padding: 2px 5px;
-      color: #606266;
-      margin-left: 5px;
+    /* 删除按钮样式优化 */
+    .blog-operations .delete-btn {
+      padding: 4px 10px;
+      color: #fff;
+      background-color: #ff6633;
+      border-radius: 15px;
+      font-size: 13px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
     }
     
-    .blog-operations .el-button:hover {
-      color: #ff6633;
+    .blog-operations .delete-btn:hover {
+      background-color: #e95b2b;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     
-    /* 修改blog-actions样式以适应新增按钮 */
+    .blog-operations .delete-btn i {
+      margin-right: 3px;
+    }
+    
+    /* 修改blog-actions样式以适应新按钮 */
     .blog-actions {
       display: flex !important;
       align-items: center !important;
       margin-top: auto !important;
-      height: 24px !important;
+      height: 28px !important;
       align-self: flex-end !important;
       width: 100% !important;
+    }
+
+    /* 新增博客元数据样式 */
+    .blog-meta {
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+      color: #999;
+      margin: 5px 0 8px 0;
+      line-height: 1.2;
+    }
+    
+    .blog-meta .meta-item {
+      display: flex;
+      align-items: center;
+      margin-right: 15px;
+    }
+    
+    .blog-meta .meta-item i {
+      margin-right: 3px;
+      font-size: 14px;
+    }
+    
+    /* 调整博客信息布局 */
+    .blog-info {
+      display: flex;
+      flex-direction: column;
+      padding: 8px 10px;
+      flex: 1;
+    }
+    
+    .blog-title {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+    
+    /* 调整博客项间距 */
+    .blog-item {
+      margin-bottom: 15px;
     }
   </style>
 </head>
@@ -148,16 +204,24 @@
       <div class="blog-img" @click="toBlogDetail(b)"><img :src="b.images.split(',')[0]" alt=""></div>
       <div class="blog-info">
         <div class="blog-title" @click="toBlogDetail(b)">{{b.title}}</div>
+        <!-- 新增博客元数据区域 -->
+        <div class="blog-meta">
+          <div class="meta-item">
+            <i class="el-icon-time"></i>
+            <span>{{formatDate(b.createTime)}}</span>
+          </div>
+          <div class="meta-item">
+            <i class="el-icon-view"></i>
+            <span>{{b.views || 0}}浏览</span>
+          </div>
+        </div>
         <div class="blog-actions">
           <div class="blog-liked"><img src="/imgs/thumbup.png" alt=""> {{b.liked}}</div>
           <div class="blog-comments"><i class="el-icon-chat-dot-round"></i> {{b.comments || 0}}</div>
           <div class="blog-operations" v-if="isCurrentUser">
-            <el-button type="text" size="mini" @click.stop="toBlogDetail(b)">
-              <i class="el-icon-view"></i> 查看
-            </el-button>
-            <el-button type="text" size="mini" @click.stop="confirmDelete(b)">
+            <button class="delete-btn" @click.stop="confirmDelete(b)">
               <i class="el-icon-delete"></i> 删除
-            </el-button>
+            </button>
           </div>
         </div>
       </div>
@@ -223,6 +287,18 @@
       // 返回上一页
       goBack() {
         history.back();
+      },
+      
+      // 格式化日期
+      formatDate(timestamp) {
+        if (!timestamp) return '未知时间';
+        const date = new Date(timestamp);
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        const hour = date.getHours().toString().padStart(2, '0');
+        const minute = date.getMinutes().toString().padStart(2, '0');
+        return `${year}-${month}-${day} ${hour}:${minute}`;
       },
 
       // 获取用户信息

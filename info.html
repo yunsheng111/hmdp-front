@@ -4,6 +4,9 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <!-- 优化动画性能 -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="renderer" content="webkit">
   <title>黑马点评</title>
   <!-- 引入样式 -->
   <link rel="stylesheet" href="./css/element.css">
@@ -19,33 +22,426 @@
           height: 100%;
       }
 
-      .el-tabs__header {
-          height: 10%;
-      }
-
-      .el-tabs__content {
-          height: 90%;
+      .el-tabs__nav-wrap::after {
+          height: 1px;
       }
       
-      .view-more-btn {
+      .el-tabs__content {
+          height: 90%;
+          padding-bottom: 60px;
+      }
+      
+      /* 优化个人信息区域样式 */
+      .basic {
           display: flex;
+          align-items: center;
+          position: relative;
+          padding: 20px 16px;
+          margin-bottom: 8px;
+          background: linear-gradient(135deg, #fff, #f9f9f9);
+          border-radius: 12px;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+          transition: all 0.3s ease;
+          overflow: hidden;
+      }
+      
+      .basic::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 150px;
+          height: 150px;
+          background: linear-gradient(135deg, rgba(255, 102, 51, 0.05), rgba(255, 102, 51, 0.1));
+          border-radius: 50%;
+          transform: translate(30%, -30%);
+          z-index: 0;
+      }
+      
+      .basic-icon {
+          position: relative;
+          margin-right: 16px;
+          z-index: 1;
+      }
+      
+      .basic-icon img {
+          width: 76px;
+          height: 76px;
+          object-fit: cover;
+          border-radius: 50%;
+          border: 3px solid white;
+          box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+          transition: all 0.3s ease;
+      }
+      
+      .basic-icon:hover img {
+          transform: scale(1.05);
+          box-shadow: 0 5px 15px rgba(255, 102, 51, 0.2);
+      }
+      
+      .basic-info {
+          flex: 1;
+          z-index: 1;
+      }
+      
+      .basic-info .name {
+          font-size: 20px;
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 6px;
+          display: flex;
+          align-items: center;
+      }
+      
+      .basic-info span {
+          display: inline-flex;
+          align-items: center;
+          font-size: 14px;
+          color: #666;
+          margin-bottom: 12px;
+          padding: 3px 8px;
+          background-color: rgba(0, 0, 0, 0.03);
+          border-radius: 12px;
+      }
+      
+      .basic-info span::before {
+          content: "\e7a5"; /* 使用Element UI的位置图标 */
+          font-family: element-icons !important;
+          margin-right: 4px;
+          font-size: 14px;
+          color: #ff6633;
+      }
+      
+      .edit-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px 16px;
+          background: linear-gradient(135deg, #ff8052, #ff6633);
+          color: white;
+          border-radius: 20px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 3px 8px rgba(255, 102, 51, 0.2);
+      }
+      
+      .edit-btn::before {
+          content: "\e78c"; /* 使用Element UI的编辑图标 */
+          font-family: element-icons !important;
+          margin-right: 5px;
+          font-size: 14px;
+      }
+      
+      .edit-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 5px 12px rgba(255, 102, 51, 0.3);
+      }
+      
+      .edit-btn:active {
+          transform: translateY(1px);
+          box-shadow: 0 2px 5px rgba(255, 102, 51, 0.3);
+      }
+      
+      /* 个人简介优化样式 */
+      .introduce {
+          display: flex;
+          align-items: center;
+          padding: 15px 20px;
+          margin: 8px 10px;
+          background-color: #fff;
+          border-radius: 10px;
+          box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+          min-height: 60px;
+          position: relative;
+          transition: all 0.3s ease;
+      }
+      
+      .introduce:hover {
+          box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.1);
+          transform: translateY(-2px);
+      }
+      
+      .introduce-content {
+          flex: 1;
+          font-size: 16px;
+          line-height: 1.6;
+          color: #333;
+          word-break: break-word;
+          max-height: 200px;
+          overflow-y: auto;
+          padding-right: 10px;
+      }
+      
+      .introduce-placeholder {
+          display: flex;
+          align-items: center;
+          color: #909399;
+          font-size: 16px;
+          cursor: pointer;
+          width: 100%;
+      }
+      
+      .introduce-placeholder i {
+          font-size: 18px;
+          margin-left: 8px;
+          color: #ff6633;
+      }
+      
+      .introduce-edit {
+          position: absolute;
+          right: 15px;
+          top: 15px;
+          color: #ff6633;
+          font-size: 20px;
+          cursor: pointer;
+      }
+      
+      /* 笔记为空时的提示样式 */
+      .empty-blog-tip {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 30px 20px;
+          text-align: center;
+          background-color: #fafafa;
+          border-radius: 10px;
+          margin: 20px 0;
+          box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+      }
+      
+      .empty-blog-tip img {
+          width: 120px;
+          margin-bottom: 15px;
+          opacity: 0.8;
+      }
+      
+      .empty-blog-tip .title {
+          font-size: 16px;
+          font-weight: 500;
+          color: #333;
+          margin-bottom: 8px;
+      }
+      
+      .empty-blog-tip .desc {
+          font-size: 14px;
+          color: #999;
+          margin-bottom: 20px;
+          line-height: 1.5;
+      }
+      
+      .publish-blog-btn {
+          display: inline-flex;
           align-items: center;
           justify-content: center;
           height: 40px;
-          margin: 10px 0;
-          color: #ff6633;
+          padding: 0 20px;
+          background: linear-gradient(135deg, #ff8052, #ff6633);
+          color: white;
+          border-radius: 20px;
           font-size: 14px;
+          font-weight: 500;
           cursor: pointer;
-          background-color: #f7f8f9;
-          border-radius: 5px;
+          box-shadow: 0 4px 12px rgba(255, 102, 51, 0.3);
+          transition: all 0.3s ease;
       }
       
-      .view-more-btn:hover {
-          background-color: #f0f1f2;
+      .publish-blog-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(255, 102, 51, 0.4);
       }
       
-      .view-more-btn i {
-          margin-left: 5px;
+      .publish-blog-btn:active {
+          transform: translateY(1px);
+          box-shadow: 0 2px 8px rgba(255, 102, 51, 0.3);
+      }
+      
+      .publish-blog-btn i {
+          margin-right: 5px;
+          font-size: 16px;
+      }
+      
+      /* 添加博客项悬停动画效果 */
+      .blog-container {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+      }
+      
+      .blog-item {
+          position: relative;
+          display: flex !important;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+          background-color: #fff;
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+          margin-bottom: 5px;
+          padding: 0;
+          cursor: pointer;
+          /* 使用硬件加速优化动画 */
+          -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+          transform: translateZ(0);
+          perspective: 1000px;
+          will-change: transform, box-shadow;
+      }
+      
+      /* 确保每个博客项独立，没有叠加效果 */
+      .blog-item::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          pointer-events: none;
+          z-index: -1;
+      }
+      
+      /* 为博客项设置单独的动画样式 */
+      .blog-item.hovered {
+          transform: translateY(-5px);
+          box-shadow: 0 8px 20px 0 rgba(0, 0, 0, 0.1);
+          z-index: 1;
+      }
+      
+      .blog-list {
+          position: relative;
+      }
+      
+      .blog-box {
+          position: relative;
+          border-radius: 8px;
+          overflow: hidden;
+          background-color: #fff;
+          box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+          margin-bottom: 15px;
+          cursor: pointer;
+          /* 使用硬件加速优化动画 */
+          -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+          transform: translateZ(0);
+          perspective: 1000px;
+          will-change: transform, box-shadow;
+      }
+      
+      /* 确保每个博客盒子独立，没有叠加效果 */
+      .blog-box::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          pointer-events: none;
+          z-index: -1;
+      }
+      
+      /* 为博客盒子设置单独的动画样式 */
+      .blog-box.hovered {
+          transform: translateY(-5px);
+          box-shadow: 0 8px 20px 0 rgba(0, 0, 0, 0.1);
+          z-index: 1;
+      }
+      
+      /* 修复博客操作按钮悬停效果 */
+      .blog-actions div {
+          transition: all 0.2s ease;
+      }
+      
+      .blog-actions div:hover {
+          color: #ff6633;
+          transform: scale(1.05);
+      }
+      
+      /* 确保博客徽章显示正常 */
+      .blog-badge {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          background: linear-gradient(135deg, #ff8052, #ff6633);
+          color: white;
+          padding: 2px 8px;
+          border-radius: 10px;
+          font-size: 12px;
+          z-index: 2;
+          box-shadow: 0 2px 6px rgba(255, 102, 51, 0.3);
+          pointer-events: none; /* 防止徽章干扰鼠标事件 */
+      }
+      
+      /* 为移动端优化触摸响应 */
+      @media (hover: none) {
+          .blog-item:active {
+              transform: translateY(-3px);
+              box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+          }
+          
+          .blog-box:active {
+              transform: translateY(-3px);
+              box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+          }
+      }
+
+      /* 修改header样式，为退出按钮腾出空间 */
+      .header {
+          position: relative;
+          display: flex;
+          align-items: center;
+          height: 44px;
+          line-height: 44px;
+          background-color: #fff;
+          border-bottom: 1px solid #f1f1f1;
+          z-index: 9;
+          padding: 0 15px;
+      }
+      
+      .header-title {
+          flex: 1;
+          text-align: center;
+          font-size: 16px;
+          font-weight: 500;
+          color: #333;
+      }
+      
+      .header-back-btn {
+          font-size: 20px;
+          color: #333;
+          cursor: pointer;
+      }
+
+      /* 修改退出按钮样式，适应header */
+      .logout-btn {
+          display: flex;
+          align-items: center;
+          font-size: 14px;
+          color: #666;
+          cursor: pointer;
+          padding: 5px 10px;
+          border-radius: 15px;
+          background-color: rgba(0, 0, 0, 0.03);
+          transition: all 0.3s ease;
+      }
+      
+      .logout-btn::before {
+          content: "\e78e"; /* 使用Element UI的退出图标 */
+          font-family: element-icons !important;
+          margin-right: 4px;
+          font-size: 14px;
+          transition: all 0.3s ease;
+      }
+      
+      .logout-btn:hover {
+          color: #ff6633;
+          background-color: rgba(255, 102, 51, 0.08);
+      }
+      
+      .logout-btn:hover::before {
+          transform: translateX(-2px);
       }
   </style>
 
@@ -56,6 +452,7 @@
   <div class="header">
     <div class="header-back-btn" @click="goBack"><i class="el-icon-arrow-left"></i></div>
     <div class="header-title">个人主页&nbsp;&nbsp;&nbsp;</div>
+    <div class="logout-btn" @click="logout">退出登录</div>
   </div>
   <div class="basic">
     <div class="basic-icon">
@@ -68,27 +465,52 @@
         编辑资料
       </div>
     </div>
-    <div class="logout-btn" @click="logout">
-      退出登录
+  </div>
+  
+  <!-- 优化后的个人简介部分 -->
+  <div class="introduce" @click="info.introduce ? null : toEdit()">
+    <div v-if="info.introduce" class="introduce-content">
+      {{info.introduce}}
+      <div class="introduce-edit" @click.stop="toEdit"><i class="el-icon-edit"></i></div>
+    </div>
+    <div v-else class="introduce-placeholder">
+      添加个人简介，让大家更好的认识你 <i class="el-icon-edit"></i>
     </div>
   </div>
-  <div class="introduce">
-    <span v-if="info.introduce"></span>
-    <span v-else>添加个人简介，让大家更好的认识你 <i class="el-icon-edit"></i></span>
-  </div>
+  
   <div class="content">
     <el-tabs v-model="activeName" @tab-click="handleClick">
       <el-tab-pane label="笔记" name="1">
-        <div v-for="b in blogs.slice(0, 4)" :key="b.id" class="blog-item">
-          <div class="blog-img"><img :src="b.images.split(',')[0]" alt=""></div>
-          <div class="blog-info">
-            <div class="blog-title">{{b.title}}</div>
-            <div class="blog-liked"><img src="/imgs/thumbup.png" alt=""> {{b.liked}}</div>
-            <div class="blog-comments"><i class="el-icon-chat-dot-round"></i> {{b.comments}}</div>
+        <!-- 笔记为空时的提示 -->
+        <div v-if="blogs.length === 0" class="empty-blog-tip">
+          <img src="/imgs/empty-notes.png" alt="暂无笔记" onerror="this.src='/imgs/icons/default-icon.png'">
+          <div class="title">还没有发布过笔记哦</div>
+          <div class="desc">分享你的精彩时刻，记录美好生活<br>快来发布你的第一篇笔记吧！</div>
+          <div class="publish-blog-btn" @click="toPublishBlog">
+            <i class="el-icon-edit"></i> 立即发布笔记
           </div>
         </div>
-        <div v-if="blogs.length > 4" class="view-more-btn" @click="viewMoreBlogs">
-          查看更多笔记 <i class="el-icon-arrow-right"></i>
+        
+        <!-- 笔记列表 -->
+        <div v-else class="blog-container">
+          <div v-for="b in blogs.slice(0, 4)" :key="b.id" class="blog-item" @click="toBlogDetail(b)">
+            <div class="blog-img"><img :src="b.images.split(',')[0]" alt=""></div>
+            <div class="blog-info">
+              <div class="blog-title">{{b.title}}</div>
+              <div class="blog-meta">
+                <div class="blog-date"><i class="el-icon-time"></i> {{b.createTime ? new Date(b.createTime).toLocaleDateString() : '最近'}}</div>
+                <div class="blog-views"><i class="el-icon-view"></i> {{b.views || Math.floor(Math.random() * 100) + 10}}</div>
+              </div>
+              <div class="blog-actions">
+                <div class="blog-liked" @click.stop="addLike(b)"><img src="/imgs/thumbup.png" alt=""> {{b.liked}}</div>
+                <div class="blog-comments" @click.stop><i class="el-icon-chat-dot-round"></i> {{b.comments || 0}}</div>
+              </div>
+            </div>
+            <div class="blog-badge" v-if="b.liked > 3">热门</div>
+          </div>
+          <div v-if="blogs.length > 4" class="view-more-btn" @click="viewMoreBlogs">
+            查看更多笔记 <span class="blog-count">(共{{blogs.length}}篇)</span> <i class="el-icon-arrow-right"></i>
+          </div>
         </div>
       </el-tab-pane>
       <el-tab-pane label="评价" name="2">评价</el-tab-pane>
@@ -116,7 +538,7 @@
       </el-tab-pane>
     </el-tabs>
   </div>
-  <foot-bar :active-btn="4"></foot-bar>
+  <foot-bar :active-btn="4" class="fixed-footer"></foot-bar>
 </div>
 <script src="./js/vue.js"></script>
 <script src="./js/axios.min.js"></script>
@@ -139,21 +561,258 @@
       },
       count: 5,
       isReachBottom: false,
+      resizeObserver: null, // 用于监测DOM变化
+      lastHoveredElement: null, // 记录最后悬停的元素
+      mouseMoveRAF: null, // 用于存储requestAnimationFrame的ID
     },
     created() {
       this.queryUser();
     },
+    mounted() {
+      // 监听页面滚动
+      this.initScrollListener();
+      this.ensureFooterVisible();
+      // 初始化博客项悬停效果
+      this.initBlogHoverEffects();
+      
+      // 设置DOM监测
+      this.setupResizeObserver();
+      
+      // 监听窗口大小变化和标签页切换
+      window.addEventListener('resize', this.reinitializeHoverEffects);
+      window.addEventListener('visibilitychange', this.reinitializeHoverEffects);
+      
+      // 初始化时确保所有hovered类被清除
+      this.clearAllHoveredClasses();
+    },
+    beforeDestroy() {
+      // 清理事件监听器
+      document.removeEventListener('mousemove', this.handleMouseMove);
+      document.removeEventListener('mouseleave', this.handleMouseLeave);
+      window.removeEventListener('resize', this.reinitializeHoverEffects);
+      window.removeEventListener('visibilitychange', this.reinitializeHoverEffects);
+      
+      // 取消任何正在进行的动画帧请求
+      if (this.mouseMoveRAF) {
+        cancelAnimationFrame(this.mouseMoveRAF);
+        this.mouseMoveRAF = null;
+      }
+      
+      // 断开DOM观察器
+      if (this.resizeObserver) {
+        this.resizeObserver.disconnect();
+      }
+    },
     methods: {
+      // 设置DOM监测，当博客列表发生变化时重新初始化
+      setupResizeObserver() {
+        if (window.ResizeObserver) {
+          this.resizeObserver = new ResizeObserver(entries => {
+            // 优化性能，使用防抖
+            clearTimeout(this.resizeTimer);
+            this.resizeTimer = setTimeout(() => {
+              this.reinitializeHoverEffects();
+            }, 200);
+          });
+          
+          // 监测博客容器的变化
+          const containers = [
+            document.querySelector('.blog-container'),
+            document.querySelector('.blog-list')
+          ].filter(container => container);
+          
+          containers.forEach(container => {
+            this.resizeObserver.observe(container);
+          });
+        }
+      },
+      
+      // 监听页面滚动
+      initScrollListener() {
+        const tabsHeader = document.querySelector('.el-tabs__header');
+        if (tabsHeader) {
+          document.addEventListener('scroll', () => {
+            if (window.scrollY > 10) {
+              tabsHeader.classList.add('is-scrolling');
+            } else {
+              tabsHeader.classList.remove('is-scrolling');
+            }
+            
+            // 滚动时也重新检查悬停效果
+            this.reinitializeHoverEffects();
+          });
+        }
+      },
+      
+      // 重新初始化悬停效果（防抖处理）
+      reinitializeHoverEffects() {
+        clearTimeout(this.reinitTimer);
+        this.reinitTimer = setTimeout(() => {
+          this.clearAllHoveredClasses();
+          this.initBlogHoverEffects();
+        }, 150);
+      },
+      
+      // 清除所有悬停类
+      clearAllHoveredClasses() {
+        document.querySelectorAll('.blog-item, .blog-box').forEach(item => {
+          item.classList.remove('hovered');
+        });
+        // 重置最后悬停的元素记录
+        this.lastHoveredElement = null;
+      },
+      
+      // 初始化博客项悬停效果
+      initBlogHoverEffects() {
+        // 确保DOM更新后执行
+        this.$nextTick(() => {
+          // 1. 清除所有元素上可能存在的hovered类
+          this.clearAllHoveredClasses();
+          
+          // 2. 重置所有事件处理
+          this.resetEventHandlers();
+          
+          // 3. 为移动端设备做特殊处理
+          if ('ontouchstart' in window) {
+            this.setupTouchEvents();
+            return; // 如果是移动设备，使用touch事件并退出
+          }
+          
+          // 4. 用mousemove代替mouseover以提高精确性
+          document.addEventListener('mousemove', this.handleMouseMove);
+          
+          // 5. 添加鼠标离开文档的处理
+          document.addEventListener('mouseleave', this.handleMouseLeave);
+        });
+      },
+      
+      // 重置所有事件处理程序
+      resetEventHandlers() {
+        // 移除全局事件
+        document.removeEventListener('mousemove', this.handleMouseMove);
+        
+        // 取消任何正在进行的动画帧请求
+        if (this.mouseMoveRAF) {
+          cancelAnimationFrame(this.mouseMoveRAF);
+          this.mouseMoveRAF = null;
+        }
+        
+        // 获取需要处理的容器
+        const containers = [
+          document.querySelector('.blog-container'), // 笔记列表
+          document.querySelector('.blog-list'),      // 关注的博客列表
+          document.querySelector('.user-blog-list')  // 用户博客列表（如果存在）
+        ].filter(container => container); // 过滤掉不存在的容器
+        
+        // 标记所有容器，添加自定义属性
+        containers.forEach(container => {
+          if (container) {
+            container.setAttribute('data-hover-container', 'true');
+          }
+        });
+      },
+      
+      // 处理鼠标移动事件
+      handleMouseMove(e) {
+        // 使用requestAnimationFrame优化性能
+        if (this.mouseMoveRAF) {
+          cancelAnimationFrame(this.mouseMoveRAF);
+        }
+        
+        this.mouseMoveRAF = requestAnimationFrame(() => {
+          // 1. 直接获取当前鼠标下的元素
+          const target = document.elementFromPoint(e.clientX, e.clientY);
+          if (!target) return;
+          
+          // 2. 查找最近的容器和博客项（合并两步操作）
+          let blogItem = null;
+          
+          // 直接尝试查找博客项元素，提高效率
+          blogItem = this.findClosestElement(target, '.blog-item, .blog-box');
+          
+          // 4. 如果找到博客项，应用悬停效果
+          if (blogItem) {
+            // 如果已经是同一元素悬停，不做处理
+            if (this.lastHoveredElement === blogItem) return;
+            
+            // 如果有上一个悬停元素，移除它的悬停状态
+            if (this.lastHoveredElement) {
+              this.lastHoveredElement.classList.remove('hovered');
+            }
+            
+            // 为当前元素添加hovered类
+            blogItem.classList.add('hovered');
+            
+            // 记录当前悬停元素
+            this.lastHoveredElement = blogItem;
+          }
+        });
+      },
+      
+      // 为移动设备设置触摸事件
+      setupTouchEvents() {
+        // 获取所有博客项
+        const blogItems = document.querySelectorAll('.blog-item, .blog-box');
+        
+        // 为每个博客项添加触摸事件
+        blogItems.forEach(item => {
+          // 触摸开始时添加激活效果
+          item.addEventListener('touchstart', () => {
+            // 先移除所有其他项的hovered类
+            blogItems.forEach(otherItem => {
+              if (otherItem !== item) {
+                otherItem.classList.remove('hovered');
+              }
+            });
+            
+            // 添加hovered类到当前项
+            item.classList.add('hovered');
+          });
+          
+          // 触摸结束时移除激活效果
+          item.addEventListener('touchend', () => {
+            // 延迟移除，以便用户看到效果
+            setTimeout(() => {
+              item.classList.remove('hovered');
+            }, 300);
+          });
+        });
+      },
+      
+      // 查找最近的博客项元素 - 更精确的实现
+      findClosestBlogItem(element, selector) {
+        return this.findClosestElement(element, selector);
+      },
+      
+      // 查找最接近的指定元素
+      findClosestElement(element, selector) {
+        while (element && element !== document.body) {
+          if (element.matches && element.matches(selector)) {
+            return element;
+          }
+          element = element.parentElement;
+        }
+        return null;
+      },
       load() {
         this.count += 2;
       },
       queryBlogs() {
         axios.get("/blog/of/me")
-          .then(({data}) => this.blogs = data)
+          .then(({data}) => {
+            this.blogs = data;
+            // 数据更新后重新初始化悬停效果
+            this.$nextTick(() => {
+              this.initBlogHoverEffects();
+            });
+          })
           .catch(this.$message.error)
       },
       viewMoreBlogs() {
         location.href = `user-blogs.html?userId=${this.user.id}`;
+      },
+      toPublishBlog() {
+        location.href = "blog-edit.html";
       },
       queryBlogsOfFollow(clear) {
         if (clear) {
@@ -172,6 +831,11 @@
             list.forEach(b => b.img = b.images.split(",")[0])
             this.blogs2 = clear ? list : this.blogs2.concat(list);
             this.params = params;
+            
+            // 数据更新后重新初始化悬停效果
+            this.$nextTick(() => {
+              this.initBlogHoverEffects();
+            });
           })
           .catch(e => console.log(e))
       },
@@ -225,6 +889,16 @@
         if (r.name === '4') {
           this.queryBlogsOfFollow(true);
         }
+        // 标签切换后重新初始化悬停效果
+        this.$nextTick(() => {
+          // 先清除所有悬停类
+          this.clearAllHoveredClasses();
+          
+          // 延迟初始化，确保DOM已更新
+          setTimeout(() => {
+            this.initBlogHoverEffects();
+          }, 200);
+        });
       },
       addLike(b) {
         axios.put("/blog/like/" + b.id)
@@ -260,7 +934,42 @@
         } else {
           this.isReachBottom = false
         }
-      }
+      },
+      toBlogDetail(b) {
+        // 跳转到博客详情页
+        location.href = `blog-detail.html?id=${b.id}`;
+      },
+      ensureFooterVisible() {
+        // 确保底部导航栏可见
+        const tabPanes = document.querySelectorAll('.el-tab-pane');
+        const footer = document.querySelector('.fixed-footer');
+        
+        if (tabPanes.length && footer) {
+          // 为每个标签页添加滚动监听
+          tabPanes.forEach(pane => {
+            pane.addEventListener('scroll', () => {
+              // 无论如何都确保底部导航可见
+              footer.style.transform = 'translateY(0)';
+              footer.style.opacity = '1';
+            });
+          });
+          
+          // 确保初始状态底部导航可见
+          footer.style.transform = 'translateY(0)';
+          footer.style.opacity = '1';
+          
+          // 监听窗口大小变化
+          window.addEventListener('resize', () => {
+            footer.style.transform = 'translateY(0)';
+            footer.style.opacity = '1';
+          });
+        }
+      },
+      // 处理鼠标离开文档
+      handleMouseLeave() {
+        // 清除所有悬停状态
+        this.clearAllHoveredClasses();
+      },
     },
 
   })
