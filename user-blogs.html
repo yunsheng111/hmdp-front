@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>用户笔记列表</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/info.css" rel="stylesheet">
+  <link href="./css/user-blogs.css" rel="stylesheet">
+
+  <style>
+    /* 内联样式，可以移到CSS文件中 */
+    .page-header {
+      display: flex;
+      align-items: center;
+      height: 40px;
+      line-height: 40px;
+      padding: 0 15px;
+      border-bottom: 2px solid #ff6633;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: #fff;
+      z-index: 10;
+    }
+
+    .page-header .back-btn {
+      width: 10%;
+      color: #ff6633;
+      font-size: 22px;
+    }
+
+    .page-header .title {
+      width: 80%;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .blog-list-container {
+      margin-top: 50px;
+      padding: 10px;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch; /* 增强iOS滚动体验 */
+    }
+
+    /* 自定义滚动条样式 */
+    .blog-list-container::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .blog-list-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 5px;
+    }
+
+    .blog-list-container::-webkit-scrollbar-thumb {
+      background: #ddd;
+      border-radius: 5px;
+    }
+
+    .blog-list-container::-webkit-scrollbar-thumb:hover {
+      background: #ccc;
+    }
+
+    /* 加载和底部提示样式 */
+    .loading-tip, .empty-tip, .bottom-tip {
+      padding: 15px 0;
+      text-align: center;
+      color: #999;
+      font-size: 14px;
+    }
+
+    .loading-tip .el-icon-loading {
+      margin-right: 5px;
+      font-size: 16px;
+    }
+
+    .bottom-tip {
+      padding: 20px 0;
+      position: relative;
+    }
+
+    .bottom-tip span {
+      position: relative;
+      padding: 0 15px;
+    }
+
+    .bottom-tip span:before, .bottom-tip span:after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 40px;
+      height: 1px;
+      background: #ddd;
+    }
+
+    .bottom-tip span:before {
+      left: -40px;
+    }
+
+    .bottom-tip span:after {
+      right: -40px;
+    }
+    
+    /* 操作按钮样式 */
+    .blog-operations {
+      margin-left: auto;
+    }
+    
+    .blog-operations .el-button {
+      padding: 2px 5px;
+      color: #606266;
+      margin-left: 5px;
+    }
+    
+    .blog-operations .el-button:hover {
+      color: #ff6633;
+    }
+    
+    /* 修改blog-actions样式以适应新增按钮 */
+    .blog-actions {
+      display: flex !important;
+      align-items: center !important;
+      margin-top: auto !important;
+      height: 24px !important;
+      align-self: flex-end !important;
+      width: 100% !important;
+    }
+  </style>
+</head>
+
+<body>
+<div id="app" v-cloak>
+  <div class="page-header">
+    <div class="back-btn" @click="goBack"><i class="el-icon-arrow-left"></i></div>
+    <div class="title">{{user.nickName || '用户'}}的笔记</div>
+    <div style="width: 10%;"></div>
+  </div>
+
+  <div class="blog-list-container" @scroll="onScroll" ref="blogContainer">
+    <div v-for="b in blogs" :key="b.id" class="blog-item">
+      <div class="blog-img" @click="toBlogDetail(b)"><img :src="b.images.split(',')[0]" alt=""></div>
+      <div class="blog-info">
+        <div class="blog-title" @click="toBlogDetail(b)">{{b.title}}</div>
+        <div class="blog-actions">
+          <div class="blog-liked"><img src="/imgs/thumbup.png" alt=""> {{b.liked}}</div>
+          <div class="blog-comments"><i class="el-icon-chat-dot-round"></i> {{b.comments || 0}}</div>
+          <div class="blog-operations" v-if="isCurrentUser">
+            <el-button type="text" size="mini" @click.stop="toBlogDetail(b)">
+              <i class="el-icon-view"></i> 查看
+            </el-button>
+            <el-button type="text" size="mini" @click.stop="confirmDelete(b)">
+              <i class="el-icon-delete"></i> 删除
+            </el-button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 加载状态和空数据提示 -->
+    <div v-if="loading" class="loading-tip">
+      <i class="el-icon-loading"></i> 加载中...
+    </div>
+    <div v-if="blogs.length === 0 && !loading" class="empty-tip">
+      暂无笔记数据
+    </div>
+    <div v-if="reachBottom && blogs.length > 0" class="bottom-tip">
+      <span>— 已经到底了 —</span>
+    </div>
+  </div>
+</div>
+
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script>
+  const app = new Vue({
+    el: "#app",
+    data: {
+      userId: null,         // 用户ID
+      user: {},             // 用户信息
+      blogs: [],            // 笔记列表
+      currentPage: 1,       // 当前页码
+      pageSize: 5,          // 每页条数
+      total: 0,             // 总条数
+      loading: false,       // 加载状态
+      reachBottom: false,   // 是否已到底部
+      scrollTimer: null,    // 滚动防抖定时器
+      loginUserId: null     // 登录用户ID
+    },
+    computed: {
+      // 判断是否是当前登录用户的笔记
+      isCurrentUser() {
+        return this.loginUserId && this.userId && this.loginUserId.toString() === this.userId.toString();
+      }
+    },
+    created() {
+      // 从URL获取用户ID
+      const urlParams = new URLSearchParams(window.location.search);
+      this.userId = urlParams.get('userId');
+      if (!this.userId) {
+        this.$message.error('用户ID不能为空');
+        setTimeout(() => {
+          this.goBack();
+        }, 1500);
+        return;
+      }
+
+      // 获取用户信息和笔记
+      this.getUserInfo();
+      this.getLoginUserInfo();
+      this.getBlogs();
+    },
+    methods: {
+      // 返回上一页
+      goBack() {
+        history.back();
+      },
+
+      // 获取用户信息
+      getUserInfo() {
+        console.log(`正在请求用户信息，用户ID: ${this.userId}，完整URL: ${axios.defaults.baseURL}/user/${this.userId}`);
+        axios.get(`/user/${this.userId}`)
+          .then(({data}) => {
+            console.log('获取用户信息成功:', data);
+            this.user = data;
+          })
+          .catch(err => {
+            console.error('获取用户信息失败:', err);
+            this.$message.error('获取用户信息失败，请稍后再试');
+            // 失败后尝试保持现有页面结构但不显示测试数据
+            if (!this.user.nickName) {
+              this.user = {
+                id: this.userId,
+                nickName: '未知用户',
+              };
+            }
+          });
+      },
+
+      // 获取当前登录用户信息
+      getLoginUserInfo() {
+        axios.get("/user/me")
+          .then(({data}) => {
+            if (data) {
+              this.loginUserId = data.id;
+              console.log('当前登录用户ID:', this.loginUserId);
+            }
+          })
+          .catch(err => {
+            console.error('获取登录用户信息失败:', err);
+          });
+      },
+
+      // 获取笔记列表
+      getBlogs(isLoadMore = false) {
+        if (this.loading) return; // 避免重复加载
+
+        this.loading = true;
+        const apiUrl = `/blog/of/user?userId=${this.userId}&current=${this.currentPage}`;
+        console.log(`正在请求笔记列表，完整URL: ${axios.defaults.baseURL}${apiUrl}`);
+
+        axios.get(apiUrl)
+          .then(({data}) => {
+            console.log('获取笔记列表成功:', data);
+            
+            // 处理返回的分页数据
+            if (data && data.records) {
+              if (isLoadMore) {
+                // 加载更多时，将新数据追加到现有数据后面
+                this.blogs = this.blogs.concat(data.records);
+              } else {
+                // 首次加载或刷新时，直接替换数据
+                this.blogs = data.records;
+              }
+              
+              // 更新总数和页码信息
+              this.total = data.total;
+              
+              // 判断是否已到底部
+              const hasMore = this.currentPage < data.pages;
+              this.reachBottom = !hasMore;
+              
+              if (!hasMore) {
+                console.log('已加载全部数据，总页数:', data.pages, '当前页:', this.currentPage);
+              }
+            } else {
+              if (!isLoadMore) {
+                this.blogs = [];
+                this.total = 0;
+                console.log('未获取到笔记数据');
+              }
+              this.reachBottom = true;
+            }
+            this.loading = false;
+          })
+          .catch(err => {
+            console.error('获取笔记失败:', err);
+            this.$message.error('获取笔记数据失败，请稍后再试');
+            if (!isLoadMore) {
+              this.blogs = [];
+              this.total = 0;
+            }
+            this.loading = false;
+            this.reachBottom = true;
+          });
+      },
+
+      // 加载更多笔记
+      loadMoreBlogs() {
+        if (this.loading || this.reachBottom) return; // 避免重复加载或已到底部
+
+        this.currentPage++; // 页码加1
+        console.log("加载更多笔记，页码:", this.currentPage);
+        this.getBlogs(true); // 加载更多数据
+      },
+
+      // 滚动事件处理
+      onScroll(e) {
+        // 防抖处理
+        if (this.scrollTimer) clearTimeout(this.scrollTimer);
+
+        this.scrollTimer = setTimeout(() => {
+          const target = e.target;
+          const scrollTop = target.scrollTop;
+          const clientHeight = target.clientHeight;
+          const scrollHeight = target.scrollHeight;
+
+          // 调试信息
+          console.log("滚动位置:", scrollTop, "容器高度:", clientHeight, "内容高度:", scrollHeight);
+
+          // 当滚动到底部前150px时加载更多，提供更流畅的体验
+          if (scrollTop + clientHeight + 150 >= scrollHeight && !this.reachBottom && !this.loading) {
+            console.log("触发加载更多");
+            this.loadMoreBlogs();
+          }
+        }, 100); // 100ms防抖
+      },
+
+      // 跳转到笔记详情
+      toBlogDetail(blog) {
+        location.href = `/blog-detail.html?id=${blog.id}`;
+      },
+      
+      // 确认删除笔记
+      confirmDelete(blog) {
+        this.$confirm('确定要删除这条笔记吗?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.deleteBlog(blog);
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+        });
+      },
+      
+      // 删除笔记
+      deleteBlog(blog) {
+        axios.delete(`/blog/${blog.id}`)
+          .then(() => {
+            this.$message({
+              type: 'success',
+              message: '删除成功!'
+            });
+            // 从列表中移除已删除的笔记
+            const index = this.blogs.findIndex(item => item.id === blog.id);
+            if (index !== -1) {
+              this.blogs.splice(index, 1);
+            }
+            // 如果删除后列表为空且不是第一页，则回到上一页
+            if (this.blogs.length === 0 && this.currentPage > 1) {
+              this.currentPage--;
+              this.getBlogs();
+            }
+          })
+          .catch(err => {
+            console.error('删除笔记失败:', err);
+            this.$message.error(`删除失败: ${err.response?.data?.msg || '未知错误'}`);
+          });
+      }
+    }
+  });
+</script>
+</body>
+
+</html>

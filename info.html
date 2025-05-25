@@ -26,6 +26,27 @@
       .el-tabs__content {
           height: 90%;
       }
+      
+      .view-more-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 40px;
+          margin: 10px 0;
+          color: #ff6633;
+          font-size: 14px;
+          cursor: pointer;
+          background-color: #f7f8f9;
+          border-radius: 5px;
+      }
+      
+      .view-more-btn:hover {
+          background-color: #f0f1f2;
+      }
+      
+      .view-more-btn i {
+          margin-left: 5px;
+      }
   </style>
 
 </head>
@@ -58,13 +79,16 @@
   <div class="content">
     <el-tabs v-model="activeName" @tab-click="handleClick">
       <el-tab-pane label="笔记" name="1">
-        <div v-for="b in blogs" :key="b.id" class="blog-item">
+        <div v-for="b in blogs.slice(0, 4)" :key="b.id" class="blog-item">
           <div class="blog-img"><img :src="b.images.split(',')[0]" alt=""></div>
           <div class="blog-info">
             <div class="blog-title">{{b.title}}</div>
             <div class="blog-liked"><img src="/imgs/thumbup.png" alt=""> {{b.liked}}</div>
             <div class="blog-comments"><i class="el-icon-chat-dot-round"></i> {{b.comments}}</div>
           </div>
+        </div>
+        <div v-if="blogs.length > 4" class="view-more-btn" @click="viewMoreBlogs">
+          查看更多笔记 <i class="el-icon-arrow-right"></i>
         </div>
       </el-tab-pane>
       <el-tab-pane label="评价" name="2">评价</el-tab-pane>
@@ -127,6 +151,9 @@
         axios.get("/blog/of/me")
           .then(({data}) => this.blogs = data)
           .catch(this.$message.error)
+      },
+      viewMoreBlogs() {
+        location.href = `user-blogs.html?userId=${this.user.id}`;
       },
       queryBlogsOfFollow(clear) {
         if (clear) {
