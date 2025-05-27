@@ -52,7 +52,7 @@
   <div class="content">
     <el-tabs v-model="activeName" @tab-click="handleClick">
       <el-tab-pane label="笔记" name="1">
-        <div v-for="b in blogs" :key="b.id" class="blog-item">
+        <div v-for="b in blogs" :key="b.id" class="blog-item" @click="toBlogDetail(b.id)">
           <div class="blog-img"><img :src="b.images.split(',')[0]" alt=""></div>
           <div class="blog-info">
             <div class="blog-title" v-html="b.title"></div>
@@ -107,7 +107,7 @@
         axios.get("/blog/of/user", {
             params: {id: this.user.id, current: 1}
           })
-          .then(({data}) => this.blogs = data)
+          .then(({data}) => this.blogs = data.records)
           .catch(this.$message.error)
       },
       queryLoginUser() {
@@ -180,6 +180,9 @@
       },
       toOtherInfo(id){
         location.href = "/other-info.html?id=" + id
+      },
+      toBlogDetail(id){
+        location.href = "/blog-detail.html?id=" + id
       }
     },
 
