@@ -27,7 +27,7 @@ axios.interceptors.response.use(function (response) {
   if(error.response.status == 401){
     // 未登录，跳转
     setTimeout(() => {
-      location.href = "/login.html"
+      location.href = "/user-login.html"
     }, 200);
     return Promise.reject("请先登录");
   }

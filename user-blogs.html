@@ -341,7 +341,7 @@
         if (this.loading) return; // 避免重复加载
 
         this.loading = true;
-        const apiUrl = `/blog/of/user?userId=${this.userId}&current=${this.currentPage}`;
+        const apiUrl = `/blog/of/user?id=${this.userId}&current=${this.currentPage}`;
         console.log(`正在请求笔记列表，完整URL: ${axios.defaults.baseURL}${apiUrl}`);
 
         axios.get(apiUrl)
@@ -423,7 +423,7 @@
 
       // 跳转到笔记详情
       toBlogDetail(blog) {
-        location.href = `/blog-detail.html?id=${blog.id}`;
+        location.href = `/user-blog-detail.html?id=${blog.id}`;
       },
       
       // 确认删除笔记
