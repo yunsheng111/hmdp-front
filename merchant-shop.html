@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评 - 店铺管理</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <style type="text/css">
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 200px;
+      background-color: #304156;
+      color: #fff;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .main-content {
+      flex: 1;
+      margin-left: 200px;
+      padding: 20px;
+    }
+    .header {
+      height: 60px;
+      background-color: #fff;
+      box-shadow: 0 1px 4px rgba(0,21,41,.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      position: relative;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      height: 60px;
+      padding: 0 20px;
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+      border-bottom: 1px solid #1f2d3d;
+    }
+    .logo img {
+      width: 30px;
+      height: 30px;
+      margin-right: 10px;
+    }
+    .menu-item {
+      height: 50px;
+      line-height: 50px;
+      padding-left: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .menu-item.active, .menu-item:hover {
+      background-color: #263445;
+    }
+    .menu-item i {
+      margin-right: 10px;
+    }
+    .content-header {
+      margin-bottom: 20px;
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,21,41,.08);
+    }
+    .content-header h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .content-section {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,21,41,.08);
+      margin-bottom: 20px;
+    }
+    .merchant-info {
+      display: flex;
+      align-items: center;
+    }
+    .merchant-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+    .user-dropdown {
+      cursor: pointer;
+    }
+    .shop-image {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      margin-right: 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+    }
+    .image-upload {
+      width: 100px;
+      height: 100px;
+      border: 1px dashed #d9d9d9;
+      border-radius: 4px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+    .image-upload:hover {
+      border-color: #409EFF;
+    }
+    .image-upload i {
+      font-size: 28px;
+      color: #8c939d;
+    }
+    .tab-content {
+      margin-top: 20px;
+    }
+    .business-hours {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .business-hours .el-time-picker {
+      margin: 0 10px;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="container">
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+      <div class="logo">
+        <img src="./imgs/logo.png" alt="Logo">
+        <span>黑马点评商家版</span>
+      </div>
+      <div class="menu">
+        <div class="menu-item" @click="navigateTo('dashboard')">
+          <i class="el-icon-s-home"></i>
+          <span>控制台</span>
+        </div>
+        <div class="menu-item active">
+          <i class="el-icon-s-shop"></i>
+          <span>店铺管理</span>
+        </div>
+        <div class="menu-item" @click="navigateTo('voucher')">
+          <i class="el-icon-s-ticket"></i>
+          <span>优惠券管理</span>
+        </div>
+        <div class="menu-item" @click="navigateTo('order')">
+          <i class="el-icon-s-order"></i>
+          <span>订单管理</span>
+        </div>
+        <div class="menu-item" @click="navigateTo('comment')">
+          <i class="el-icon-s-comment"></i>
+          <span>评价管理</span>
+        </div>
+        <div class="menu-item" @click="navigateTo('account')">
+          <i class="el-icon-s-custom"></i>
+          <span>账号设置</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 主内容区 -->
+    <div class="main-content">
+      <!-- 顶部导航 -->
+      <div class="header">
+        <div>
+          <i class="el-icon-s-fold" style="font-size: 20px; cursor: pointer;"></i>
+        </div>
+        <div class="merchant-info">
+          <img class="merchant-avatar" :src="merchantInfo.avatar || './imgs/avatar.jpg'" alt="商家头像">
+          <el-dropdown trigger="click" @command="handleCommand">
+            <span class="el-dropdown-link user-dropdown">
+              {{ merchantInfo.name }}<i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="account">账号设置</el-dropdown-item>
+              <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+      </div>
+      
+      <!-- 店铺管理内容 -->
+      <div class="content-header">
+        <h2>店铺管理</h2>
+      </div>
+      
+      <div class="content-section">
+        <el-tabs v-model="activeTab">
+          <el-tab-pane label="基本信息" name="basic">
+            <div class="tab-content">
+              <el-form :model="shopInfo" :rules="rules" ref="shopForm" label-width="100px">
+                <el-form-item label="店铺名称" prop="name">
+                  <el-input v-model="shopInfo.name" placeholder="请输入店铺名称"></el-input>
+                </el-form-item>
+                <el-form-item label="店铺类型" prop="type">
+                  <el-select v-model="shopInfo.type" placeholder="请选择店铺类型">
+                    <el-option v-for="item in shopTypes" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="店铺地址" prop="address">
+                  <el-input v-model="shopInfo.address" placeholder="请输入店铺地址"></el-input>
+                </el-form-item>
+                <el-form-item label="联系电话" prop="phone">
+                  <el-input v-model="shopInfo.phone" placeholder="请输入联系电话"></el-input>
+                </el-form-item>
+                <el-form-item label="店铺简介" prop="description">
+                  <el-input type="textarea" v-model="shopInfo.description" placeholder="请输入店铺简介" :rows="4"></el-input>
+                </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" @click="saveShopInfo">保存信息</el-button>
+                </el-form-item>
+              </el-form>
+            </div>
+          </el-tab-pane>
+          
+          <el-tab-pane label="营业时间" name="hours">
+            <div class="tab-content">
+              <el-form :model="businessHours" ref="hoursForm" label-width="100px">
+                <el-form-item label="营业状态">
+                  <el-radio-group v-model="businessHours.status">
+                    <el-radio :label="1">营业中</el-radio>
+                    <el-radio :label="0">休息中</el-radio>
+                  </el-radio-group>
+                </el-form-item>
+                
+                <el-form-item label="营业模式">
+                  <el-radio-group v-model="businessHours.mode">
+                    <el-radio :label="1">全天营业</el-radio>
+                    <el-radio :label="2">自定义时间</el-radio>
+                  </el-radio-group>
+                </el-form-item>
+                
+                <div v-if="businessHours.mode === 2">
+                  <el-form-item label="每日营业时间">
+                    <div v-for="(item, index) in businessHours.periods" :key="index" class="business-hours">
+                      <el-time-picker v-model="item.start" format="HH:mm" placeholder="开始时间"></el-time-picker>
+                      <span>至</span>
+                      <el-time-picker v-model="item.end" format="HH:mm" placeholder="结束时间"></el-time-picker>
+                      <el-button icon="el-icon-delete" circle size="mini" type="danger" @click="removePeriod(index)" v-if="businessHours.periods.length > 1"></el-button>
+                    </div>
+                    <el-button type="primary" plain size="small" icon="el-icon-plus" @click="addPeriod">添加时间段</el-button>
+                  </el-form-item>
+                </div>
+                
+                <el-form-item label="休息日">
+                  <el-checkbox-group v-model="businessHours.restDays">
+                    <el-checkbox label="1">周一</el-checkbox>
+                    <el-checkbox label="2">周二</el-checkbox>
+                    <el-checkbox label="3">周三</el-checkbox>
+                    <el-checkbox label="4">周四</el-checkbox>
+                    <el-checkbox label="5">周五</el-checkbox>
+                    <el-checkbox label="6">周六</el-checkbox>
+                    <el-checkbox label="0">周日</el-checkbox>
+                  </el-checkbox-group>
+                </el-form-item>
+                
+                <el-form-item>
+                  <el-button type="primary" @click="saveBusinessHours">保存设置</el-button>
+                </el-form-item>
+              </el-form>
+            </div>
+          </el-tab-pane>
+          
+          <el-tab-pane label="店铺图片" name="images">
+            <div class="tab-content">
+              <el-form label-width="100px">
+                <el-form-item label="店铺Logo">
+                  <el-upload
+                    action="/api/merchant/shop/logo"
+                    :show-file-list="false"
+                    :on-success="handleLogoSuccess"
+                    :before-upload="beforeImageUpload">
+                    <img v-if="shopInfo.logo" :src="shopInfo.logo" class="shop-image">
+                    <div v-else class="image-upload">
+                      <i class="el-icon-plus"></i>
+                    </div>
+                  </el-upload>
+                  <div style="margin-top: 10px; color: #909399; font-size: 12px;">
+                    建议尺寸：200px × 200px，小于2MB，支持jpg、png格式
+                  </div>
+                </el-form-item>
+                
+                <el-form-item label="店铺门面照">
+                  <el-upload
+                    action="/api/merchant/shop/cover"
+                    :show-file-list="false"
+                    :on-success="handleCoverSuccess"
+                    :before-upload="beforeImageUpload">
+                    <img v-if="shopInfo.cover" :src="shopInfo.cover" class="shop-image" style="width: 200px; height: 120px;">
+                    <div v-else class="image-upload" style="width: 200px; height: 120px;">
+                      <i class="el-icon-plus"></i>
+                    </div>
+                  </el-upload>
+                  <div style="margin-top: 10px; color: #909399; font-size: 12px;">
+                    建议尺寸：750px × 450px，小于2MB，支持jpg、png格式
+                  </div>
+                </el-form-item>
+                
+                <el-form-item label="店铺环境照">
+                  <div style="display: flex; flex-wrap: wrap;">
+                    <el-upload
+                      action="/api/merchant/shop/images"
+                      list-type="picture-card"
+                      :file-list="shopImages"
+                      :on-preview="handlePictureCardPreview"
+                      :on-remove="handleRemove"
+                      :on-success="handleImageSuccess"
+                      :before-upload="beforeImageUpload">
+                      <i class="el-icon-plus"></i>
+                    </el-upload>
+                  </div>
+                  <div style="margin-top: 10px; color: #909399; font-size: 12px;">
+                    最多上传10张，每张小于2MB，支持jpg、png格式
+                  </div>
+                </el-form-item>
+              </el-form>
+              
+              <el-dialog :visible.sync="dialogVisible">
+                <img width="100%" :src="dialogImageUrl" alt="店铺图片预览">
+              </el-dialog>
+            </div>
+          </el-tab-pane>
+        </el-tabs>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/footer.js"></script>
+<script src="./js/merchant-common.js"></script>
+<script>
+  const app = new Vue({
+    el: "#app",
+    data: {
+      activeTab: 'basic',
+      merchantInfo: {
+        id: '',
+        name: '',
+        avatar: '',
+        phone: ''
+      },
+      shopInfo: {
+        id: '',
+        name: '',
+        type: '',
+        address: '',
+        phone: '',
+        description: '',
+        logo: '',
+        cover: ''
+      },
+      shopTypes: [
+        { value: '1', label: '美食' },
+        { value: '2', label: '酒店' },
+        { value: '3', label: '休闲娱乐' },
+        { value: '4', label: '旅游' },
+        { value: '5', label: '购物' },
+        { value: '6', label: '生活服务' },
+        { value: '7', label: '丽人' },
+        { value: '8', label: '景点' },
+        { value: '9', label: '运动健身' }
+      ],
+      businessHours: {
+        status: 1,
+        mode: 1,
+        periods: [
+          { start: new Date(2023, 0, 1, 9, 0), end: new Date(2023, 0, 1, 21, 0) }
+        ],
+        restDays: []
+      },
+      shopImages: [],
+      dialogVisible: false,
+      dialogImageUrl: '',
+      rules: {
+        name: [
+          { required: true, message: '请输入店铺名称', trigger: 'blur' },
+          { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
+        ],
+        type: [
+          { required: true, message: '请选择店铺类型', trigger: 'change' }
+        ],
+        address: [
+          { required: true, message: '请输入店铺地址', trigger: 'blur' }
+        ],
+        phone: [
+          { required: true, message: '请输入联系电话', trigger: 'blur' },
+          { pattern: /^1[3-9]\d{9}$|^0\d{2,3}-\d{7,8}$/, message: '请输入正确的电话格式', trigger: 'blur' }
+        ]
+      }
+    },
+    created() {
+      // 检查是否登录
+      const merchantToken = sessionStorage.getItem("merchantToken");
+      if (!merchantToken) {
+        location.href = "/merchant-login.html";
+        return;
+      }
+      
+      // 获取商家信息
+      const merchantInfoStr = sessionStorage.getItem("merchantInfo");
+      if (merchantInfoStr) {
+        this.merchantInfo = JSON.parse(merchantInfoStr);
+        // 初始化店铺表单
+        this.initShopForm();
+      } else {
+        this.fetchMerchantInfo();
+      }
+    },
+    methods: {
+      // 导航到其他页面
+      navigateTo(page) {
+        if (page === 'dashboard') {
+          location.href = "/merchant-center.html";
+        } else {
+          location.href = `/merchant-${page}.html`;
+        }
+      },
+      
+      // 下拉菜单操作
+      handleCommand(command) {
+        if (command === 'logout') {
+          this.logout();
+        } else if (command === 'account') {
+          this.navigateTo('account');
+        }
+      },
+      
+      // 获取商家信息
+      fetchMerchantInfo() {
+        merchantAxios.get("/merchant/info")
+          .then(response => {
+            if (response.code === 200) {
+              this.merchantInfo = response.data;
+              sessionStorage.setItem("merchantInfo", JSON.stringify(response.data));
+              // 初始化店铺表单
+              this.initShopForm();
+            } else {
+              this.$message.error(response.msg || "获取商家信息失败");
+            }
+          })
+          .catch(error => {
+            console.error("获取商家信息失败:", error);
+            this.$message.error("获取商家信息失败，请重试");
+          });
+      },
+      
+      // 初始化店铺表单
+      initShopForm() {
+        // 从商家信息中获取店铺数据
+        if (this.merchantInfo.shop) {
+          this.shopInfo = { ...this.merchantInfo.shop };
+        } else {
+          // 获取店铺信息
+          this.fetchShopInfo();
+        }
+      },
+      
+      // 获取店铺信息
+      fetchShopInfo() {
+        merchantAxios.get("/merchant/shop/info")
+          .then(response => {
+            if (response.code === 200) {
+              this.shopInfo = response.data;
+            } else {
+              this.$message.error(response.msg || "获取店铺信息失败");
+            }
+          })
+          .catch(error => {
+            console.error("获取店铺信息失败:", error);
+            this.$message.error("获取店铺信息失败，请重试");
+          });
+      },
+      
+      // 更新店铺信息
+      updateShopInfo() {
+        this.$refs.shopForm.validate((valid) => {
+          if (valid) {
+            merchantAxios.put("/merchant/shop/update", this.shopInfo)
+              .then(response => {
+                if (response.code === 200) {
+                  this.$message.success("店铺信息更新成功");
+                  // 更新本地商家信息
+                  if (this.merchantInfo) {
+                    this.merchantInfo.shop = response.data;
+                    sessionStorage.setItem("merchantInfo", JSON.stringify(this.merchantInfo));
+                  }
+                } else {
+                  this.$message.error(response.msg || "更新失败");
+                }
+              })
+              .catch(error => {
+                console.error("更新店铺信息失败:", error);
+                this.$message.error("更新失败，请重试");
+              });
+          } else {
+            return false;
+          }
+        });
+      },
+      
+      // 添加营业时间段
+      addPeriod() {
+        this.businessHours.periods.push({
+          start: new Date(2023, 0, 1, 9, 0),
+          end: new Date(2023, 0, 1, 21, 0)
+        });
+      },
+      
+      // 移除营业时间段
+      removePeriod(index) {
+        this.businessHours.periods.splice(index, 1);
+      },
+      
+      // 保存营业时间设置
+      saveBusinessHours() {
+        this.$message({
+          message: '营业时间设置保存成功！',
+          type: 'success'
+        });
+        
+        // 实际项目中的API调用
+        /*
+        axios.post("/api/merchant/shop/hours", this.businessHours, {
+          headers: {
+            Authorization: sessionStorage.getItem("merchantToken")
+          }
+        })
+        .then(({data}) => {
+          if(data.code === 200){
+            this.$message({
+              message: '营业时间设置保存成功！',
+              type: 'success'
+            });
+          } else {
+            this.$message.error(data.msg || "保存失败");
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          this.$message.error("保存失败");
+        });
+        */
+      },
+      
+      // 图片上传前验证
+      beforeImageUpload(file) {
+        const isJPGOrPNG = file.type === 'image/jpeg' || file.type === 'image/png';
+        const isLt2M = file.size / 1024 / 1024 < 2;
+        
+        if (!isJPGOrPNG) {
+          this.$message.error('上传图片只能是 JPG 或 PNG 格式!');
+        }
+        if (!isLt2M) {
+          this.$message.error('上传图片大小不能超过 2MB!');
+        }
+        return isJPGOrPNG && isLt2M;
+      },
+      
+      // Logo上传成功处理
+      handleLogoSuccess(res, file) {
+        if (res.code === 200) {
+          this.shopInfo.logo = res.data;
+          this.$message.success('Logo上传成功');
+        } else {
+          this.$message.error(res.msg || '上传失败');
+        }
+      },
+      
+      // 封面上传成功处理
+      handleCoverSuccess(res, file) {
+        if (res.code === 200) {
+          this.shopInfo.cover = res.data;
+          this.$message.success('封面上传成功');
+        } else {
+          this.$message.error(res.msg || '上传失败');
+        }
+      },
+      
+      // 环境照上传成功处理
+      handleImageSuccess(res, file, fileList) {
+        if (res.code === 200) {
+          this.shopImages = fileList.map(item => {
+            return { name: item.name, url: item.url || res.data };
+          });
+          this.$message.success('图片上传成功');
+        } else {
+          this.$message.error(res.msg || '上传失败');
+        }
+      },
+      
+      // 移除图片
+      handleRemove(file, fileList) {
+        this.shopImages = fileList;
+        
+        // 实际项目中可能需要调用删除API
+        /*
+        const fileName = file.url.split('/').pop();
+        axios.delete(`/api/merchant/shop/image/${fileName}`, {
+          headers: {
+            Authorization: sessionStorage.getItem("merchantToken")
+          }
+        })
+        .then(({data}) => {
+          if(data.code === 200){
+            this.$message.success('图片删除成功');
+          } else {
+            this.$message.error(data.msg || '删除失败');
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          this.$message.error("删除失败");
+        });
+        */
+      },
+      
+      // 预览图片
+      handlePictureCardPreview(file) {
+        this.dialogImageUrl = file.url;
+        this.dialogVisible = true;
+      },
+      
+      // 退出登录
+      logout() {
+        // 清除商家信息和token
+        sessionStorage.removeItem("merchantToken");
+        sessionStorage.removeItem("merchantInfo");
+        // 跳转到登录页
+        location.href = "/merchant-login.html";
+      }
+    }
+  })
+</script>
+</body>
+</html> 

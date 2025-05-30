@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评 - 管理员登录</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/login.css" rel="stylesheet">
+  <!-- 引入字体图标 -->
+  <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+
+  <style type="text/css">
+      :root {
+          --primary-color: #F63;
+          --primary-hover: #ff5533;
+          --primary-active: #e65c3e;
+          --primary-light: rgba(255, 102, 51, 0.1);
+          --primary-lighter: rgba(255, 102, 51, 0.05);
+          --text-primary: #303133;
+          --text-regular: #606266;
+          --text-secondary: #909399;
+          --border-color: #dcdfe6;
+          --success-color: #67C23A;
+          --success-hover: #5daf34;
+          --border-radius: 4px;
+          --box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+          --transition: all 0.3s ease;
+      }
+      
+      body {
+          background-color: #f5f7fa;
+          margin: 0;
+          font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+      }
+      
+      .el-radio__input.is-checked .el-radio__inner {
+          border-color: var(--primary-color);
+          background: var(--primary-color);
+      }
+      
+      .el-input__inner:focus {
+          border: 1px solid var(--primary-color);
+      }
+      
+      .login-container {
+          max-width: 450px;
+          margin: 60px auto;
+          padding: 0;
+          box-shadow: var(--box-shadow);
+          border-radius: 8px;
+          overflow: hidden;
+          background-color: #fff;
+      }
+      
+      .login-banner {
+          background: linear-gradient(135deg, var(--primary-color), #ff8c66);
+          height: 120px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          color: white;
+          position: relative;
+          overflow: hidden;
+      }
+      
+      .login-banner::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none"/><path d="M0,0 L100,100 M40,0 L100,60 M0,40 L60,100" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></svg>');
+          background-size: 20px 20px;
+      }
+      
+      .admin-login-title {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-direction: column;
+          margin-bottom: 0;
+      }
+      
+      .admin-login-title img {
+          height: 50px;
+          margin-bottom: 10px;
+      }
+      
+      .admin-login-title h2 {
+          margin: 0;
+          color: #fff;
+          font-size: 22px;
+          text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      }
+      
+      .content {
+          padding: 30px;
+      }
+      
+      .login-form {
+          margin-bottom: 20px;
+      }
+      
+      .login-form .el-input {
+          margin-bottom: 20px;
+      }
+      
+      .login-form .el-input__inner {
+          height: 42px;
+          border-radius: var(--border-radius);
+      }
+      
+      .login-btn {
+          width: 100%;
+          background-color: var(--primary-color);
+          color: #fff;
+          border-color: var(--primary-color);
+          height: 42px;
+          font-size: 16px;
+          letter-spacing: 1px;
+          transition: var(--transition);
+          margin-top: 15px;
+          font-weight: 500;
+      }
+      
+      .login-btn:hover {
+          background-color: var(--primary-hover);
+          border-color: var(--primary-hover);
+      }
+      
+      .login-options {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+          color: var(--text-secondary);
+          font-size: 14px;
+      }
+      
+      .remember-me {
+          display: flex;
+          align-items: center;
+      }
+      
+      .login-radio {
+          display: flex;
+          align-items: flex-start;
+          margin-bottom: 20px;
+          font-size: 13px;
+          color: var(--text-regular);
+      }
+      
+      .login-tip {
+          font-size: 13px;
+          color: var(--text-secondary);
+          text-align: center;
+          margin-top: 25px;
+      }
+      
+      .login-tip a {
+          color: var(--primary-color);
+          text-decoration: none;
+      }
+      
+      .login-tip a:hover {
+          text-decoration: underline;
+      }
+      
+      /* 响应式调整 */
+      @media (max-width: 768px) {
+          .login-container {
+              margin: 30px 15px;
+              max-width: none;
+          }
+          
+          .content {
+              padding: 20px;
+          }
+      }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="login-container">
+    <div class="login-banner">
+      <div class="admin-login-title">
+        <img src="./imgs/logo.png" alt="黑马点评">
+        <h2>管理员登录</h2>
+      </div>
+    </div>
+    <div class="content">
+      <div class="login-form">
+        <el-input placeholder="请输入用户名" v-model="form.username" prefix-icon="el-icon-user">
+        </el-input>
+        <el-input placeholder="请输入密码" type="password" v-model="form.password" prefix-icon="el-icon-lock" @keyup.enter.native="login">
+        </el-input>
+        <div class="login-options">
+          <div class="remember-me">
+            <el-checkbox v-model="rememberMe">记住我</el-checkbox>
+          </div>
+          <a href="javascript:void(0)" style="color: var(--primary-color)">忘记密码?</a>
+        </div>
+        <el-button @click="login" class="login-btn" :loading="loading">登录</el-button>
+      </div>
+      <div class="login-radio">
+        <div>
+          <input type="radio" name="readed" v-model="radio" value="1" id="agreement">
+          <label for="agreement"></label>
+        </div>
+        <div>我已阅读并同意
+          <a href="javascript:void(0)" style="color: var(--primary-color)">
+          《黑马点评管理员服务协议》</a>、
+          <a href="javascript:void(0)" style="color: var(--primary-color)">《隐私政策》</a>
+        </div>
+      </div>
+      <div class="login-tip">
+        管理员登录专用入口，普通用户请使用<a href="login.html">用户登录</a>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/admin-common.js"></script>
+<script>
+  // 检查是否已登录
+  const checkLogin = () => {
+    const token = sessionStorage.getItem('adminToken');
+    if (token) {
+      // 如果已有token，验证是否有效并直接跳转到管理员首页
+      adminAxios.get('/admin/info')
+        .then((data) => {
+          if (data && data.success) {
+            location.href = 'admin-dashboard.html';
+          }
+        })
+        .catch((err) => {
+          console.log('Token验证失败，需要重新登录', err);
+          // Token无效，清除旧token
+          sessionStorage.removeItem('adminToken');
+          sessionStorage.removeItem('adminInfo');
+        });
+    }
+  }
+
+  const app = new Vue({
+    el: "#app",
+    data: {
+      radio: "",
+      form: {
+        username: "",
+        password: ""
+      },
+      rememberMe: false,
+      loading: false
+    },
+    created() {
+      // 页面加载时检查登录状态
+      checkLogin();
+      
+      // 从本地存储读取记住的用户名密码
+      const savedCredentials = localStorage.getItem('adminCredentials');
+      if (savedCredentials) {
+        try {
+          const credentials = JSON.parse(savedCredentials);
+          this.form.username = credentials.username || '';
+          this.form.password = credentials.password || '';
+          this.rememberMe = true;
+        } catch (e) {
+          console.error('解析存储的凭据失败', e);
+        }
+      }
+    },
+    methods: {
+      login() {
+        // 表单验证
+        if (!this.radio) {
+          this.$message.error("请先确认阅读服务协议！");
+          return;
+        }
+        
+        if (!this.form.username || !this.form.password) {
+          this.$message.error("用户名和密码不能为空！");
+          return;
+        }
+        
+        this.loading = true;
+        
+        // 调用管理员登录接口
+        adminAxios.post("/admin/login", this.form)
+          .then((data) => {
+            this.loading = false;
+            
+            // 使用adminAxios时，data已经是响应数据本身
+            if (data && data.success) {
+              // 记住我功能
+              if (this.rememberMe) {
+                localStorage.setItem('adminCredentials', JSON.stringify({
+                  username: this.form.username,
+                  password: this.form.password
+                }));
+              } else {
+                localStorage.removeItem('adminCredentials');
+              }
+              
+              // 保存管理员token到session
+              sessionStorage.setItem("adminToken", data.data.token);
+              // 保存管理员信息
+              sessionStorage.setItem("adminInfo", JSON.stringify(data.data));
+              
+              this.$message.success('登录成功，正在跳转...');
+              
+              // 跳转到管理员首页
+              setTimeout(() => {
+                location.href = "admin-dashboard.html";
+              }, 800);
+            } else {
+              this.$message.error('登录失败，请检查用户名和密码');
+            }
+          })
+          .catch(err => {
+            this.loading = false;
+            console.error('登录失败：', err);
+            this.$message.error(err || '登录失败，请检查用户名和密码');
+          });
+      }
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评 - 系统监控与统计</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+      background-color: #f5f7fa;
+    }
+    .admin-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    .admin-sidebar {
+      width: 220px;
+      background-color: #304156;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      transition: width 0.3s;
+      position: fixed;
+      height: 100vh;
+      z-index: 1000;
+    }
+    .admin-logo {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #263445;
+      padding: 0 16px;
+    }
+    .admin-logo img {
+      height: 32px;
+      margin-right: 8px;
+    }
+    .admin-logo h1 {
+      color: #fff;
+      font-size: 18px;
+      margin: 0;
+      white-space: nowrap;
+    }
+    .admin-main {
+      flex: 1;
+      margin-left: 220px;
+      padding: 15px;
+      background-color: #f5f7fa;
+      min-height: 100vh;
+    }
+    .admin-header {
+      height: 60px;
+      background-color: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 15px;
+      margin-bottom: 15px;
+    }
+    .admin-content {
+      background-color: #fff;
+      border-radius: 4px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      min-height: calc(100vh - 90px);
+    }
+    .admin-user-dropdown {
+      display: flex;
+      align-items: center;
+    }
+    .admin-user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .el-menu {
+      border-right: none;
+      background-color: #304156;
+    }
+    .el-menu-item {
+      color: #bfcbd9;
+    }
+    .el-menu-item:hover, .el-menu-item:focus {
+      background-color: #263445;
+    }
+    .el-menu-item.is-active {
+      color: #409EFF;
+      background-color: #263445;
+    }
+    .stat-card {
+      margin-bottom: 20px;
+    }
+    .filter-bar {
+        margin-bottom: 20px;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="admin-container">
+    <!-- 侧边栏导航 -->
+    <div class="admin-sidebar">
+      <div class="admin-logo">
+        <img src="./imgs/logo.png" alt="黑马点评">
+        <h1>管理员控制台</h1>
+      </div>
+      <el-menu
+        default-active="6" 
+        class="el-menu-vertical"
+        background-color="#304156"
+        text-color="#bfcbd9"
+        active-text-color="#409EFF">
+        <el-menu-item index="1" @click="navigateTo('admin-dashboard.html')">
+          <i class="el-icon-s-home"></i>
+          <span slot="title">控制台</span>
+        </el-menu-item>
+        <el-menu-item index="2" @click="navigateTo('admin-users.html')">
+          <i class="el-icon-user"></i>
+          <span slot="title">用户管理</span>
+        </el-menu-item>
+        <el-menu-item index="3" @click="navigateTo('admin-merchants.html')">
+          <i class="el-icon-s-shop"></i>
+          <span slot="title">商户管理</span>
+        </el-menu-item>
+        <el-menu-item index="4" @click="navigateTo('admin-shop-types.html')">
+          <i class="el-icon-s-grid"></i>
+          <span slot="title">商户分类管理</span>
+        </el-menu-item>
+        <el-menu-item index="5" @click="navigateTo('admin-content.html')">
+          <i class="el-icon-document-checked"></i>
+          <span slot="title">内容审核</span>
+        </el-menu-item>
+        <el-menu-item index="6" @click="navigateTo('admin-statistics.html')">
+          <i class="el-icon-data-line"></i>
+          <span slot="title">系统监控</span>
+        </el-menu-item>
+        <el-menu-item index="7" @click="logout">
+          <i class="el-icon-switch-button"></i>
+          <span slot="title">退出登录</span>
+        </el-menu-item>
+      </el-menu>
+    </div>
+    
+    <!-- 主要内容区域 -->
+    <div class="admin-main">
+      <!-- 顶部栏 -->
+      <div class="admin-header">
+        <div class="admin-header-left">
+          <i class="el-icon-s-fold" style="font-size: 20px; cursor: pointer;"></i>
+        </div>
+        <div class="admin-user-dropdown">
+          <img :src="adminInfo.avatar || './imgs/default-avatar.png'" class="admin-user-avatar">
+          <el-dropdown trigger="click">
+            <span class="el-dropdown-link">
+              {{adminInfo.username || '管理员'}} <i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item icon="el-icon-user">个人信息</el-dropdown-item>
+              <el-dropdown-item icon="el-icon-setting">系统设置</el-dropdown-item>
+              <el-dropdown-item icon="el-icon-switch-button" @click.native="logout">退出登录</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+      </div>
+      
+      <!-- 内容区域 -->
+      <div class="admin-content">
+        <h2 class="mb-3">系统监控与数据统计</h2>
+
+        <el-tabs v-model="activeStatTab" @tab-click="handleStatTabClick">
+            <el-tab-pane label="核心数据摘要" name="summaryStats">
+                <div class="tab-content-padding">
+                    <div class="filter-bar">
+                        <el-date-picker
+                            v-model="summaryParams.date"
+                            type="date"
+                            placeholder="选择日期"
+                            value-format="yyyy-MM-dd"
+                            @change="fetchSummaryStats">
+                        </el-date-picker>
+                        <el-select v-model="summaryParams.period" placeholder="统计周期" @change="fetchSummaryStats">
+                            <el-option label="每日" value="daily"></el-option>
+                            <el-option label="每周" value="weekly"></el-option>
+                            <el-option label="每月" value="monthly"></el-option>
+                        </el-select>
+                        <el-button type="primary" icon="el-icon-search" @click="fetchSummaryStats">查询</el-button>
+                    </div>
+
+                    <div v-if="summaryDataLoading" v-loading="summaryDataLoading" style="min-height: 200px;"></div>
+                    
+                    <div v-if="!summaryDataLoading && summaryData">
+                        <el-descriptions class="margin-top" title="数据概览" :column="3" border>
+                            <template slot="extra">
+                                <el-tag size="small">{{ summaryData.date }} ({{ summaryData.period === 'daily' ? '日度' : summaryData.period === 'weekly' ? '周度' : '月度'}})</el-tag>
+                            </template>
+                            <el-descriptions-item>
+                                <template slot="label"><i class="el-icon-view"></i> UV数量</template>
+                                {{ summaryData.uvCount | formatNumber }}
+                            </el-descriptions-item>
+                            <el-descriptions-item>
+                                <template slot="label"><i class="el-icon-user"></i> DAU</template>
+                                {{ summaryData.userActivity ? summaryData.userActivity.dau : 'N/A' | formatNumber }}
+                            </el-descriptions-item>
+                            <el-descriptions-item>
+                                <template slot="label"><i class="el-icon-s-custom"></i> 新增用户</template>
+                                {{ summaryData.userActivity ? summaryData.userActivity.newUserCount : 'N/A' | formatNumber }}
+                            </el-descriptions-item>
+                            <el-descriptions-item>
+                                <template slot="label"><i class="el-icon-s-order"></i> 总订单数</template>
+                                {{ summaryData.transactionSummary ? summaryData.transactionSummary.totalOrders : 'N/A' | formatNumber }}
+                            </el-descriptions-item>
+                            <el-descriptions-item :span="2">
+                                <template slot="label"><i class="el-icon-money"></i> 总交易额</template>
+                                ¥ {{ summaryData.transactionSummary ? summaryData.transactionSummary.totalAmount : 'N/A' | formatNumber(2) }}
+                            </el-descriptions-item>
+                        </el-descriptions>
+                        <!-- 可以根据需要添加更多卡片或图表来展示其他核心指标 -->
+                    </div>
+                    <el-empty v-if="!summaryDataLoading && !summaryData" description="暂无数据摘要，请选择日期和周期查询"></el-empty>
+                </div>
+            </el-tab-pane>
+
+            <el-tab-pane label="数据导出" name="dataExport">
+                 <div class="tab-content-padding">
+                    <el-form ref="exportFormRef" :model="exportForm" label-width="120px" style="max-width: 600px;">
+                        <el-form-item label="数据类型" prop="dataType" :rules="[{ required: true, message: '请选择数据类型', trigger: 'change' }]">
+                            <el-select v-model="exportForm.dataType" placeholder="请选择要导出的数据类型" style="width:100%;">
+                                <el-option
+                                    v-for="item in dataTypeOptions"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="导出格式" prop="format">
+                            <el-select v-model="exportForm.format" placeholder="请选择导出格式" style="width:100%;">
+                                <el-option
+                                    v-for="item in formatOptions"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="日期范围" prop="dateRange">
+                            <el-date-picker
+                                v-model="exportForm.dateRange"
+                                type="daterange"
+                                range-separator="至"
+                                start-placeholder="开始日期"
+                                end-placeholder="结束日期"
+                                value-format="yyyy-MM-dd"
+                                style="width:100%;">
+                            </el-date-picker>
+                        </el-form-item>
+                        <el-form-item label="筛选条件 (JSON)" prop="filtersJsonString">
+                            <el-input
+                                type="textarea"
+                                :rows="3"
+                                placeholder='请输入JSON格式的筛选条件，例如：{"status": 1, "shopId": 100}'
+                                v-model="exportForm.filtersJsonString">
+                            </el-input>
+                            <div style="font-size: 12px; color: #909399;">注意：此筛选条件将作为字符串直接传递给后端。</div>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="handleExportData" :loading="exporting">
+                                {{ exporting ? '导出处理中...' : '导出数据' }}
+                            </el-button>
+                            <el-button @click="resetExportForm">重置表单</el-button>
+                        </el-form-item>
+                    </el-form>
+                 </div>
+            </el-tab-pane>
+
+            <el-tab-pane label="预警历史" name="alertHistory">
+                <div class="tab-content-padding">
+                    <div class="filter-bar">
+                        <el-select v-model="alertHistoryPageParams.severity" placeholder="告警级别" clearable @change="fetchAlertHistory">
+                            <el-option label="所有级别" value=""></el-option>
+                            <el-option
+                                v-for="item in severityOptions"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value">
+                            </el-option>
+                        </el-select>
+                        <el-select v-model="alertHistoryPageParams.timeRange" placeholder="时间范围" clearable @change="fetchAlertHistory">
+                            <el-option label="所有时间" value=""></el-option>
+                            <el-option
+                                v-for="item in timeRangeOptions"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value">
+                            </el-option>
+                        </el-select>
+                         <el-button type="primary" icon="el-icon-refresh" @click="fetchAlertHistory">刷新</el-button>
+                    </div>
+
+                    <el-table
+                        v-loading="alertHistoryLoading"
+                        :data="alertHistoryList"
+                        border
+                        style="width: 100%">
+                        <el-table-column type="index" label="序号" width="60" align="center"></el-table-column>
+                        <el-table-column prop="historyId" label="历史ID" width="100" align="center"></el-table-column>
+                        <el-table-column prop="alertName" label="预警名称" min-width="180"></el-table-column>
+                        <el-table-column prop="triggerTime" label="触发时间" width="180" align="center"></el-table-column>
+                        <el-table-column prop="details" label="详情" min-width="250">
+                            <template slot-scope="scope">
+                                <el-popover trigger="hover" placement="top" width="400">
+                                    <p>{{ scope.row.details }}</p>
+                                    <div slot="reference" class="name-wrapper">
+                                        {{ scope.row.details && scope.row.details.length > 60 ? scope.row.details.substring(0, 60) + '...' : scope.row.details }}
+                                    </div>
+                                </el-popover>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="级别" width="100" align="center">
+                            <template slot-scope="scope">
+                                <el-tag :type="getAlertSeverityTagType(scope.row.severity)">
+                                    {{ scope.row.severity }}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="status" label="状态" width="100" align="center"></el-table-column>
+                    </el-table>
+
+                    <div class="pagination-container" style="text-align: right; margin-top: 20px;">
+                        <el-pagination
+                            @size-change="handleAlertHistorySizeChange"
+                            @current-change="handleAlertHistoryCurrentChange"
+                            :current-page="alertHistoryPageParams.page"
+                            :page-sizes="[10, 20, 50, 100]"
+                            :page-size="alertHistoryPageParams.size"
+                            layout="total, sizes, prev, pager, next, jumper"
+                            :total="alertHistoryTotal">
+                        </el-pagination>
+                    </div>
+                </div>
+            </el-tab-pane>
+        </el-tabs>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script>
+  const adminToken = sessionStorage.getItem("adminToken");
+  const adminInfoStr = sessionStorage.getItem("adminInfo");
+  
+  if (!adminToken) {
+    // location.href = "admin-login.html"; 
+  }
+  
+  const app = new Vue({
+    el: "#app",
+    data: {
+      adminInfo: adminInfoStr ? JSON.parse(adminInfoStr) : {},
+      activeStatTab: 'summaryStats',
+
+      // 核心数据摘要
+      summaryDataLoading: false,
+      summaryParams: {
+        date: new Date().toISOString().slice(0,10), // 默认为当天
+        period: 'daily' // daily, weekly, monthly
+      },
+      summaryData: null, 
+
+      // 数据导出
+      exportForm: {
+        dataType: '',
+        format: 'CSV',
+        dateRange: [], // [startDate, endDate]
+        filtersJsonString: ''
+      },
+      dataTypeOptions: [
+        { value: 'users', label: '用户数据' },
+        { value: 'orders', label: '订单数据' },
+        { value: 'merchants', label: '商户数据' },
+        { value: 'products', label: '商品数据' },
+        { value: 'comments', label: '评论数据' }
+      ],
+      formatOptions: [
+        { value: 'CSV', label: 'CSV格式' },
+        { value: 'EXCEL', label: 'Excel格式' }
+      ],
+      exporting: false,
+
+      // 预警历史
+      alertHistoryLoading: false,
+      alertHistoryList: [],
+      alertHistoryPageParams: {
+        page: 1,
+        size: 10,
+        severity: '', // INFO, WARNING, CRITICAL
+        timeRange: '' // last_24_hours, last_7_days
+      },
+      alertHistoryTotal: 0,
+      severityOptions: [
+        { value: 'INFO', label: '信息' },
+        { value: 'WARNING', label: '警告' },
+        { value: 'CRITICAL', label: '严重' }
+      ],
+      timeRangeOptions: [
+        { value: 'last_24_hours', label: '过去24小时' },
+        { value: 'last_7_days', label: '过去7天' }
+      ]
+    },
+    filters: {
+        formatNumber(value, decimals = 0) {
+            if (isNaN(parseFloat(value))) return value; // 返回原值如果不是数字
+            return parseFloat(value).toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        }
+    },
+    created() {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${adminToken}`;
+      if(this.activeStatTab === 'summaryStats'){
+        this.fetchSummaryStats();
+      }
+    },
+    methods: {
+      navigateTo(path) {
+        location.href = path;
+      },
+      handleStatTabClick(tab, event) {
+        if(tab.name === 'summaryStats'){
+          this.fetchSummaryStats();
+        } else if (tab.name === 'dataExport'){
+          // console.log("切换到数据导出");
+          // 可以在此重置表单或执行其他初始化操作
+          this.resetExportForm();
+        } else if (tab.name === 'alertHistory'){
+          this.fetchAlertHistory();
+        }
+      },
+      // --- 核心数据摘要 START ---
+      fetchSummaryStats(){
+        this.summaryDataLoading = true;
+        this.summaryData = null; // 查询前清空旧数据
+        axios.get("/api/admin/stats/summary", { params: this.summaryParams })
+            .then(({data}) => {
+                if(data.success && data.data){
+                    this.summaryData = data.data;
+                } else {
+                    this.$message.error(data.msg || "获取核心数据摘要失败");
+                    this.summaryData = {}; // 给一个空对象避免渲染错误
+                }
+            })
+            .catch(err => {
+                console.error("获取核心数据摘要失败", err);
+                this.$message.error("获取核心数据摘要失败，请重试");
+                this.summaryData = {}; 
+            })
+            .finally(() => {
+                this.summaryDataLoading = false;
+            });
+      },
+      // --- 核心数据摘要 END ---
+
+      // --- 数据导出 START ---
+      resetExportForm(){
+        this.exportForm = {
+            dataType: '',
+            format: 'CSV',
+            dateRange: [],
+            filtersJsonString: ''
+        };
+        if(this.$refs.exportFormRef){
+            this.$refs.exportFormRef.resetFields();
+        }
+      },
+      handleExportData(){
+        this.$refs.exportFormRef.validate((valid) => {
+          if (valid) {
+            this.exporting = true;
+            let params = {
+              dataType: this.exportForm.dataType,
+              format: this.exportForm.format,
+            };
+
+            if (this.exportForm.dateRange && this.exportForm.dateRange.length === 2) {
+              params.startDate = this.exportForm.dateRange[0];
+              params.endDate = this.exportForm.dateRange[1];
+            }
+
+            if (this.exportForm.filtersJsonString.trim() !== '') {
+              try {
+                // 校验是否是合法的JSON，但不直接将其作为对象发送，因为API需要字符串
+                JSON.parse(this.exportForm.filtersJsonString);
+                params.filters = this.exportForm.filtersJsonString;
+              } catch (e) {
+                this.$message.error('筛选条件JSON格式不正确');
+                this.exporting = false;
+                return;
+              }
+            }
+            
+            // 构造查询字符串
+            const queryString = Object.keys(params)
+              .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(params[key]))
+              .join('&');
+            
+            const exportUrl = `/api/admin/data-export?${queryString}`;
+
+            // 使用 window.location.href 触发下载，对于GET请求下载文件是常见做法
+            // 后端需要正确设置 Content-Disposition 头
+            // 为了更好的用户体验，特别是错误处理，实际项目中可能会使用更复杂的方式，如axios请求blob然后创建链接下载
+            // 但基于API文档是GET请求，此处直接使用
+            console.log("尝试导出：", exportUrl);
+            window.location.href = exportUrl;
+            
+            // 由于无法直接知道下载是否成功或失败，这里简单地结束loading状态
+            // 实际项目中可能需要后端配合，例如返回一个JSON表示任务已创建，然后轮询状态
+            setTimeout(() => {
+                this.exporting = false;
+                this.$message.info('已发起数据导出请求，请注意浏览器下载提示。');
+            }, 2000); // 延迟一点时间假装处理
+
+          } else {
+            console.log('导出表单校验失败!');
+            return false;
+          }
+        });
+      },
+      // --- 数据导出 END ---
+
+      // --- 预警历史 START ---
+      fetchAlertHistory(){
+        this.alertHistoryLoading = true;
+        const params = {...this.alertHistoryPageParams};
+        if(params.severity === '') delete params.severity;
+        if(params.timeRange === '') delete params.timeRange;
+
+        axios.get("/api/admin/alerts/history", { params })
+            .then(({data}) => {
+                if(data.success && data.data){
+                    this.alertHistoryList = data.data.list || [];
+                    this.alertHistoryTotal = data.data.total || 0;
+                } else {
+                    this.$message.error(data.msg || "获取预警历史失败");
+                    this.alertHistoryList = [];
+                    this.alertHistoryTotal = 0;
+                }
+            })
+            .catch(err => {
+                console.error("获取预警历史失败", err);
+                this.$message.error("获取预警历史失败，请重试");
+                this.alertHistoryList = [];
+                this.alertHistoryTotal = 0;
+            })
+            .finally(() => {
+                this.alertHistoryLoading = false;
+            });
+      },
+      handleAlertHistorySizeChange(size) {
+        this.alertHistoryPageParams.size = size;
+        this.fetchAlertHistory();
+      },
+      handleAlertHistoryCurrentChange(page) {
+        this.alertHistoryPageParams.page = page;
+        this.fetchAlertHistory();
+      },
+      getAlertSeverityTagType(severity){
+        if(severity === 'CRITICAL') return 'danger';
+        if(severity === 'WARNING') return 'warning';
+        if(severity === 'INFO') return 'info';
+        return 'info';
+      },
+      // --- 预警历史 END ---
+
+      logout() {
+        axios.post("/api/admin/logout")
+          .then(() => {
+            sessionStorage.removeItem("adminToken");
+            sessionStorage.removeItem("adminInfo");
+            location.href = "admin-login.html";
+          })
+          .catch(err => {
+            console.error("退出失败", err);
+            sessionStorage.removeItem("adminToken");
+            sessionStorage.removeItem("adminInfo");
+            location.href = "admin-login.html";
+          });
+      }
+    }
+  })
+</script>
+</body>
+</html> 

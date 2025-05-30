@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评 - 管理员控制台</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+      background-color: #f5f7fa;
+    }
+    .admin-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    .admin-sidebar {
+      width: 220px;
+      background-color: #304156;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      transition: width 0.3s;
+      position: fixed;
+      height: 100vh;
+      z-index: 1000;
+    }
+    .admin-logo {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #263445;
+      padding: 0 16px;
+    }
+    .admin-logo img {
+      height: 32px;
+      margin-right: 8px;
+    }
+    .admin-logo h1 {
+      color: #fff;
+      font-size: 18px;
+      margin: 0;
+      white-space: nowrap;
+    }
+    .admin-main {
+      flex: 1;
+      margin-left: 220px;
+      padding: 15px;
+      background-color: #f5f7fa;
+      min-height: 100vh;
+    }
+    .admin-header {
+      height: 60px;
+      background-color: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 15px;
+      margin-bottom: 15px;
+    }
+    .admin-content {
+      background-color: #fff;
+      border-radius: 4px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      min-height: calc(100vh - 90px);
+    }
+    .admin-user-dropdown {
+      display: flex;
+      align-items: center;
+    }
+    .admin-user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .el-menu {
+      border-right: none;
+      background-color: #304156;
+    }
+    .el-menu-item {
+      color: #bfcbd9;
+    }
+    .el-menu-item:hover, .el-menu-item:focus {
+      background-color: #263445;
+    }
+    .el-menu-item.is-active {
+      color: #409EFF;
+      background-color: #263445;
+    }
+    .dashboard-cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .dashboard-card {
+      flex: 1;
+      min-width: 200px;
+      background-color: #fff;
+      border-radius: 4px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+    }
+    .dashboard-card-icon {
+      font-size: 48px;
+      margin-right: 15px;
+    }
+    .dashboard-card-info h3 {
+      margin: 0;
+      font-size: 14px;
+      color: #606266;
+    }
+    .dashboard-card-info p {
+      margin: 5px 0 0;
+      font-size: 24px;
+      font-weight: bold;
+      color: #303133;
+    }
+    .blue-icon { color: #409EFF; }
+    .green-icon { color: #67C23A; }
+    .orange-icon { color: #E6A23C; }
+    .red-icon { color: #F56C6C; }
+    .dashboard-chart {
+      margin-top: 20px;
+      background-color: #fff;
+      border-radius: 4px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    }
+    .dashboard-chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .dashboard-chart-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #303133;
+    }
+    .dashboard-chart-content {
+      height: 300px;
+    }
+    .recent-activity {
+      margin-top: 20px;
+      background-color: #fff;
+      border-radius: 4px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    }
+    .recent-activity-header {
+      font-size: 16px;
+      font-weight: bold;
+      color: #303133;
+      margin-bottom: 15px;
+    }
+    .activity-item {
+      border-bottom: 1px solid #EBEEF5;
+      padding: 10px 0;
+    }
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+    .activity-time {
+      font-size: 12px;
+      color: #909399;
+    }
+    .activity-content {
+      margin-top: 5px;
+      font-size: 14px;
+      color: #606266;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="admin-container">
+    <!-- 侧边栏导航 -->
+    <div class="admin-sidebar">
+      <div class="admin-logo">
+        <img src="./imgs/logo.png" alt="黑马点评">
+        <h1>管理员控制台</h1>
+      </div>
+      <el-menu
+        default-active="1"
+        class="el-menu-vertical"
+        background-color="#304156"
+        text-color="#bfcbd9"
+        active-text-color="#409EFF">
+        <el-menu-item index="1">
+          <i class="el-icon-s-home"></i>
+          <span slot="title">控制台</span>
+        </el-menu-item>
+        <el-menu-item index="2">
+          <i class="el-icon-user"></i>
+          <span slot="title">用户管理</span>
+        </el-menu-item>
+        <el-menu-item index="3">
+          <i class="el-icon-s-shop"></i>
+          <span slot="title">商户管理</span>
+        </el-menu-item>
+        <el-menu-item index="4">
+          <i class="el-icon-s-grid"></i>
+          <span slot="title">商户分类管理</span>
+        </el-menu-item>
+        <el-menu-item index="5">
+          <i class="el-icon-document-checked"></i>
+          <span slot="title">内容审核</span>
+        </el-menu-item>
+        <el-menu-item index="6">
+          <i class="el-icon-data-line"></i>
+          <span slot="title">系统监控</span>
+        </el-menu-item>
+        <el-menu-item index="7" @click="logout">
+          <i class="el-icon-switch-button"></i>
+          <span slot="title">退出登录</span>
+        </el-menu-item>
+      </el-menu>
+    </div>
+    
+    <!-- 主要内容区域 -->
+    <div class="admin-main">
+      <!-- 顶部栏 -->
+      <div class="admin-header">
+        <div class="admin-header-left">
+          <i class="el-icon-s-fold" style="font-size: 20px; cursor: pointer;"></i>
+        </div>
+        <div class="admin-user-dropdown">
+          <img :src="adminInfo.avatar || './imgs/default-avatar.png'" class="admin-user-avatar">
+          <el-dropdown trigger="click">
+            <span class="el-dropdown-link">
+              {{adminInfo.username || '管理员'}} <i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item icon="el-icon-user">个人信息</el-dropdown-item>
+              <el-dropdown-item icon="el-icon-setting">系统设置</el-dropdown-item>
+              <el-dropdown-item icon="el-icon-switch-button" @click.native="logout">退出登录</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+      </div>
+      
+      <!-- 内容区域 -->
+      <div class="admin-content">
+        <h2 class="mb-4">系统概览</h2>
+        
+        <!-- 数据统计卡片 -->
+        <div class="dashboard-cards">
+          <div class="dashboard-card">
+            <div class="dashboard-card-icon blue-icon">
+              <i class="el-icon-user"></i>
+            </div>
+            <div class="dashboard-card-info">
+              <h3>总用户数</h3>
+              <p>{{stats.userCount}}</p>
+            </div>
+          </div>
+          <div class="dashboard-card">
+            <div class="dashboard-card-icon green-icon">
+              <i class="el-icon-s-shop"></i>
+            </div>
+            <div class="dashboard-card-info">
+              <h3>总商户数</h3>
+              <p>{{stats.merchantCount}}</p>
+            </div>
+          </div>
+          <div class="dashboard-card">
+            <div class="dashboard-card-icon orange-icon">
+              <i class="el-icon-shopping-cart-full"></i>
+            </div>
+            <div class="dashboard-card-info">
+              <h3>今日订单</h3>
+              <p>{{stats.todayOrders}}</p>
+            </div>
+          </div>
+          <div class="dashboard-card">
+            <div class="dashboard-card-icon red-icon">
+              <i class="el-icon-warning"></i>
+            </div>
+            <div class="dashboard-card-info">
+              <h3>待处理举报</h3>
+              <p>{{stats.pendingReports}}</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 图表区域 -->
+        <div class="dashboard-chart">
+          <div class="dashboard-chart-header">
+            <div class="dashboard-chart-title">用户注册趋势</div>
+            <el-radio-group v-model="chartTimeRange" size="small">
+              <el-radio-button label="week">本周</el-radio-button>
+              <el-radio-button label="month">本月</el-radio-button>
+              <el-radio-button label="year">本年</el-radio-button>
+            </el-radio-group>
+          </div>
+          <div class="dashboard-chart-content">
+            <!-- 这里放置图表组件，实际项目中可以使用ECharts等 -->
+            <div style="text-align: center; color: #909399; line-height: 300px;">
+              图表加载中...
+            </div>
+          </div>
+        </div>
+        
+        <!-- 最近活动列表 -->
+        <div class="recent-activity">
+          <div class="recent-activity-header">
+            最近系统活动
+          </div>
+          <div v-if="activities.length > 0">
+            <div class="activity-item" v-for="(activity, index) in activities" :key="index">
+              <div class="activity-time">{{activity.time}}</div>
+              <div class="activity-content">{{activity.content}}</div>
+            </div>
+          </div>
+          <div v-else style="text-align: center; color: #909399; padding: 20px 0;">
+            暂无活动记录
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/admin-common.js"></script>
+<script>
+  // 检查是否已登录
+  const checkAuth = () => {
+    const adminToken = sessionStorage.getItem('adminToken');
+    if (!adminToken) {
+      // 未登录，跳转到登录页
+      location.href = "admin-login.html";
+      return;
+    }
+    
+    // 已登录，无需再配置axios，adminAxios已经配置好了
+  };
+
+  // 页面加载时检查登录状态
+  checkAuth();
+
+  const app = new Vue({
+    el: "#app",
+    data: {
+      adminInfo: null,
+      stats: {
+        userCount: 0,
+        merchantCount: 0,
+        todayOrders: 0,
+        pendingReports: 0
+      },
+      chartTimeRange: 'week',
+      activities: [
+        { time: '2023-08-01 10:30', content: '系统维护更新完成' },
+        { time: '2023-08-01 09:15', content: '新商家申请审核通过' },
+        { time: '2023-07-31 16:45', content: '用户反馈问题处理完毕' },
+        { time: '2023-07-31 14:20', content: '系统安全漏洞修复' },
+        { time: '2023-07-31 11:10', content: '新版本功能发布' }
+      ]
+    },
+    created() {
+      // 加载管理员信息
+      try {
+        this.adminInfo = JSON.parse(sessionStorage.getItem('adminInfo')) || {};
+      } catch (e) {
+        console.error('解析管理员信息失败', e);
+        this.adminInfo = {};
+      }
+      
+      // 加载统计数据
+      this.loadStats();
+    },
+    methods: {
+      loadStats() {
+        // 尝试调用统计接口，如果失败则使用静态数据
+        adminAxios.get("/admin/stats/summary")
+          .then(data => {
+            // 使用获取到的统计数据更新页面
+            if (data && data.data) {
+              this.stats = { ...this.stats, ...data.data };
+            }
+          })
+          .catch(err => {
+            console.error('获取统计数据失败', err);
+            // 使用静态数据代替API数据
+            this.stats = {
+              userCount: 1258,
+              merchantCount: 356,
+              todayOrders: 89,
+              pendingReports: 12
+            };
+            // 显示提示但不跳转
+            this.$message.warning('获取统计数据失败，显示模拟数据');
+          });
+      },
+      logout() {
+        // 调用登出接口
+        adminAxios.post("/admin/logout")
+          .then(() => {
+            // 清除本地存储的token和用户信息
+            sessionStorage.removeItem('adminToken');
+            sessionStorage.removeItem('adminInfo');
+            
+            // 提示登出成功
+            this.$message.success('退出登录成功');
+            
+            // 跳转到登录页
+            setTimeout(() => {
+              location.href = "admin-login.html";
+            }, 500);
+          })
+          .catch(err => {
+            console.error('登出失败', err);
+            
+            // 即使接口调用失败，也清除本地token并跳转
+            sessionStorage.removeItem('adminToken');
+            sessionStorage.removeItem('adminInfo');
+            location.href = "admin-login.html";
+          });
+      }
+    }
+  });
+</script>
+</body>
+</html>

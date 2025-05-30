@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评 - 优惠券管理</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <style type="text/css">
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 200px;
+      background-color: #304156;
+      color: #fff;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .main-content {
+      flex: 1;
+      margin-left: 200px;
+      padding: 20px;
+    }
+    .header {
+      height: 60px;
+      background-color: #fff;
+      box-shadow: 0 1px 4px rgba(0,21,41,.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      position: relative;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      height: 60px;
+      padding: 0 20px;
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+      border-bottom: 1px solid #1f2d3d;
+    }
+    .logo img {
+      width: 30px;
+      height: 30px;
+      margin-right: 10px;
+    }
+    .menu-item {
+      height: 50px;
+      line-height: 50px;
+      padding-left: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .menu-item.active, .menu-item:hover {
+      background-color: #263445;
+    }
+    .menu-item i {
+      margin-right: 10px;
+    }
+    .content-header {
+      margin-bottom: 20px;
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,21,41,.08);
+    }
+    .content-header h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .content-section {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,21,41,.08);
+      margin-bottom: 20px;
+    }
+    .merchant-info {
+      display: flex;
+      align-items: center;
+    }
+    .merchant-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+    .user-dropdown {
+      cursor: pointer;
+    }
+    .action-bar {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .voucher-card {
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 15px;
+      position: relative;
+      transition: all 0.3s;
+    }
+    .voucher-card:hover {
+      box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+    }
+    .voucher-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .voucher-title {
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .voucher-amount {
+      color: #ff6b6b;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .voucher-info {
+      display: flex;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .voucher-info-item {
+      margin-right: 20px;
+      margin-bottom: 5px;
+      color: #606266;
+    }
+    .voucher-description {
+      color: #606266;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+    .voucher-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid #ebeef5;
+    }
+    .voucher-status {
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+    .status-active {
+      background-color: #f0f9eb;
+      color: #67c23a;
+    }
+    .status-inactive {
+      background-color: #f4f4f5;
+      color: #909399;
+    }
+    .status-expired {
+      background-color: #fef0f0;
+      color: #f56c6c;
+    }
+    .form-footer {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .form-footer .el-button {
+      min-width: 120px;
+    }
+    .card-action-menu {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+    }
+    .pagination-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .empty-data {
+      text-align: center;
+      padding: 40px 0;
+      color: #909399;
+    }
+    .empty-data i {
+      font-size: 60px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="container">
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+      <div class="logo">
+        <img src="./imgs/logo.png" alt="Logo">
+        <span>黑马点评商家版</span>
+      </div>
+      <div class="menu">
+        <div class="menu-item" @click="navigateTo('dashboard')">
+          <i class="el-icon-s-home"></i>
+          <span>控制台</span>
+        </div>
+        <div class="menu-item" @click="navigateTo('shop')">
+          <i class="el-icon-s-shop"></i>
+          <span>店铺管理</span>
+        </div>
+        <div class="menu-item active">
+          <i class="el-icon-s-ticket"></i>
+          <span>优惠券管理</span>
+        </div>
+        <div class="menu-item" @click="navigateTo('order')">
+          <i class="el-icon-s-order"></i>
+          <span>订单管理</span>
+        </div>
+        <div class="menu-item" @click="navigateTo('comment')">
+          <i class="el-icon-s-comment"></i>
+          <span>评价管理</span>
+        </div>
+        <div class="menu-item" @click="navigateTo('account')">
+          <i class="el-icon-s-custom"></i>
+          <span>账号设置</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 主内容区 -->
+    <div class="main-content">
+      <!-- 顶部导航 -->
+      <div class="header">
+        <div>
+          <i class="el-icon-s-fold" style="font-size: 20px; cursor: pointer;"></i>
+        </div>
+        <div class="merchant-info">
+          <img class="merchant-avatar" :src="merchantInfo.avatar || './imgs/avatar.jpg'" alt="商家头像">
+          <el-dropdown trigger="click" @command="handleCommand">
+            <span class="el-dropdown-link user-dropdown">
+              {{ merchantInfo.name }}<i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="account">账号设置</el-dropdown-item>
+              <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+      </div>
+      
+      <!-- 优惠券管理内容 -->
+      <div class="content-header">
+        <h2>优惠券管理</h2>
+      </div>
+      
+      <div class="content-section">
+        <div class="action-bar">
+          <div>
+            <el-radio-group v-model="filterStatus" size="small" @change="filterVouchers">
+              <el-radio-button label="all">全部</el-radio-button>
+              <el-radio-button label="active">进行中</el-radio-button>
+              <el-radio-button label="inactive">未开始</el-radio-button>
+              <el-radio-button label="expired">已结束</el-radio-button>
+            </el-radio-group>
+          </div>
+          <div>
+            <el-button type="primary" @click="showCreateDialog">新增优惠券</el-button>
+          </div>
+        </div>
+        
+        <!-- 优惠券列表 -->
+        <div v-if="vouchers.length > 0">
+          <div class="voucher-list">
+            <div v-for="voucher in displayVouchers" :key="voucher.id" class="voucher-card">
+              <div class="voucher-header">
+                <div class="voucher-title">{{ voucher.title }}</div>
+                <div class="voucher-amount" v-if="voucher.type === 1">
+                  ¥{{ voucher.value }}
+                </div>
+                <div class="voucher-amount" v-else-if="voucher.type === 2">
+                  {{ voucher.value }}折
+                </div>
+              </div>
+              <div class="voucher-info">
+                <div class="voucher-info-item">
+                  <i class="el-icon-tickets"></i>
+                  类型：{{ getTypeText(voucher.type) }}
+                </div>
+                <div class="voucher-info-item">
+                  <i class="el-icon-money"></i>
+                  门槛：{{ voucher.threshold === 0 ? '无门槛' : '满' + voucher.threshold + '元可用' }}
+                </div>
+                <div class="voucher-info-item">
+                  <i class="el-icon-time"></i>
+                  有效期：{{ voucher.beginTime }} 至 {{ voucher.endTime }}
+                </div>
+                <div class="voucher-info-item">
+                  <i class="el-icon-shopping-cart-full"></i>
+                  库存：{{ voucher.stock }}
+                </div>
+                <div class="voucher-info-item">
+                  <i class="el-icon-sold-out"></i>
+                  已售：{{ voucher.sold }}
+                </div>
+              </div>
+              <div class="voucher-description" v-if="voucher.description">
+                <i class="el-icon-info-circle"></i> {{ voucher.description }}
+              </div>
+              <div class="voucher-footer">
+                <div>
+                  <span class="voucher-status"
+                        :class="{
+                          'status-active': voucher.status === 'active',
+                          'status-inactive': voucher.status === 'inactive',
+                          'status-expired': voucher.status === 'expired'
+                        }">
+                    {{ getStatusText(voucher.status) }}
+                  </span>
+                </div>
+                <div>
+                  <el-button type="text" size="small" @click="showEditDialog(voucher)">编辑</el-button>
+                  <el-button type="text" size="small" @click="showStockDialog(voucher)" v-if="voucher.status === 'active'">库存管理</el-button>
+                  <el-button type="text" size="small" @click="toggleVoucherStatus(voucher)" v-if="voucher.status !== 'expired'">
+                    {{ voucher.status === 'active' ? '暂停' : '启用' }}
+                  </el-button>
+                  <el-button type="text" size="small" style="color: #F56C6C;" @click="deleteVoucher(voucher)">删除</el-button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 分页 -->
+          <div class="pagination-container">
+            <el-pagination
+              @current-change="handleCurrentChange"
+              :current-page="currentPage"
+              :page-size="pageSize"
+              layout="prev, pager, next, jumper"
+              :total="filteredVouchers.length">
+            </el-pagination>
+          </div>
+        </div>
+        
+        <!-- 空数据提示 -->
+        <div v-else class="empty-data">
+          <i class="el-icon-tickets"></i>
+          <p>暂无优惠券数据，点击"新增优惠券"添加</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 新增/编辑优惠券对话框 -->
+  <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="600px">
+    <el-form :model="voucherForm" :rules="voucherRules" ref="voucherForm" label-width="100px">
+      <el-form-item label="优惠券名称" prop="title">
+        <el-input v-model="voucherForm.title" placeholder="请输入优惠券名称"></el-input>
+      </el-form-item>
+      
+      <el-form-item label="优惠券类型" prop="type">
+        <el-radio-group v-model="voucherForm.type">
+          <el-radio :label="1">满减券</el-radio>
+          <el-radio :label="2">折扣券</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      
+      <el-form-item label="优惠金额" prop="value" v-if="voucherForm.type === 1">
+        <el-input-number v-model="voucherForm.value" :min="1" :precision="2" :step="1"></el-input-number>
+        <span style="margin-left: 10px;">元</span>
+      </el-form-item>
+      
+      <el-form-item label="折扣力度" prop="value" v-if="voucherForm.type === 2">
+        <el-input-number v-model="voucherForm.value" :min="1" :max="9.9" :precision="1" :step="0.1"></el-input-number>
+        <span style="margin-left: 10px;">折</span>
+      </el-form-item>
+      
+      <el-form-item label="使用门槛" prop="threshold">
+        <el-input-number v-model="voucherForm.threshold" :min="0" :precision="2" :step="10"></el-input-number>
+        <span style="margin-left: 10px;">元（0表示无门槛）</span>
+      </el-form-item>
+      
+      <el-form-item label="有效期" prop="validTimeRange">
+        <el-date-picker
+          v-model="voucherForm.validTimeRange"
+          type="datetimerange"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          value-format="yyyy-MM-dd HH:mm:ss">
+        </el-date-picker>
+      </el-form-item>
+      
+      <el-form-item label="库存数量" prop="stock">
+        <el-input-number v-model="voucherForm.stock" :min="1" :step="10"></el-input-number>
+      </el-form-item>
+      
+      <el-form-item label="使用说明" prop="description">
+        <el-input type="textarea" v-model="voucherForm.description" placeholder="请输入使用说明" :rows="3"></el-input>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="dialogVisible = false">取 消</el-button>
+      <el-button type="primary" @click="submitVoucherForm">确 定</el-button>
+    </div>
+  </el-dialog>
+  
+  <!-- 库存管理对话框 -->
+  <el-dialog title="库存管理" :visible.sync="stockDialogVisible" width="400px">
+    <el-form :model="stockForm" ref="stockForm" label-width="100px">
+      <el-form-item label="当前库存">
+        <span>{{ stockForm.currentStock }}</span>
+      </el-form-item>
+      <el-form-item label="已售数量">
+        <span>{{ stockForm.sold }}</span>
+      </el-form-item>
+      <el-form-item label="库存操作" prop="action">
+        <el-radio-group v-model="stockForm.action">
+          <el-radio :label="'add'">增加</el-radio>
+          <el-radio :label="'reduce'">减少</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="调整数量" prop="amount">
+        <el-input-number v-model="stockForm.amount" :min="1" :step="10"></el-input-number>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="stockDialogVisible = false">取 消</el-button>
+      <el-button type="primary" @click="submitStockAdjustment">确 定</el-button>
+    </div>
+  </el-dialog>
+</div>
+
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/merchant-common.js"></script>
+<script>
+  const app = new Vue({
+    el: "#app",
+    data: {
+      merchantInfo: {
+        id: '',
+        name: '',
+        avatar: '',
+        phone: ''
+      },
+      // 优惠券列表
+      vouchers: [],
+      filteredVouchers: [],
+      // 分页相关
+      currentPage: 1,
+      pageSize: 5,
+      // 筛选状态
+      filterStatus: 'all',
+      // 对话框控制
+      dialogVisible: false,
+      dialogTitle: '新增优惠券',
+      isEdit: false,
+      stockDialogVisible: false,
+      // 表单数据
+      voucherForm: {
+        id: '',
+        title: '',
+        type: 1,
+        value: 10,
+        threshold: 0,
+        validTimeRange: [],
+        beginTime: '',
+        endTime: '',
+        stock: 100,
+        description: ''
+      },
+      // 表单验证规则
+      voucherRules: {
+        title: [
+          { required: true, message: '请输入优惠券名称', trigger: 'blur' },
+          { min: 2, max: 30, message: '长度在 2 到 30 个字符', trigger: 'blur' }
+        ],
+        type: [
+          { required: true, message: '请选择优惠券类型', trigger: 'change' }
+        ],
+        value: [
+          { required: true, message: '请输入优惠金额/折扣', trigger: 'blur' }
+        ],
+        validTimeRange: [
+          { required: true, message: '请选择有效期', trigger: 'change' }
+        ],
+        stock: [
+          { required: true, message: '请输入库存数量', trigger: 'blur' }
+        ]
+      },
+      // 库存调整表单
+      stockForm: {
+        id: '',
+        currentStock: 0,
+        sold: 0,
+        action: 'add',
+        amount: 10
+      }
+    },
+    methods: {
+      // 导航到其他页面
+      navigateTo(page) {
+        if (page === 'dashboard') {
+          location.href = "/merchant-center.html";
+        } else {
+          location.href = `/merchant-${page}.html`;
+        }
+      },
+      
+      // 下拉菜单操作
+      handleCommand(command) {
+        if (command === 'logout') {
+          this.logout();
+        } else if (command === 'account') {
+          this.navigateTo('account');
+        }
+      },
+      
+      // 获取商家信息
+      fetchMerchantInfo() {
+        merchantAxios.get("/merchant/info")
+          .then(response => {
+            if (response.code === 200) {
+              this.merchantInfo = response.data;
+              sessionStorage.setItem("merchantInfo", JSON.stringify(response.data));
+            } else {
+              this.$message.error(response.msg || "获取商家信息失败");
+            }
+          })
+          .catch(error => {
+            console.error("获取商家信息失败:", error);
+            this.$message.error("获取商家信息失败，请重试");
+          });
+      },
+      
+      // 获取优惠券列表
+      loadVouchers() {
+        this.loading = true;
+        // 使用merchantAxios发送请求
+        merchantAxios.get("/merchant/vouchers", {
+          params: {
+            page: this.currentPage,
+            size: this.pageSize,
+            status: this.filterStatus
+          }
+        })
+        .then(response => {
+          if (response.code === 200) {
+            this.vouchers = response.data.records;
+            this.total = response.data.total;
+          } else {
+            this.$message.error(response.msg || "获取优惠券列表失败");
+          }
+          this.loading = false;
+        })
+        .catch(error => {
+          console.error("获取优惠券列表失败:", error);
+          this.$message.error("获取优惠券列表失败，请重试");
+          this.loading = false;
+        });
+      },
+      
+      // 筛选优惠券
+      filterVouchers() {
+        if (this.filterStatus === 'all') {
+          this.filteredVouchers = [...this.vouchers];
+        } else {
+          this.filteredVouchers = this.vouchers.filter(item => item.status === this.filterStatus);
+        }
+        // 重置分页
+        this.currentPage = 1;
+      },
+      
+      // 处理分页变化
+      handleCurrentChange(val) {
+        this.currentPage = val;
+      },
+      
+      // 显示创建优惠券对话框
+      showCreateDialog() {
+        this.isEdit = false;
+        this.dialogTitle = '新增优惠券';
+        // 重置表单
+        this.voucherForm = {
+          id: '',
+          title: '',
+          type: 1,
+          value: 10,
+          threshold: 0,
+          validTimeRange: [],
+          beginTime: '',
+          endTime: '',
+          stock: 100,
+          description: ''
+        };
+        this.dialogVisible = true;
+        // 延迟重置表单校验结果
+        this.$nextTick(() => {
+          this.$refs.voucherForm && this.$refs.voucherForm.clearValidate();
+        });
+      },
+      
+      // 显示编辑优惠券对话框
+      showEditDialog(voucher) {
+        this.isEdit = true;
+        this.dialogTitle = '编辑优惠券';
+        // 设置表单数据
+        this.voucherForm = {
+          id: voucher.id,
+          title: voucher.title,
+          type: voucher.type,
+          value: voucher.value,
+          threshold: voucher.threshold,
+          validTimeRange: [voucher.beginTime, voucher.endTime],
+          beginTime: voucher.beginTime,
+          endTime: voucher.endTime,
+          stock: voucher.stock,
+          description: voucher.description
+        };
+        this.dialogVisible = true;
+        // 延迟重置表单校验结果
+        this.$nextTick(() => {
+          this.$refs.voucherForm && this.$refs.voucherForm.clearValidate();
+        });
+      },
+      
+      // 提交优惠券表单
+      submitVoucherForm() {
+        this.$refs.voucherForm.validate((valid) => {
+          if (valid) {
+            // 处理时间范围
+            if (this.voucherForm.validTimeRange && this.voucherForm.validTimeRange.length === 2) {
+              this.voucherForm.beginTime = this.voucherForm.validTimeRange[0];
+              this.voucherForm.endTime = this.voucherForm.validTimeRange[1];
+            }
+            
+            if (this.isEdit) {
+              this.updateVoucher();
+            } else {
+              this.createVoucher();
+            }
+          } else {
+            return false;
+          }
+        });
+      },
+      
+      // 创建新优惠券
+      createVoucher() {
+        this.$refs.voucherForm.validate((valid) => {
+          if (valid) {
+            merchantAxios.post("/merchant/voucher/create", this.voucherForm)
+              .then(response => {
+                if (response.code === 200) {
+                  this.$message.success("创建成功");
+                  this.dialogVisible = false;
+                  // 重置表单
+                  this.resetVoucherForm();
+                  // 刷新列表
+                  this.loadVouchers();
+                } else {
+                  this.$message.error(response.msg || "创建失败");
+                }
+              })
+              .catch(error => {
+                console.error("创建优惠券失败:", error);
+                this.$message.error("创建失败，请重试");
+              });
+          } else {
+            return false;
+          }
+        });
+      },
+      
+      // 更新优惠券
+      updateVoucher() {
+        // 模拟更新操作
+        const index = this.vouchers.findIndex(item => item.id === this.voucherForm.id);
+        if (index !== -1) {
+          // 保持原状态和已售数量不变
+          const status = this.vouchers[index].status;
+          const sold = this.vouchers[index].sold;
+          
+          this.vouchers[index] = {
+            ...this.voucherForm,
+            status,
+            sold
+          };
+          
+          this.filterVouchers();
+          this.dialogVisible = false;
+          
+          this.$message({
+            message: '优惠券更新成功！',
+            type: 'success'
+          });
+        }
+      },
+      
+      // 显示库存管理对话框
+      showStockDialog(voucher) {
+        this.stockForm = {
+          id: voucher.id,
+          currentStock: voucher.stock,
+          sold: voucher.sold,
+          action: 'add',
+          amount: 10
+        };
+        this.stockDialogVisible = true;
+      },
+      
+      // 提交库存调整
+      submitStockAdjustment() {
+        // 模拟库存调整
+        const index = this.vouchers.findIndex(item => item.id === this.stockForm.id);
+        if (index !== -1) {
+          if (this.stockForm.action === 'add') {
+            this.vouchers[index].stock += this.stockForm.amount;
+          } else {
+            // 确保库存不会小于已售数量
+            const newStock = Math.max(this.vouchers[index].sold, this.vouchers[index].stock - this.stockForm.amount);
+            this.vouchers[index].stock = newStock;
+          }
+          
+          this.stockDialogVisible = false;
+          this.$message({
+            message: '库存调整成功！',
+            type: 'success'
+          });
+        }
+      },
+      
+      // 切换优惠券状态（启用/暂停）
+      toggleVoucherStatus(voucher) {
+        // 模拟状态切换
+        const index = this.vouchers.findIndex(item => item.id === voucher.id);
+        if (index !== -1) {
+          const newStatus = this.vouchers[index].status === 'active' ? 'inactive' : 'active';
+          this.vouchers[index].status = newStatus;
+          
+          this.$message({
+            message: `优惠券已${newStatus === 'active' ? '启用' : '暂停'}！`,
+            type: 'success'
+          });
+        }
+      },
+      
+      // 删除优惠券
+      deleteVoucher(voucher) {
+        this.$confirm('确定要删除该优惠券吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          // 模拟删除操作
+          const index = this.vouchers.findIndex(item => item.id === voucher.id);
+          if (index !== -1) {
+            this.vouchers.splice(index, 1);
+            this.filterVouchers();
+            
+            this.$message({
+              type: 'success',
+              message: '删除成功！'
+            });
+          }
+        }).catch(() => {
+          // 取消删除操作
+        });
+      },
+      
+      // 获取优惠券类型文本
+      getTypeText(type) {
+        switch(type) {
+          case 1:
+            return '满减券';
+          case 2:
+            return '折扣券';
+          default:
+            return '未知类型';
+        }
+      },
+      
+      // 获取优惠券状态文本
+      getStatusText(status) {
+        switch(status) {
+          case 'active':
+            return '进行中';
+          case 'inactive':
+            return '未开始';
+          case 'expired':
+            return '已结束';
+          default:
+            return '未知状态';
+        }
+      },
+      
+      // 退出登录
+      logout() {
+        // 清除商家信息和token
+        sessionStorage.removeItem("merchantToken");
+        sessionStorage.removeItem("merchantInfo");
+        // 跳转到登录页
+        location.href = "/merchant-login.html";
+      },
+      
+      // 重置表单
+      resetVoucherForm() {
+        this.voucherForm = {
+          id: '',
+          title: '',
+          type: 1,
+          value: 10,
+          threshold: 0,
+          validTimeRange: [],
+          beginTime: '',
+          endTime: '',
+          stock: 100,
+          description: ''
+        };
+      }
+    },
+    computed: {
+      // 当前页的优惠券数据
+      displayVouchers() {
+        const start = (this.currentPage - 1) * this.pageSize;
+        const end = start + this.pageSize;
+        return this.filteredVouchers.slice(start, end);
+      }
+    },
+    created() {
+      // 检查是否登录
+      const merchantToken = sessionStorage.getItem("merchantToken");
+      if (!merchantToken) {
+        location.href = "/merchant-login.html";
+        return;
+      }
+      
+      // 获取商家信息
+      const merchantInfoStr = sessionStorage.getItem("merchantInfo");
+      if (merchantInfoStr) {
+        this.merchantInfo = JSON.parse(merchantInfoStr);
+      } else {
+        this.fetchMerchantInfo();
+      }
+      
+      // 加载优惠券列表
+      this.loadVouchers();
+    },
+  });
+</script> 

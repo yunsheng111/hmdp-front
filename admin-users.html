@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评 - 用户管理</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+      background-color: #f5f7fa;
+    }
+    .admin-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    .admin-sidebar {
+      width: 220px;
+      background-color: #304156;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      transition: width 0.3s;
+      position: fixed;
+      height: 100vh;
+      z-index: 1000;
+    }
+    .admin-logo {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #263445;
+      padding: 0 16px;
+    }
+    .admin-logo img {
+      height: 32px;
+      margin-right: 8px;
+    }
+    .admin-logo h1 {
+      color: #fff;
+      font-size: 18px;
+      margin: 0;
+      white-space: nowrap;
+    }
+    .admin-main {
+      flex: 1;
+      margin-left: 220px;
+      padding: 15px;
+      background-color: #f5f7fa;
+      min-height: 100vh;
+    }
+    .admin-header {
+      height: 60px;
+      background-color: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 15px;
+      margin-bottom: 15px;
+    }
+    .admin-content {
+      background-color: #fff;
+      border-radius: 4px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      min-height: calc(100vh - 90px);
+    }
+    .admin-user-dropdown {
+      display: flex;
+      align-items: center;
+    }
+    .admin-user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .el-menu {
+      border-right: none;
+      background-color: #304156;
+    }
+    .el-menu-item {
+      color: #bfcbd9;
+    }
+    .el-menu-item:hover, .el-menu-item:focus {
+      background-color: #263445;
+    }
+    .el-menu-item.is-active {
+      color: #409EFF;
+      background-color: #263445;
+    }
+    .search-form {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+    }
+    .search-form-item {
+      margin-right: 10px;
+    }
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+    .el-tag--normal {
+      margin-right: 5px;
+    }
+    .user-detail-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .user-detail-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin-right: 20px;
+    }
+    .user-detail-info h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+    .user-detail-info p {
+      margin: 5px 0;
+      color: #606266;
+    }
+    .user-detail-section {
+      margin-top: 20px;
+      border-top: 1px solid #EBEEF5;
+      padding-top: 20px;
+    }
+    .user-detail-section-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="admin-container">
+    <!-- 侧边栏导航 -->
+    <div class="admin-sidebar">
+      <div class="admin-logo">
+        <img src="./imgs/logo.png" alt="黑马点评">
+        <h1>管理员控制台</h1>
+      </div>
+      <el-menu
+        default-active="2"
+        class="el-menu-vertical"
+        background-color="#304156"
+        text-color="#bfcbd9"
+        active-text-color="#409EFF">
+        <el-menu-item index="1" @click="navigateTo('admin-dashboard.html')">
+          <i class="el-icon-s-home"></i>
+          <span slot="title">控制台</span>
+        </el-menu-item>
+        <el-menu-item index="2" @click="navigateTo('admin-users.html')">
+          <i class="el-icon-user"></i>
+          <span slot="title">用户管理</span>
+        </el-menu-item>
+        <el-menu-item index="3" @click="navigateTo('admin-merchants.html')">
+          <i class="el-icon-s-shop"></i>
+          <span slot="title">商户管理</span>
+        </el-menu-item>
+        <el-menu-item index="4" @click="navigateTo('admin-shop-types.html')">
+          <i class="el-icon-s-grid"></i>
+          <span slot="title">商户分类管理</span>
+        </el-menu-item>
+        <el-menu-item index="5" @click="navigateTo('admin-content.html')">
+          <i class="el-icon-document-checked"></i>
+          <span slot="title">内容审核</span>
+        </el-menu-item>
+        <el-menu-item index="6" @click="navigateTo('admin-statistics.html')">
+          <i class="el-icon-data-line"></i>
+          <span slot="title">系统监控</span>
+        </el-menu-item>
+        <el-menu-item index="7" @click="logout">
+          <i class="el-icon-switch-button"></i>
+          <span slot="title">退出登录</span>
+        </el-menu-item>
+      </el-menu>
+    </div>
+    
+    <!-- 主要内容区域 -->
+    <div class="admin-main">
+      <!-- 顶部栏 -->
+      <div class="admin-header">
+        <div class="admin-header-left">
+          <i class="el-icon-s-fold" style="font-size: 20px; cursor: pointer;"></i>
+        </div>
+        <div class="admin-user-dropdown">
+          <img :src="adminInfo.avatar || './imgs/default-avatar.png'" class="admin-user-avatar">
+          <el-dropdown trigger="click">
+            <span class="el-dropdown-link">
+              {{adminInfo.username || '管理员'}} <i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item icon="el-icon-user">个人信息</el-dropdown-item>
+              <el-dropdown-item icon="el-icon-setting">系统设置</el-dropdown-item>
+              <el-dropdown-item icon="el-icon-switch-button" @click.native="logout">退出登录</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+      </div>
+      
+      <!-- 内容区域 -->
+      <div class="admin-content">
+        <h2 class="mb-4">用户管理</h2>
+        
+        <!-- 搜索表单 -->
+        <div class="search-form">
+          <div class="search-form-item">
+            <el-input
+              placeholder="搜索用户名/手机号"
+              v-model="searchForm.keyword"
+              clearable
+              prefix-icon="el-icon-search"
+              @keyup.enter.native="handleSearch">
+            </el-input>
+          </div>
+          <div class="search-form-item">
+            <el-select v-model="searchForm.status" placeholder="用户状态" clearable>
+              <el-option label="正常" :value="0"></el-option>
+              <el-option label="禁用" :value="1"></el-option>
+            </el-select>
+          </div>
+          <div class="search-form-item">
+            <el-button type="primary" @click="handleSearch">搜索</el-button>
+            <el-button @click="resetSearch">重置</el-button>
+          </div>
+        </div>
+        
+        <!-- 用户列表表格 -->
+        <el-table
+          v-loading="tableLoading"
+          :data="userList"
+          border
+          style="width: 100%">
+          <el-table-column
+            type="index"
+            width="50"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="id"
+            label="用户ID"
+            width="80"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            label="用户信息"
+            min-width="200">
+            <template slot-scope="scope">
+              <div style="display: flex; align-items: center;">
+                <img :src="scope.row.icon || './imgs/default-avatar.png'" class="user-avatar">
+                <div style="margin-left: 10px;">
+                  <div>{{scope.row.nickname || '未设置昵称'}}</div>
+                  <div style="font-size: 12px; color: #909399;">{{scope.row.phone}}</div>
+                </div>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="createTime"
+            label="注册时间"
+            width="180"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            label="状态"
+            width="100"
+            align="center">
+            <template slot-scope="scope">
+              <el-tag :type="scope.row.status === 0 ? 'success' : 'danger'">
+                {{ scope.row.status === 0 ? '正常' : '禁用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="操作"
+            width="200"
+            align="center">
+            <template slot-scope="scope">
+              <el-button
+                size="mini"
+                @click="handleViewUser(scope.row)">查看</el-button>
+              <el-button
+                size="mini"
+                :type="scope.row.status === 0 ? 'danger' : 'success'"
+                @click="handleChangeStatus(scope.row)">
+                {{ scope.row.status === 0 ? '禁用' : '启用' }}
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        
+        <!-- 分页 -->
+        <div class="pagination-container" style="text-align: right; margin-top: 20px;">
+          <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="pageParams.page"
+            :page-sizes="[10, 20, 50, 100]"
+            :page-size="pageParams.size"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="total">
+          </el-pagination>
+        </div>
+        
+        <!-- 用户详情弹窗 -->
+        <el-dialog
+          title="用户详情"
+          :visible.sync="userDetailVisible"
+          width="70%">
+          <div v-if="currentUser">
+            <!-- 用户基本信息 -->
+            <div class="user-detail-header">
+              <img :src="currentUser.icon || './imgs/default-avatar.png'" class="user-detail-avatar">
+              <div class="user-detail-info">
+                <h3>{{currentUser.nickname || '未设置昵称'}}</h3>
+                <p>手机号: {{currentUser.phone}}</p>
+                <p>
+                  状态: 
+                  <el-tag :type="currentUser.status === 0 ? 'success' : 'danger'">
+                    {{ currentUser.status === 0 ? '正常' : '禁用' }}
+                  </el-tag>
+                </p>
+                <p>注册时间: {{currentUser.createTime}}</p>
+              </div>
+            </div>
+            
+            <!-- 用户详细信息 - 使用选项卡展示不同类别信息 -->
+            <el-tabs v-model="activeTab">
+              <el-tab-pane label="订单记录" name="orders">
+                <div v-if="userDetail.orders && userDetail.orders.length > 0">
+                  <el-table :data="userDetail.orders" border style="width: 100%">
+                    <el-table-column prop="id" label="订单ID" width="100"></el-table-column>
+                    <el-table-column prop="shopName" label="商铺名称"></el-table-column>
+                    <el-table-column prop="amount" label="金额" width="120"></el-table-column>
+                    <el-table-column prop="status" label="状态" width="120">
+                      <template slot-scope="scope">
+                        <el-tag :type="getOrderStatusType(scope.row.status)">
+                          {{getOrderStatusText(scope.row.status)}}
+                        </el-tag>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="createTime" label="下单时间" width="180"></el-table-column>
+                  </el-table>
+                </div>
+                <div v-else class="text-center py-3 text-muted">
+                  暂无订单记录
+                </div>
+              </el-tab-pane>
+              <el-tab-pane label="签到记录" name="signIns">
+                <div v-if="userDetail.signIns && userDetail.signIns.length > 0">
+                  <el-table :data="userDetail.signIns" border style="width: 100%">
+                    <el-table-column prop="id" label="ID" width="100"></el-table-column>
+                    <el-table-column prop="date" label="签到日期" width="180"></el-table-column>
+                    <el-table-column prop="points" label="获得积分" width="120"></el-table-column>
+                  </el-table>
+                </div>
+                <div v-else class="text-center py-3 text-muted">
+                  暂无签到记录
+                </div>
+              </el-tab-pane>
+              <el-tab-pane label="关注列表" name="follows">
+                <div v-if="userDetail.follows && userDetail.follows.length > 0">
+                  <el-table :data="userDetail.follows" border style="width: 100%">
+                    <el-table-column prop="id" label="ID" width="100"></el-table-column>
+                    <el-table-column label="关注对象">
+                      <template slot-scope="scope">
+                        <div style="display: flex; align-items: center;">
+                          <img :src="scope.row.icon" class="user-avatar">
+                          <span style="margin-left: 10px;">{{scope.row.name}}</span>
+                        </div>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="followTime" label="关注时间" width="180"></el-table-column>
+                  </el-table>
+                </div>
+                <div v-else class="text-center py-3 text-muted">
+                  暂无关注记录
+                </div>
+              </el-tab-pane>
+            </el-tabs>
+          </div>
+        </el-dialog>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script>
+  // 检查管理员登录状态
+  const adminToken = sessionStorage.getItem("adminToken");
+  const adminInfoStr = sessionStorage.getItem("adminInfo");
+  
+  if (!adminToken) {
+    // 未登录，跳转到登录页
+    //location.href = "admin-login.html";
+  }
+  
+  const app = new Vue({
+    el: "#app",
+    data: {
+      adminInfo: adminInfoStr ? JSON.parse(adminInfoStr) : {},
+      searchForm: {
+        keyword: '',
+        status: ''
+      },
+      tableLoading: false,
+      userList: [],
+      pageParams: {
+        page: 1,
+        size: 10
+      },
+      total: 0,
+      userDetailVisible: false,
+      currentUser: null,
+      userDetail: {
+        orders: [],
+        signIns: [],
+        follows: []
+      },
+      activeTab: 'orders'
+    },
+    created() {
+      // 页面加载时获取用户列表
+      this.fetchUserList();
+    },
+    methods: {
+      navigateTo(path) {
+        location.href = path;
+      },
+      fetchUserList() {
+        this.tableLoading = true;
+        
+        // 配置请求头，添加管理员token
+        axios.defaults.headers.common['Authorization'] = `Bearer ${adminToken}`;
+        
+        const params = {
+          ...this.pageParams,
+          ...this.searchForm
+        };
+        
+        axios.get("/admin/users", { params })
+          .then(({data}) => {
+            this.userList = data.list || [];
+            this.total = data.total || 0;
+          })
+          .catch(err => {
+            console.error("获取用户列表失败", err);
+            this.$message.error("获取用户列表失败，请重试");
+          })
+          .finally(() => {
+            this.tableLoading = false;
+          });
+      },
+      handleSearch() {
+        // 重置页码为1，然后重新搜索
+        this.pageParams.page = 1;
+        this.fetchUserList();
+      },
+      resetSearch() {
+        this.searchForm = {
+          keyword: '',
+          status: ''
+        };
+        this.handleSearch();
+      },
+      handleSizeChange(size) {
+        this.pageParams.size = size;
+        this.fetchUserList();
+      },
+      handleCurrentChange(page) {
+        this.pageParams.page = page;
+        this.fetchUserList();
+      },
+      handleViewUser(user) {
+        this.currentUser = user;
+        this.userDetailVisible = true;
+        
+        // 获取用户详细信息
+        axios.get(`/admin/users/${user.id}/details`)
+          .then(({data}) => {
+            this.userDetail = data || { orders: [], signIns: [], follows: [] };
+          })
+          .catch(err => {
+            console.error("获取用户详情失败", err);
+            this.$message.error("获取用户详情失败，请重试");
+          });
+      },
+      handleChangeStatus(user) {
+        const newStatus = user.status === 0 ? 1 : 0;
+        const statusText = newStatus === 0 ? '启用' : '禁用';
+        
+        this.$confirm(`确定要${statusText}用户 "${user.nickname || user.phone}" 吗?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          // 调用修改用户状态接口
+          axios.put(`/admin/users/${user.id}/status`, { status: newStatus })
+            .then(() => {
+              this.$message.success(`${statusText}用户成功`);
+              // 更新本地数据
+              user.status = newStatus;
+            })
+            .catch(err => {
+              console.error(`${statusText}用户失败`, err);
+              this.$message.error(`${statusText}用户失败，请重试`);
+            });
+        }).catch(() => {
+          // 取消操作，不做任何处理
+        });
+      },
+      getOrderStatusType(status) {
+        const statusMap = {
+          0: 'info',   // 待支付
+          1: 'warning', // 待使用
+          2: 'success', // 已完成
+          3: 'danger'   // 已取消
+        };
+        return statusMap[status] || 'info';
+      },
+      getOrderStatusText(status) {
+        const statusMap = {
+          0: '待支付',
+          1: '待使用',
+          2: '已完成',
+          3: '已取消'
+        };
+        return statusMap[status] || '未知状态';
+      },
+      logout() {
+        // 退出登录
+        axios.post("/admin/logout")
+          .then(() => {
+            // 清除登录信息
+            sessionStorage.removeItem("adminToken");
+            sessionStorage.removeItem("adminInfo");
+            // 跳转到登录页
+            location.href = "admin-login.html";
+          })
+          .catch(err => {
+            console.error("退出失败", err);
+            // 即使请求失败，也清除本地存储并跳转
+            sessionStorage.removeItem("adminToken");
+            sessionStorage.removeItem("adminInfo");
+            location.href = "admin-login.html";
+          });
+      }
+    }
+  })
+</script>
+</body>
+</html>

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评 - 商家注册</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/login.css" rel="stylesheet">
+
+  <style type="text/css">
+    .merchant-logo {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .merchant-logo img {
+      width: 60px;
+      height: 60px;
+    }
+    .merchant-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .login-container {
+      padding-bottom: 0;
+    }
+    .content {
+      padding-bottom: 20px;
+    }
+    .login-form {
+      padding-top: 0;
+    }
+    .form-divider {
+      margin: 15px 0;
+      font-size: 14px;
+      color: #666;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .form-divider::before, .form-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background-color: #ebeef5;
+    }
+    .form-divider span {
+      padding: 0 10px;
+    }
+    .form-item {
+      margin-bottom: 10px;
+    }
+    .steps-wrapper {
+      margin-bottom: 20px;
+    }
+    .upload-demo {
+      margin-bottom: 10px;
+    }
+    .upload-tip {
+      font-size: 12px;
+      color: #909399;
+      margin-top: 5px;
+    }
+    .login-link {
+      text-align: center;
+      margin-top: 15px;
+      color: #8c939d;
+    }
+    .login-link a {
+      color: #f63;
+      text-decoration: none;
+    }
+    .next-btn {
+      width: 100%;
+      background-color: #f63;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="login-container">
+    <div class="header">
+      <div class="header-back-btn" @click="goBack"><i class="el-icon-arrow-left"></i></div>
+      <div class="header-title">商家入驻</div>
+    </div>
+    <div class="content">
+      <div class="merchant-logo">
+        <img src="./imgs/logo.png" alt="商家中心">
+      </div>
+      <div class="merchant-title">商家账号注册</div>
+      
+      <div class="steps-wrapper">
+        <el-steps :active="active" finish-status="success" simple>
+          <el-step title="填写账号信息"></el-step>
+          <el-step title="提交资质审核"></el-step>
+          <el-step title="注册成功"></el-step>
+        </el-steps>
+      </div>
+      
+      <div class="login-form">
+        <!-- 步骤一：账号信息 -->
+        <div v-if="active === 0">
+          <el-form :model="registerForm" :rules="rules" ref="registerForm" label-position="top">
+            <el-form-item label="商家名称" prop="name">
+              <el-input v-model="registerForm.name" placeholder="请输入商家名称" prefix-icon="el-icon-s-shop"></el-input>
+            </el-form-item>
+            
+            <el-form-item label="登录账号" prop="account">
+              <el-input v-model="registerForm.account" placeholder="请设置登录账号" prefix-icon="el-icon-user"></el-input>
+            </el-form-item>
+            
+            <el-form-item label="登录密码" prop="password">
+              <el-input type="password" v-model="registerForm.password" placeholder="请设置登录密码" prefix-icon="el-icon-lock" show-password></el-input>
+            </el-form-item>
+            
+            <el-form-item label="确认密码" prop="confirmPassword">
+              <el-input type="password" v-model="registerForm.confirmPassword" placeholder="请再次输入密码" prefix-icon="el-icon-lock" show-password></el-input>
+            </el-form-item>
+            
+            <div class="form-divider">
+              <span>联系方式</span>
+            </div>
+            
+            <el-form-item label="联系电话" prop="phone">
+              <div style="display: flex; justify-content: space-between">
+                <el-input style="width: 60%" v-model="registerForm.phone" placeholder="请输入手机号" prefix-icon="el-icon-mobile-phone"></el-input>
+                <el-button style="width: 38%" @click="sendCode" type="success" :disabled="disabled">{{codeBtnMsg}}</el-button>
+              </div>
+            </el-form-item>
+            
+            <el-form-item label="验证码" prop="code">
+              <el-input v-model="registerForm.code" placeholder="请输入验证码" prefix-icon="el-icon-message"></el-input>
+            </el-form-item>
+            
+            <el-form-item label="商家简介" prop="description">
+              <el-input type="textarea" v-model="registerForm.description" placeholder="请简要描述您的商家特色和主营业务" :rows="3"></el-input>
+            </el-form-item>
+          </el-form>
+          <el-button @click="nextStep" class="next-btn">下一步</el-button>
+        </div>
+        
+        <!-- 步骤二：资质信息 -->
+        <div v-if="active === 1">
+          <el-form :model="qualificationForm" :rules="qualificationRules" ref="qualificationForm" label-position="top">
+            <el-form-item label="营业执照" prop="businessLicense">
+              <el-upload
+                class="upload-demo"
+                action="/api/merchant/upload"
+                :on-preview="handlePreview"
+                :on-remove="handleRemove"
+                :on-success="(res) => handleSuccess(res, 'businessLicense')"
+                :before-upload="beforeUpload"
+                :limit="1"
+                list-type="picture">
+                <el-button size="small" type="primary">点击上传</el-button>
+                <div class="upload-tip">请上传营业执照扫描件或照片，支持JPG、PNG格式</div>
+              </el-upload>
+            </el-form-item>
+            
+            <el-form-item label="营业执照号码" prop="licenseNumber">
+              <el-input v-model="qualificationForm.licenseNumber" placeholder="请输入营业执照号码"></el-input>
+            </el-form-item>
+            
+            <el-form-item label="法人身份证" prop="idCard">
+              <el-upload
+                class="upload-demo"
+                action="/api/merchant/upload"
+                :on-preview="handlePreview"
+                :on-remove="handleRemove"
+                :on-success="(res) => handleSuccess(res, 'idCard')"
+                :before-upload="beforeUpload"
+                :limit="1"
+                list-type="picture">
+                <el-button size="small" type="primary">点击上传</el-button>
+                <div class="upload-tip">请上传法人身份证正面照片，支持JPG、PNG格式</div>
+              </el-upload>
+            </el-form-item>
+            
+            <el-form-item label="身份证号码" prop="idNumber">
+              <el-input v-model="qualificationForm.idNumber" placeholder="请输入身份证号码"></el-input>
+            </el-form-item>
+            
+            <el-form-item label="其他资质证明(选填)">
+              <el-upload
+                class="upload-demo"
+                action="/api/merchant/upload"
+                :on-preview="handlePreview"
+                :on-remove="handleRemove"
+                :on-success="(res) => handleSuccess(res, 'otherQualification')"
+                :before-upload="beforeUpload"
+                :limit="3"
+                multiple
+                list-type="picture">
+                <el-button size="small" type="primary">点击上传</el-button>
+                <div class="upload-tip">可上传其他资质证明，如食品经营许可证、特许经营授权书等</div>
+              </el-upload>
+            </el-form-item>
+          </el-form>
+          <div style="margin-top: 20px; display: flex; justify-content: space-between">
+            <el-button @click="prevStep" style="width: 48%">上一步</el-button>
+            <el-button @click="submitRegister" style="width: 48%; background-color:#f63; color: #fff;">提交注册</el-button>
+          </div>
+        </div>
+        
+        <!-- 步骤三：注册成功 -->
+        <div v-if="active === 2" style="text-align: center;">
+          <i class="el-icon-success" style="font-size: 60px; color: #67C23A; margin-bottom: 20px;"></i>
+          <h2 style="margin-bottom: 15px;">注册申请已提交</h2>
+          <p style="margin-bottom: 25px; color: #666;">我们将在1-3个工作日内审核您的资质信息，请耐心等待。</p>
+          <p style="margin-bottom: 30px; color: #666;">审核结果将通过短信通知您，请保持手机畅通。</p>
+          <el-button @click="goToLogin" style="width: 100%; background-color:#f63; color: #fff;">返回登录</el-button>
+        </div>
+        
+        <div class="login-link" v-if="active !== 2">
+          已有商家账号？<a href="merchant-login.html">立即登录</a>
+        </div>
+      </div>
+      
+      <div class="login-radio" v-if="active !== 2">
+        <div>
+          <input type="radio" name="readed" v-model="radio" value="1">
+          <label for="readed"></label>
+        </div>
+        <div>我已阅读并同意
+          <a href="javascript:void(0)">
+          《黑马点评商家服务协议》</a>、
+          <a href="javascript:void(0)">《隐私政策》</a>
+          等，接受免除或者限制责任、诉讼管辖约定等粗体标示条款
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/footer.js"></script>
+<script src="./js/merchant-common.js"></script>
+<script>
+  const app = new Vue({
+    el: "#app",
+    data: {
+      active: 0, // 当前步骤
+      radio: "",
+      disabled: false, // 发送短信按钮
+      codeBtnMsg: "发送验证码", // 发送短信按钮提示
+      registerForm: {
+        name: "",
+        account: "",
+        password: "",
+        confirmPassword: "",
+        phone: "",
+        code: "",
+        description: ""
+      },
+      qualificationForm: {
+        businessLicense: "",
+        licenseNumber: "",
+        idCard: "",
+        idNumber: "",
+        otherQualification: []
+      },
+      rules: {
+        name: [
+          { required: true, message: '请输入商家名称', trigger: 'blur' },
+          { min: 2, max: 30, message: '长度在 2 到 30 个字符', trigger: 'blur' }
+        ],
+        account: [
+          { required: true, message: '请设置登录账号', trigger: 'blur' },
+          { min: 4, max: 20, message: '长度在 4 到 20 个字符', trigger: 'blur' },
+          { pattern: /^[a-zA-Z0-9_]+$/, message: '账号只能包含字母、数字和下划线', trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '请设置登录密码', trigger: 'blur' },
+          { min: 6, max: 20, message: '长度在 6 到 20 个字符', trigger: 'blur' }
+        ],
+        confirmPassword: [
+          { required: true, message: '请再次输入密码', trigger: 'blur' },
+          { validator: (rule, value, callback) => {
+              if (value !== this.registerForm.password) {
+                callback(new Error('两次输入密码不一致'));
+              } else {
+                callback();
+              }
+            }, 
+            trigger: 'blur' 
+          }
+        ],
+        phone: [
+          { required: true, message: '请输入手机号', trigger: 'blur' },
+          { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
+        ],
+        code: [
+          { required: true, message: '请输入验证码', trigger: 'blur' }
+        ],
+        description: [
+          { required: true, message: '请简要描述您的商家特色和主营业务', trigger: 'blur' },
+          { max: 200, message: '长度不能超过 200 个字符', trigger: 'blur' }
+        ]
+      },
+      qualificationRules: {
+        businessLicense: [
+          { required: true, message: '请上传营业执照', trigger: 'change' }
+        ],
+        licenseNumber: [
+          { required: true, message: '请输入营业执照号码', trigger: 'blur' }
+        ],
+        idCard: [
+          { required: true, message: '请上传法人身份证', trigger: 'change' }
+        ],
+        idNumber: [
+          { required: true, message: '请输入身份证号码', trigger: 'blur' },
+          { pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/, message: '请输入正确的身份证号码', trigger: 'blur' }
+        ]
+      }
+    },
+    methods: {
+      goBack() {
+        if (this.active > 0 && this.active < 2) {
+          this.active--;
+        } else {
+          location.href = "/index.html";
+        }
+      },
+      nextStep() {
+        if(!this.radio){
+          this.$message.error("请先确认阅读用户协议！");
+          return
+        }
+        
+        this.$refs.registerForm.validate((valid) => {
+          if (valid) {
+            // 验证通过，进入下一步
+            this.active++;
+          } else {
+            this.$message.error('请完成必填信息再进行下一步');
+            return false;
+          }
+        });
+      },
+      prevStep() {
+        this.active--;
+      },
+      submitRegister() {
+        if(!this.radio){
+          this.$message.error("请先确认阅读用户协议！");
+          return
+        }
+        
+        this.$refs.qualificationForm.validate((valid) => {
+          if (valid) {
+            // 验证通过，提交注册信息
+            const registerData = {
+              ...this.registerForm,
+              qualification: {
+                ...this.qualificationForm
+              }
+            };
+            
+            merchantAxios.post("/merchant/register", registerData)
+              .then(({data}) => {
+                if(data.code === 200){
+                  // 注册成功，进入第三步
+                  this.active = 2;
+                } else {
+                  this.$message.error(data.msg || "注册失败");
+                }
+              })
+              .catch(err => this.$message.error(err.response?.data?.msg || "服务器异常"))
+          } else {
+            this.$message.error('请完成必填信息再提交');
+            return false;
+          }
+        });
+      },
+      goToLogin() {
+        location.href = "/merchant-login.html";
+      },
+      sendCode() {
+        if (!this.registerForm.phone) {
+          this.$message.error("手机号不能为空");
+          return;
+        }
+        
+        // 发送验证码
+        merchantAxios.post("/merchant/code?phone="+this.registerForm.phone)
+          .then(({data}) => {
+            if(data.code === 200){
+              this.$message.success("验证码发送成功");
+            } else {
+              this.$message.error(data.msg || "验证码发送失败");
+            }
+          })
+          .catch(err => {
+            console.error("发送验证码失败:", err);
+            this.$message.error("验证码发送失败，请重试");
+          });
+          
+        // 禁用按钮
+        this.disabled = true;
+        // 按钮倒计时
+        let i = 60;
+        this.codeBtnMsg = (i--) + '秒后可重发'
+        let taskId = setInterval(() => this.codeBtnMsg = (i--) + '秒后可重发', 1000);
+        setTimeout(() => {
+          this.disabled = false;
+          clearInterval(taskId);
+          this.codeBtnMsg = "发送验证码";
+        }, 59000)
+      },
+      handlePreview(file) {
+        console.log(file);
+      },
+      handleRemove(file, fileList) {
+        console.log(file, fileList);
+      },
+      handleSuccess(response, field) {
+        if(response.code === 200) {
+          if(field === 'otherQualification') {
+            this.qualificationForm.otherQualification.push(response.data.url);
+          } else {
+            this.qualificationForm[field] = response.data.url;
+          }
+        } else {
+          this.$message.error(response.msg || "上传失败");
+        }
+      },
+      beforeUpload(file) {
+        const isJPG = file.type === 'image/jpeg';
+        const isPNG = file.type === 'image/png';
+        const isLt2M = file.size / 1024 / 1024 < 2;
+
+        if (!isJPG && !isPNG) {
+          this.$message.error('上传图片只能是 JPG 或 PNG 格式!');
+          return false;
+        }
+        if (!isLt2M) {
+          this.$message.error('上传图片大小不能超过 2MB!');
+          return false;
+        }
+        return true;
+      }
+    }
+  })
+</script>
+</body>
+</html>

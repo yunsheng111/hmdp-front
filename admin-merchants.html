@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评 - 商户管理</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+      background-color: #f5f7fa;
+    }
+    .admin-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    .admin-sidebar {
+      width: 220px;
+      background-color: #304156;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      transition: width 0.3s;
+      position: fixed;
+      height: 100vh;
+      z-index: 1000;
+    }
+    .admin-logo {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #263445;
+      padding: 0 16px;
+    }
+    .admin-logo img {
+      height: 32px;
+      margin-right: 8px;
+    }
+    .admin-logo h1 {
+      color: #fff;
+      font-size: 18px;
+      margin: 0;
+      white-space: nowrap;
+    }
+    .admin-main {
+      flex: 1;
+      margin-left: 220px;
+      padding: 15px;
+      background-color: #f5f7fa;
+      min-height: 100vh;
+    }
+    .admin-header {
+      height: 60px;
+      background-color: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 15px;
+      margin-bottom: 15px;
+    }
+    .admin-content {
+      background-color: #fff;
+      border-radius: 4px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      min-height: calc(100vh - 90px);
+    }
+    .admin-user-dropdown {
+      display: flex;
+      align-items: center;
+    }
+    .admin-user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .el-menu {
+      border-right: none;
+      background-color: #304156;
+    }
+    .el-menu-item {
+      color: #bfcbd9;
+    }
+    .el-menu-item:hover, .el-menu-item:focus {
+      background-color: #263445;
+    }
+    .el-menu-item.is-active {
+      color: #409EFF;
+      background-color: #263445;
+    }
+    .search-form {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+    }
+    .search-form-item {
+      margin-right: 10px;
+    }
+    .shop-type-icon{
+        width: 20px;
+        height: 20px;
+        margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="admin-container">
+    <!-- 侧边栏导航 -->
+    <div class="admin-sidebar">
+      <div class="admin-logo">
+        <img src="./imgs/logo.png" alt="黑马点评">
+        <h1>管理员控制台</h1>
+      </div>
+      <el-menu
+        default-active="3" 
+        class="el-menu-vertical"
+        background-color="#304156"
+        text-color="#bfcbd9"
+        active-text-color="#409EFF">
+        <el-menu-item index="1" @click="navigateTo('admin-dashboard.html')">
+          <i class="el-icon-s-home"></i>
+          <span slot="title">控制台</span>
+        </el-menu-item>
+        <el-menu-item index="2" @click="navigateTo('admin-users.html')">
+          <i class="el-icon-user"></i>
+          <span slot="title">用户管理</span>
+        </el-menu-item>
+        <el-menu-item index="3" @click="navigateTo('admin-merchants.html')">
+          <i class="el-icon-s-shop"></i>
+          <span slot="title">商户管理</span>
+        </el-menu-item>
+        <el-menu-item index="4" @click="navigateTo('admin-shop-types.html')">
+          <i class="el-icon-s-grid"></i>
+          <span slot="title">商户分类管理</span>
+        </el-menu-item>
+        <el-menu-item index="5" @click="navigateTo('admin-content.html')">
+          <i class="el-icon-document-checked"></i>
+          <span slot="title">内容审核</span>
+        </el-menu-item>
+        <el-menu-item index="6" @click="navigateTo('admin-statistics.html')">
+          <i class="el-icon-data-line"></i>
+          <span slot="title">系统监控</span>
+        </el-menu-item>
+        <el-menu-item index="7" @click="logout">
+          <i class="el-icon-switch-button"></i>
+          <span slot="title">退出登录</span>
+        </el-menu-item>
+      </el-menu>
+    </div>
+    
+    <!-- 主要内容区域 -->
+    <div class="admin-main">
+      <!-- 顶部栏 -->
+      <div class="admin-header">
+        <div class="admin-header-left">
+          <i class="el-icon-s-fold" style="font-size: 20px; cursor: pointer;"></i>
+        </div>
+        <div class="admin-user-dropdown">
+          <img :src="adminInfo.avatar || './imgs/default-avatar.png'" class="admin-user-avatar">
+          <el-dropdown trigger="click">
+            <span class="el-dropdown-link">
+              {{adminInfo.username || '管理员'}} <i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item icon="el-icon-user">个人信息</el-dropdown-item>
+              <el-dropdown-item icon="el-icon-setting">系统设置</el-dropdown-item>
+              <el-dropdown-item icon="el-icon-switch-button" @click.native="logout">退出登录</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+      </div>
+      
+      <!-- 内容区域 -->
+      <div class="admin-content">
+        <h2 class="mb-4">商户管理</h2>
+        
+        <!-- 搜索表单 -->
+        <div class="search-form">
+          <div class="search-form-item">
+            <el-input
+              placeholder="搜索商户名称"
+              v-model="searchForm.keyword"
+              clearable
+              prefix-icon="el-icon-search"
+              @keyup.enter.native="handleSearch">
+            </el-input>
+          </div>
+          <div class="search-form-item">
+            <el-select v-model="searchForm.status" placeholder="商户状态" clearable>
+              <el-option label="待审核" :value="0"></el-option>
+              <el-option label="正常" :value="1"></el-option>
+              <el-option label="禁用" :value="2"></el-option>
+              <el-option label="待整改" :value="3"></el-option>
+            </el-select>
+          </div>
+          <div class="search-form-item">
+             <el-select v-model="searchForm.shopTypeId" placeholder="商户分类" clearable>
+              <el-option
+                v-for="item in shopTypes"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              </el-option>
+            </el-select>
+          </div>
+          <div class="search-form-item">
+            <el-button type="primary" @click="handleSearch">搜索</el-button>
+            <el-button @click="resetSearch">重置</el-button>
+          </div>
+        </div>
+        
+        <!-- 商户列表表格 -->
+        <el-table
+          v-loading="tableLoading"
+          :data="merchantList"
+          border
+          style="width: 100%">
+          <el-table-column
+            type="index"
+            width="50"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="id"
+            label="商户ID"
+            width="80"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="name"
+            label="商户名称"
+            min-width="150">
+          </el-table-column>
+          <el-table-column
+            label="商户分类"
+            width="150"
+            align="center">
+            <template slot-scope="scope">
+                <img :src="scope.row.shopTypeIcon || './imgs/default-type.png'" class="shop-type-icon">
+                <span>{{ scope.row.shopType || '未分类' }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="applyTime"
+            label="申请时间"
+            width="180"
+            align="center">
+          </el-table-column>
+           <el-table-column
+            prop="auditTime"
+            label="审核时间"
+            width="180"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            label="状态"
+            width="100"
+            align="center">
+            <template slot-scope="scope">
+              <el-tag :type="getMerchantStatusType(scope.row.status)">
+                {{ getMerchantStatusText(scope.row.status) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="操作"
+            width="220"
+            align="center">
+            <template slot-scope="scope">
+              <el-button
+                size="mini"
+                @click="handleViewMerchant(scope.row)">查看</el-button>
+              <el-button
+                size="mini"
+                type="warning"
+                v-if="scope.row.status === 0" 
+                @click="handleAuditMerchant(scope.row)">审核</el-button>
+              <el-button
+                size="mini"
+                :type="scope.row.status === 1 ? 'danger' : 'success'"
+                v-if="scope.row.status !== 0" 
+                @click="handleChangeMerchantStatus(scope.row)">
+                {{ scope.row.status === 1 ? '禁用' : (scope.row.status === 2 ? '启用' : '标记正常') }}
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        
+        <!-- 分页 -->
+        <div class="pagination-container" style="text-align: right; margin-top: 20px;">
+          <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="pageParams.page"
+            :page-sizes="[10, 20, 50, 100]"
+            :page-size="pageParams.size"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="total">
+          </el-pagination>
+        </div>
+
+        <!-- 商户详情弹窗 -->
+        <el-dialog
+          title="商户详情"
+          :visible.sync="merchantDetailVisible"
+          width="60%"
+          :close-on-click-modal="false">
+          <div v-if="currentMerchant">
+            <h4>基本信息</h4>
+            <el-descriptions :column="2" border>
+              <el-descriptions-item label="商户名称">{{ currentMerchant.name }}</el-descriptions-item>
+              <el-descriptions-item label="商户分类">{{ currentMerchant.shopType }}</el-descriptions-item>
+              <el-descriptions-item label="联系电话">{{ currentMerchant.phone || '暂无' }}</el-descriptions-item>
+              <el-descriptions-item label="营业时间">{{ currentMerchant.openHours || '暂无' }}</el-descriptions-item>
+              <el-descriptions-item label="平均消费">{{ currentMerchant.avgPrice ? '¥' + currentMerchant.avgPrice : '暂无' }}</el-descriptions-item>
+              <el-descriptions-item label="评分">{{ currentMerchant.score || '暂无' }}</el-descriptions-item>
+              <el-descriptions-item label="地址" :span="2">{{ currentMerchant.address || '暂无' }}</el-descriptions-item>
+            </el-descriptions>
+            
+            <h4 style="margin-top: 20px;">资质信息</h4>
+            <div v-if="merchantQualifications.length > 0">
+              <el-row :gutter="20">
+                <el-col :span="8" v-for="(qual, index) in merchantQualifications" :key="index" style="margin-bottom: 10px;">
+                  <el-card :body-style="{ padding: '0px' }">
+                    <img :src="qual.imageUrl || './imgs/default-image.png'" class="image" style="width: 100%; display: block;">
+                    <div style="padding: 14px;">
+                      <span>{{ qual.qualificationType }}</span>
+                      <div class="bottom clearfix">
+                        <el-tag size="mini">{{ qual.status || '未知状态' }}</el-tag>
+                         <el-tooltip class="item" effect="dark" :content="'编号: ' + (qual.number || '无')" placement="top">
+                            <i class="el-icon-info" style="float: right; padding: 3px 0"></i>
+                        </el-tooltip>
+                      </div>
+                    </div>
+                  </el-card>
+                </el-col>
+              </el-row>
+            </div>
+            <div v-else>
+              <el-empty description="暂无资质信息"></el-empty>
+            </div>
+          </div>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="merchantDetailVisible = false">关 闭</el-button>
+          </span>
+        </el-dialog>
+
+        <!-- 商户审核弹窗 -->
+        <el-dialog
+          title="商户审核"
+          :visible.sync="merchantAuditVisible"
+          width="40%"
+          :close-on-click-modal="false">
+          <div v-if="currentMerchant">
+            <p><strong>商户名称:</strong> {{ currentMerchant.name }}</p>
+            <p><strong>申请时间:</strong> {{ currentMerchant.applyTime }}</p>
+            <el-form :model="auditForm" ref="auditFormRef" label-width="80px">
+              <el-form-item label="审核结果" prop="status" :rules="[{ required: true, message: '请选择审核结果', trigger: 'change' }]">
+                <el-radio-group v-model="auditForm.status">
+                  <el-radio :label="1">通过</el-radio>
+                  <el-radio :label="2">拒绝</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="审核意见" prop="auditComment" :rules="auditForm.status === 2 ? [{ required: true, message: '拒绝时必须填写审核意见', trigger: 'blur' }] : []">
+                <el-input type="textarea" v-model="auditForm.auditComment" placeholder="请输入审核意见"></el-input>
+              </el-form-item>
+            </el-form>
+          </div>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="merchantAuditVisible = false">取 消</el-button>
+            <el-button type="primary" @click="submitAudit">确 定</el-button>
+          </span>
+        </el-dialog>
+
+        <!-- 修改商户状态弹窗 -->
+        <el-dialog
+          :title="'确认操作 - ' + statusChangeForm.actionText + '商户'"
+          :visible.sync="statusChangeDialogVisible"
+          width="40%"
+          :close-on-click-modal="false">
+          <div v-if="currentMerchant">
+            <p>您正在对商户 <strong>{{ statusChangeForm.merchantName }}</strong> 执行 <strong>{{ statusChangeForm.actionText }}</strong> 操作。</p>
+            <el-form :model="statusChangeForm" ref="statusChangeFormRef" label-width="80px" style="margin-top: 20px;">
+              <el-form-item 
+                label="操作原因" 
+                prop="reason" 
+                :rules="statusChangeForm.newStatus === 2 ? [{ required: true, message: '禁用商户时必须填写原因', trigger: 'blur' }] : []">
+                <el-input 
+                  type="textarea" 
+                  v-model="statusChangeForm.reason" 
+                  :placeholder="statusChangeForm.newStatus === 2 ? '请输入禁用原因' : '请输入操作原因（可选）'"></el-input>
+              </el-form-item>
+            </el-form>
+          </div>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="statusChangeDialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="submitStatusChange">确 定</el-button>
+          </span>
+        </el-dialog>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script>
+  // 检查管理员登录状态
+  const adminToken = sessionStorage.getItem("adminToken");
+  const adminInfoStr = sessionStorage.getItem("adminInfo");
+  
+  if (!adminToken) {
+    //location.href = "admin-login.html";
+  }
+  
+  const app = new Vue({
+    el: "#app",
+    data: {
+      adminInfo: adminInfoStr ? JSON.parse(adminInfoStr) : {},
+      searchForm: {
+        keyword: '',
+        status: '',
+        shopTypeId: ''
+      },
+      shopTypes: [], // 商户分类列表
+      tableLoading: false,
+      merchantList: [],
+      pageParams: {
+        page: 1,
+        size: 10
+      },
+      total: 0,
+      merchantDetailVisible: false, // 商户详情弹窗可见性
+      merchantAuditVisible: false,  // 商户审核弹窗可见性
+      currentMerchant: null, // 当前操作的商户对象
+      merchantQualifications: [], // 当前商户的资质信息
+      auditForm: { // 审核表单
+        status: null, // 1-通过, 2-拒绝
+        auditComment: ''
+      },
+      statusChangeDialogVisible: false, // 修改状态弹窗可见性
+      statusChangeForm: { // 修改状态表单
+        newStatus: null,
+        reason: '',
+        actionText: '', // 操作文本，如 '禁用', '启用'
+        merchantName: '' // 当前操作的商户名称
+      }
+    },
+    created() {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${adminToken}`;
+      this.fetchShopTypes();
+      this.fetchMerchantList();
+    },
+    methods: {
+      navigateTo(path) {
+        location.href = path;
+      },
+      fetchShopTypes(){
+        axios.get("/api/admin/shop-types")
+          .then(({data}) => {
+            if(data.success){
+                this.shopTypes = data.data.list || [];
+            }else{
+                this.$message.error(data.msg || "获取商户分类失败");
+            }
+          })
+          .catch(err => {
+            console.error("获取商户分类失败", err);
+            this.$message.error("获取商户分类失败，请重试");
+          });
+      },
+      fetchMerchantList() {
+        this.tableLoading = true;
+        const params = {
+          ...this.pageParams,
+          ...this.searchForm
+        };
+        
+        axios.get("/api/admin/merchants", { params })
+          .then(({data}) => {
+            if(data.success){
+                this.merchantList = data.data.list || [];
+                this.total = data.data.total || 0;
+            } else {
+                this.$message.error(data.msg || "获取商户列表失败");
+            }
+          })
+          .catch(err => {
+            console.error("获取商户列表失败", err);
+            this.$message.error("获取商户列表失败，请重试");
+          })
+          .finally(() => {
+            this.tableLoading = false;
+          });
+      },
+      handleSearch() {
+        this.pageParams.page = 1;
+        this.fetchMerchantList();
+      },
+      resetSearch() {
+        this.searchForm = {
+          keyword: '',
+          status: '',
+          shopTypeId: ''
+        };
+        this.handleSearch();
+      },
+      handleSizeChange(size) {
+        this.pageParams.size = size;
+        this.fetchMerchantList();
+      },
+      handleCurrentChange(page) {
+        this.pageParams.page = page;
+        this.fetchMerchantList();
+      },
+      getMerchantStatusType(status) {
+        const statusMap = {
+          0: 'info',    // 待审核
+          1: 'success', // 正常
+          2: 'danger',  // 禁用
+          3: 'warning'  // 待整改
+        };
+        return statusMap[status] || 'info';
+      },
+      getMerchantStatusText(status) {
+        const statusMap = {
+          0: '待审核',
+          1: '正常',
+          2: '禁用',
+          3: '待整改'
+        };
+        return statusMap[status] || '未知状态';
+      },
+      async handleViewMerchant(merchant) {
+        this.currentMerchant = merchant;
+        this.merchantQualifications = []; // 先清空
+        this.merchantDetailVisible = true;
+        try {
+          // 根据接口文档，使用 /api/admin/merchants/{merchantId}/qualifications 获取资质
+          const { data } = await axios.get(`/api/admin/merchants/${merchant.id}/qualifications`);
+          if (data.success) {
+            this.merchantQualifications = data.data || [];
+          } else {
+            this.$message.error(data.msg || '获取商户资质信息失败');
+          }
+        } catch (error) {
+          console.error("获取商户资质信息失败", error);
+          this.$message.error('获取商户资质信息失败，请重试');
+        }
+      },
+      handleAuditMerchant(merchant){
+        this.currentMerchant = merchant;
+        // 重置审核表单
+        this.auditForm = { status: null, auditComment: '' };
+        if (this.$refs.auditFormRef) {
+            this.$refs.auditFormRef.resetFields();
+        }
+        this.merchantAuditVisible = true;
+      },
+      submitAudit() {
+        this.$refs.auditFormRef.validate((valid) => {
+          if (valid) {
+            // 根据接口文档，审核接口是 PUT /api/admin/merchants/applications/{applicationId}/audit
+            // 这里假设 merchant.id 就是 applicationId，如果后端设计不同，需要调整
+            const applicationId = this.currentMerchant.id; 
+            axios.put(`/api/admin/merchants/applications/${applicationId}/audit`, this.auditForm)
+              .then(({data}) => {
+                if(data.success){
+                  this.$message.success("审核操作成功");
+                  this.merchantAuditVisible = false;
+                  this.fetchMerchantList(); // 刷新列表
+                } else {
+                  this.$message.error(data.msg || "审核操作失败");
+                }
+              })
+              .catch(err => {
+                console.error("审核操作失败", err);
+                this.$message.error("审核操作失败，请重试");
+              });
+          } else {
+            console.log('审核表单校验失败');
+            return false;
+          }
+        });
+      },
+      handleChangeMerchantStatus(merchant) {
+        let newStatus;
+        let actionText;
+        let merchantName = merchant.name;
+
+        if (merchant.status === 1) { // 当前是正常状态，则操作是禁用
+            newStatus = 2; 
+            actionText = '禁用';
+        } else if (merchant.status === 2) { // 当前是禁用状态，则操作是启用
+            newStatus = 1;
+            actionText = '启用';
+        } else if (merchant.status === 3) { // 当前是待整改，则操作是标记为正常
+            newStatus = 1;
+            actionText = '标记为正常';
+        } else {
+            this.$message.error("未知商户状态，无法操作");
+            return;
+        }
+
+        this.currentMerchant = merchant;
+        this.statusChangeForm.newStatus = newStatus;
+        this.statusChangeForm.reason = ''; // 重置原因
+        this.statusChangeForm.actionText = actionText;
+        this.statusChangeForm.merchantName = merchantName;
+        this.statusChangeDialogVisible = true;
+      },
+      submitStatusChange() {
+        if (this.statusChangeForm.newStatus === 2 && !this.statusChangeForm.reason.trim()) {
+            this.$message.error('禁用商户时必须填写原因');
+            return;
+        }
+        const { newStatus, reason, actionText } = this.statusChangeForm;
+        const merchantId = this.currentMerchant.id;
+        const merchantName = this.currentMerchant.name;
+
+        this.$confirm(`确定要${actionText}商户 "${merchantName}" 吗?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          axios.put(`/api/admin/merchants/${merchantId}/status`, { status: newStatus, reason: reason })
+            .then(({data}) => {
+                if(data.success){
+                    this.$message.success(`${actionText}商户成功`);
+                    this.statusChangeDialogVisible = false;
+                    this.fetchMerchantList(); // 重新获取列表刷新状态
+                }else{
+                    this.$message.error(data.msg || `${actionText}商户失败`);
+                }
+            })
+            .catch(err => {
+              console.error(`${actionText}商户失败`, err);
+              this.$message.error(`${actionText}商户失败，请重试`);
+            });
+        }).catch(() => {
+          // 取消操作
+        });
+      },
+      logout() {
+        axios.post("/api/admin/logout")
+          .then(() => {
+            sessionStorage.removeItem("adminToken");
+            sessionStorage.removeItem("adminInfo");
+            location.href = "admin-login.html";
+          })
+          .catch(err => {
+            console.error("退出失败", err);
+            sessionStorage.removeItem("adminToken");
+            sessionStorage.removeItem("adminInfo");
+            location.href = "admin-login.html";
+          });
+      }
+    }
+  })
+</script>
+</body>
+</html> 

@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评 - 账号设置</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <style type="text/css">
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 200px;
+      background-color: #304156;
+      color: #fff;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .main-content {
+      flex: 1;
+      margin-left: 200px;
+      padding: 20px;
+    }
+    .header {
+      height: 60px;
+      background-color: #fff;
+      box-shadow: 0 1px 4px rgba(0,21,41,.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      position: relative;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      height: 60px;
+      padding: 0 20px;
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+      border-bottom: 1px solid #1f2d3d;
+    }
+    .logo img {
+      width: 30px;
+      height: 30px;
+      margin-right: 10px;
+    }
+    .menu-item {
+      height: 50px;
+      line-height: 50px;
+      padding-left: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .menu-item.active, .menu-item:hover {
+      background-color: #263445;
+    }
+    .menu-item i {
+      margin-right: 10px;
+    }
+    .content-header {
+      margin-bottom: 20px;
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,21,41,.08);
+    }
+    .content-header h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .content-section {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,21,41,.08);
+      margin-bottom: 20px;
+    }
+    .merchant-info {
+      display: flex;
+      align-items: center;
+    }
+    .merchant-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+    .user-dropdown {
+      cursor: pointer;
+    }
+    .account-tabs {
+      margin-bottom: 20px;
+    }
+    .tab-content {
+      padding: 20px 0;
+    }
+    .account-form {
+      max-width: 600px;
+    }
+    .avatar-uploader {
+      border: 1px dashed #d9d9d9;
+      border-radius: 6px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      width: 120px;
+      height: 120px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .avatar-uploader:hover {
+      border-color: #409EFF;
+    }
+    .avatar-uploader-icon {
+      font-size: 28px;
+      color: #8c939d;
+    }
+    .avatar-image {
+      width: 120px;
+      height: 120px;
+      display: block;
+      object-fit: cover;
+    }
+    .form-footer {
+      margin-top: 20px;
+      text-align: right;
+    }
+    .form-divider {
+      height: 20px;
+    }
+    .notification-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+      border-bottom: 1px solid #ebeef5;
+    }
+    .notification-item:last-child {
+      border-bottom: none;
+    }
+    .notification-info {
+      flex: 1;
+    }
+    .notification-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .notification-desc {
+      color: #606266;
+      font-size: 14px;
+    }
+    .account-section-title {
+      margin-bottom: 20px;
+      font-size: 16px;
+      font-weight: bold;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ebeef5;
+    }
+    .security-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+      border-bottom: 1px solid #ebeef5;
+    }
+    .security-item:last-child {
+      border-bottom: none;
+    }
+    .security-info {
+      flex: 1;
+    }
+    .security-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .security-desc {
+      color: #606266;
+      font-size: 14px;
+    }
+    .security-status {
+      margin-right: 15px;
+      font-size: 14px;
+    }
+    .status-set {
+      color: #67c23a;
+    }
+    .status-unset {
+      color: #f56c6c;
+    }
+    .status-partial {
+      color: #e6a23c;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="container">
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+      <div class="logo">
+        <img src="./imgs/logo.png" alt="Logo">
+        <span>黑马点评商家版</span>
+      </div>
+      <div class="menu">
+        <div class="menu-item" @click="navigateTo('dashboard')">
+          <i class="el-icon-s-home"></i>
+          <span>控制台</span>
+        </div>
+        <div class="menu-item" @click="navigateTo('shop')">
+          <i class="el-icon-s-shop"></i>
+          <span>店铺管理</span>
+        </div>
+        <div class="menu-item" @click="navigateTo('voucher')">
+          <i class="el-icon-s-ticket"></i>
+          <span>优惠券管理</span>
+        </div>
+        <div class="menu-item" @click="navigateTo('order')">
+          <i class="el-icon-s-order"></i>
+          <span>订单管理</span>
+        </div>
+        <div class="menu-item" @click="navigateTo('comment')">
+          <i class="el-icon-s-comment"></i>
+          <span>评价管理</span>
+        </div>
+        <div class="menu-item active">
+          <i class="el-icon-s-custom"></i>
+          <span>账号设置</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 主内容区 -->
+    <div class="main-content">
+      <!-- 顶部导航 -->
+      <div class="header">
+        <div>
+          <i class="el-icon-s-fold" style="font-size: 20px; cursor: pointer;"></i>
+        </div>
+        <div class="merchant-info">
+          <img class="merchant-avatar" :src="merchantInfo.avatar || './imgs/avatar.jpg'" alt="商家头像">
+          <el-dropdown trigger="click" @command="handleCommand">
+            <span class="el-dropdown-link user-dropdown">
+              {{ merchantInfo.name }}<i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="account">账号设置</el-dropdown-item>
+              <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+      </div>
+      
+      <!-- 账号设置内容 -->
+      <div class="content-header">
+        <h2>账号设置</h2>
+      </div>
+      
+      <div class="content-section">
+        <el-tabs v-model="activeTab" class="account-tabs">
+          <el-tab-pane label="基本信息" name="basic">
+            <div class="tab-content">
+              <el-form :model="basicForm" :rules="basicRules" ref="basicForm" label-width="100px" class="account-form">
+                <el-form-item label="商家头像">
+                  <el-upload
+                    class="avatar-uploader"
+                    action="/api/merchant/upload-avatar"
+                    :show-file-list="false"
+                    :on-success="handleAvatarSuccess"
+                    :before-upload="beforeAvatarUpload">
+                    <img v-if="basicForm.avatar" :src="basicForm.avatar" class="avatar-image">
+                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                  </el-upload>
+                  <div style="font-size: 12px; color: #909399; margin-top: 10px;">
+                    支持 JPG、PNG 格式，文件大小不超过 2MB
+                  </div>
+                </el-form-item>
+                
+                <el-form-item label="商家名称" prop="name">
+                  <el-input v-model="basicForm.name" placeholder="请输入商家名称"></el-input>
+                </el-form-item>
+                
+                <el-form-item label="联系电话" prop="phone">
+                  <el-input v-model="basicForm.phone" placeholder="请输入联系电话"></el-input>
+                </el-form-item>
+                
+                <el-form-item label="联系邮箱" prop="email">
+                  <el-input v-model="basicForm.email" placeholder="请输入联系邮箱"></el-input>
+                </el-form-item>
+                
+                <el-form-item label="商家简介" prop="introduction">
+                  <el-input type="textarea" v-model="basicForm.introduction" placeholder="请输入商家简介" :rows="4"></el-input>
+                </el-form-item>
+                
+                <div class="form-footer">
+                  <el-button type="primary" @click="updateBasicInfo">保存修改</el-button>
+                </div>
+              </el-form>
+            </div>
+          </el-tab-pane>
+          
+          <el-tab-pane label="修改密码" name="password">
+            <div class="tab-content">
+              <el-form :model="passwordForm" :rules="passwordRules" ref="passwordForm" label-width="120px" class="account-form">
+                <el-form-item label="当前密码" prop="currentPassword">
+                  <el-input type="password" v-model="passwordForm.currentPassword" placeholder="请输入当前密码" show-password></el-input>
+                </el-form-item>
+                
+                <el-form-item label="新密码" prop="newPassword">
+                  <el-input type="password" v-model="passwordForm.newPassword" placeholder="请输入新密码" show-password></el-input>
+                </el-form-item>
+                
+                <el-form-item label="确认新密码" prop="confirmPassword">
+                  <el-input type="password" v-model="passwordForm.confirmPassword" placeholder="请再次输入新密码" show-password></el-input>
+                </el-form-item>
+                
+                <div class="form-footer">
+                  <el-button type="primary" @click="updatePassword">修改密码</el-button>
+                </div>
+              </el-form>
+            </div>
+          </el-tab-pane>
+          
+          <el-tab-pane label="账号安全" name="security">
+            <div class="tab-content">
+              <div class="account-section-title">安全设置</div>
+              
+              <div class="security-item">
+                <div class="security-info">
+                  <div class="security-title">登录密码</div>
+                  <div class="security-desc">用于保护账号信息安全</div>
+                </div>
+                <div>
+                  <span class="security-status status-set">已设置</span>
+                  <el-button type="text" @click="activeTab = 'password'">修改</el-button>
+                </div>
+              </div>
+              
+              <div class="security-item">
+                <div class="security-info">
+                  <div class="security-title">手机绑定</div>
+                  <div class="security-desc">用于接收安全验证码和通知</div>
+                </div>
+                <div>
+                  <span class="security-status" :class="basicForm.phone ? 'status-set' : 'status-unset'">
+                    {{ basicForm.phone ? '已绑定 (' + maskPhone(basicForm.phone) + ')' : '未绑定' }}
+                  </span>
+                  <el-button type="text" @click="handleBindPhone">{{ basicForm.phone ? '修改' : '绑定' }}</el-button>
+                </div>
+              </div>
+              
+              <div class="security-item">
+                <div class="security-info">
+                  <div class="security-title">邮箱绑定</div>
+                  <div class="security-desc">用于接收通知和找回密码</div>
+                </div>
+                <div>
+                  <span class="security-status" :class="basicForm.email ? 'status-set' : 'status-unset'">
+                    {{ basicForm.email ? '已绑定 (' + maskEmail(basicForm.email) + ')' : '未绑定' }}
+                  </span>
+                  <el-button type="text" @click="handleBindEmail">{{ basicForm.email ? '修改' : '绑定' }}</el-button>
+                </div>
+              </div>
+              
+              <div class="security-item">
+                <div class="security-info">
+                  <div class="security-title">实名认证</div>
+                  <div class="security-desc">用于提高账号安全性和提现功能</div>
+                </div>
+                <div>
+                  <span class="security-status" :class="securityInfo.isVerified ? 'status-set' : 'status-unset'">
+                    {{ securityInfo.isVerified ? '已认证' : '未认证' }}
+                  </span>
+                  <el-button type="text" @click="handleVerify">{{ securityInfo.isVerified ? '查看' : '认证' }}</el-button>
+                </div>
+              </div>
+            </div>
+          </el-tab-pane>
+          
+          <el-tab-pane label="消息通知" name="notification">
+            <div class="tab-content">
+              <div class="account-section-title">通知设置</div>
+              
+              <div class="notification-item">
+                <div class="notification-info">
+                  <div class="notification-title">新订单通知</div>
+                  <div class="notification-desc">有新的订单时，通过短信或邮件通知</div>
+                </div>
+                <el-switch v-model="notificationSettings.newOrder"></el-switch>
+              </div>
+              
+              <div class="notification-item">
+                <div class="notification-info">
+                  <div class="notification-title">评价通知</div>
+                  <div class="notification-desc">收到新的评价时，通过短信或邮件通知</div>
+                </div>
+                <el-switch v-model="notificationSettings.newComment"></el-switch>
+              </div>
+              
+              <div class="notification-item">
+                <div class="notification-info">
+                  <div class="notification-title">优惠券提醒</div>
+                  <div class="notification-desc">优惠券即将到期时，通过短信或邮件提醒</div>
+                </div>
+                <el-switch v-model="notificationSettings.voucherExpire"></el-switch>
+              </div>
+              
+              <div class="notification-item">
+                <div class="notification-info">
+                  <div class="notification-title">系统公告</div>
+                  <div class="notification-desc">接收系统更新、活动等相关通知</div>
+                </div>
+                <el-switch v-model="notificationSettings.systemNotice"></el-switch>
+              </div>
+              
+              <div class="form-footer">
+                <el-button type="primary" @click="saveNotificationSettings">保存设置</el-button>
+              </div>
+            </div>
+          </el-tab-pane>
+        </el-tabs>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 绑定手机对话框 -->
+  <el-dialog :title="basicForm.phone ? '修改手机号' : '绑定手机号'" :visible.sync="phoneDialogVisible" width="500px">
+    <el-form :model="phoneForm" :rules="phoneRules" ref="phoneForm" label-width="100px">
+      <el-form-item label="手机号码" prop="phone">
+        <el-input v-model="phoneForm.phone" placeholder="请输入手机号码"></el-input>
+      </el-form-item>
+      
+      <el-form-item label="验证码" prop="code">
+        <div style="display: flex;">
+          <el-input v-model="phoneForm.code" placeholder="请输入验证码" style="flex: 1; margin-right: 10px;"></el-input>
+          <el-button type="primary" :disabled="isCodeSending" @click="sendPhoneCode">
+            {{ codeButtonText }}
+          </el-button>
+        </div>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="phoneDialogVisible = false">取 消</el-button>
+      <el-button type="primary" @click="confirmBindPhone">确 定</el-button>
+    </div>
+  </el-dialog>
+  
+  <!-- 绑定邮箱对话框 -->
+  <el-dialog :title="basicForm.email ? '修改邮箱' : '绑定邮箱'" :visible.sync="emailDialogVisible" width="500px">
+    <el-form :model="emailForm" :rules="emailRules" ref="emailForm" label-width="100px">
+      <el-form-item label="邮箱地址" prop="email">
+        <el-input v-model="emailForm.email" placeholder="请输入邮箱地址"></el-input>
+      </el-form-item>
+      
+      <el-form-item label="验证码" prop="code">
+        <div style="display: flex;">
+          <el-input v-model="emailForm.code" placeholder="请输入验证码" style="flex: 1; margin-right: 10px;"></el-input>
+          <el-button type="primary" :disabled="isEmailCodeSending" @click="sendEmailCode">
+            {{ emailCodeButtonText }}
+          </el-button>
+        </div>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="emailDialogVisible = false">取 消</el-button>
+      <el-button type="primary" @click="confirmBindEmail">确 定</el-button>
+    </div>
+  </el-dialog>
+  
+  <!-- 实名认证对话框 -->
+  <el-dialog title="实名认证" :visible.sync="verifyDialogVisible" width="500px">
+    <div v-if="securityInfo.isVerified">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <i class="el-icon-success" style="font-size: 50px; color: #67c23a;"></i>
+        <div style="margin-top: 10px; font-size: 18px; font-weight: bold;">已完成实名认证</div>
+      </div>
+      
+      <el-form label-width="100px">
+        <el-form-item label="姓名">
+          <div>{{ maskName(securityInfo.realName) }}</div>
+        </el-form-item>
+        
+        <el-form-item label="身份证号">
+          <div>{{ maskIdCard(securityInfo.idCard) }}</div>
+        </el-form-item>
+        
+        <el-form-item label="认证时间">
+          <div>{{ securityInfo.verifyTime }}</div>
+        </el-form-item>
+      </el-form>
+    </div>
+    <div v-else>
+      <el-form :model="verifyForm" :rules="verifyRules" ref="verifyForm" label-width="100px">
+        <el-form-item label="真实姓名" prop="realName">
+          <el-input v-model="verifyForm.realName" placeholder="请输入真实姓名"></el-input>
+        </el-form-item>
+        
+        <el-form-item label="身份证号" prop="idCard">
+          <el-input v-model="verifyForm.idCard" placeholder="请输入身份证号"></el-input>
+        </el-form-item>
+        
+        <el-form-item label="身份证正面">
+          <el-upload
+            class="avatar-uploader"
+            action="/api/merchant/upload-id-card"
+            :show-file-list="false"
+            :on-success="handleIdCardFrontSuccess"
+            :before-upload="beforeIdCardUpload">
+            <img v-if="verifyForm.idCardFront" :src="verifyForm.idCardFront" class="avatar-image">
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
+          <div style="font-size: 12px; color: #909399; margin-top: 10px;">
+            请上传清晰的身份证人像面照片
+          </div>
+        </el-form-item>
+        
+        <el-form-item label="身份证反面">
+          <el-upload
+            class="avatar-uploader"
+            action="/api/merchant/upload-id-card"
+            :show-file-list="false"
+            :on-success="handleIdCardBackSuccess"
+            :before-upload="beforeIdCardUpload">
+            <img v-if="verifyForm.idCardBack" :src="verifyForm.idCardBack" class="avatar-image">
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
+          <div style="font-size: 12px; color: #909399; margin-top: 10px;">
+            请上传清晰的身份证国徽面照片
+          </div>
+        </el-form-item>
+      </el-form>
+    </div>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="verifyDialogVisible = false">关 闭</el-button>
+      <el-button type="primary" @click="submitVerify" v-if="!securityInfo.isVerified">提交认证</el-button>
+    </div>
+  </el-dialog>
+</div>
+
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/footer.js"></script>
+<script src="./js/merchant-common.js"></script>
+<script>
+  const app = new Vue({
+    el: "#app",
+    data: {
+      // 当前激活的选项卡
+      activeTab: 'basic',
+      // 商家信息
+      merchantInfo: {
+        id: '',
+        name: '',
+        avatar: '',
+        phone: ''
+      },
+      // 基本信息表单
+      basicForm: {
+        name: '',
+        avatar: '',
+        phone: '',
+        email: '',
+        introduction: ''
+      },
+      // 基本信息表单验证规则
+      basicRules: {
+        name: [
+          { required: true, message: '请输入商家名称', trigger: 'blur' },
+          { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
+        ],
+        phone: [
+          { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
+        ],
+        email: [
+          { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
+        ]
+      },
+      // 密码修改表单
+      passwordForm: {
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      },
+      // 密码修改表单验证规则
+      passwordRules: {
+        currentPassword: [
+          { required: true, message: '请输入当前密码', trigger: 'blur' }
+        ],
+        newPassword: [
+          { required: true, message: '请输入新密码', trigger: 'blur' },
+          { min: 6, message: '密码长度不能少于6个字符', trigger: 'blur' }
+        ],
+        confirmPassword: [
+          { required: true, message: '请再次输入新密码', trigger: 'blur' },
+          { 
+            validator: (rule, value, callback) => {
+              if (value !== app.passwordForm.newPassword) {
+                callback(new Error('两次输入的密码不一致'));
+              } else {
+                callback();
+              }
+            }, 
+            trigger: 'blur' 
+          }
+        ]
+      },
+      // 通知设置
+      notificationSettings: {
+        newOrder: true,
+        newComment: true,
+        voucherExpire: true,
+        systemNotice: true
+      },
+      // 安全信息
+      securityInfo: {
+        isVerified: false,
+        realName: '',
+        idCard: '',
+        verifyTime: ''
+      },
+      // 手机绑定相关
+      phoneDialogVisible: false,
+      phoneForm: {
+        phone: '',
+        code: ''
+      },
+      phoneRules: {
+        phone: [
+          { required: true, message: '请输入手机号码', trigger: 'blur' },
+          { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
+        ],
+        code: [
+          { required: true, message: '请输入验证码', trigger: 'blur' },
+          { len: 6, message: '验证码长度应为6位', trigger: 'blur' }
+        ]
+      },
+      isCodeSending: false,
+      codeButtonText: '获取验证码',
+      countdown: 60,
+      // 邮箱绑定相关
+      emailDialogVisible: false,
+      emailForm: {
+        email: '',
+        code: ''
+      },
+      emailRules: {
+        email: [
+          { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+          { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
+        ],
+        code: [
+          { required: true, message: '请输入验证码', trigger: 'blur' },
+          { len: 6, message: '验证码长度应为6位', trigger: 'blur' }
+        ]
+      },
+      isEmailCodeSending: false,
+      emailCodeButtonText: '获取验证码',
+      emailCountdown: 60,
+      // 实名认证相关
+      verifyDialogVisible: false,
+      verifyForm: {
+        realName: '',
+        idCard: '',
+        idCardFront: '',
+        idCardBack: ''
+      },
+      verifyRules: {
+        realName: [
+          { required: true, message: '请输入真实姓名', trigger: 'blur' }
+        ],
+        idCard: [
+          { required: true, message: '请输入身份证号', trigger: 'blur' },
+          { 
+            pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/, 
+            message: '请输入正确的身份证号码', 
+            trigger: 'blur' 
+          }
+        ]
+      }
+    },
+    methods: {
+      // 导航到其他页面
+      navigateTo(page) {
+        if (page === 'dashboard') {
+          location.href = "/merchant-center.html";
+        } else {
+          location.href = `/merchant-${page}.html`;
+        }
+      },
+      
+      // 下拉菜单操作
+      handleCommand(command) {
+        if (command === 'logout') {
+          this.logout();
+        } else if (command === 'account') {
+          this.navigateTo('account');
+        }
+      },
+      
+      // 获取商家信息
+      fetchMerchantInfo() {
+        merchantAxios.get("/merchant/info")
+          .then(response => {
+            if (response.code === 200) {
+              this.merchantInfo = response.data;
+              this.basicForm = JSON.parse(JSON.stringify(response.data));
+              sessionStorage.setItem("merchantInfo", JSON.stringify(response.data));
+            } else {
+              this.$message.error(response.msg || "获取商家信息失败");
+            }
+          })
+          .catch(error => {
+            console.error("获取商家信息失败:", error);
+            this.$message.error("获取商家信息失败，请重试");
+          });
+      },
+      
+      // 更新基本信息
+      updateBasicInfo() {
+        this.$refs.basicForm.validate((valid) => {
+          if (valid) {
+            merchantAxios.put("/merchant/update", this.basicForm)
+              .then(response => {
+                if (response.code === 200) {
+                  this.$message.success("更新成功");
+                  this.merchantInfo = response.data;
+                  sessionStorage.setItem("merchantInfo", JSON.stringify(response.data));
+                } else {
+                  this.$message.error(response.msg || "更新失败");
+                }
+              })
+              .catch(error => {
+                console.error("更新商家信息失败:", error);
+                this.$message.error("更新失败，请重试");
+              });
+          } else {
+            return false;
+          }
+        });
+      },
+      
+      // 修改密码
+      updatePassword() {
+        this.$refs.passwordForm.validate((valid) => {
+          if (valid) {
+            // 模拟密码修改
+            setTimeout(() => {
+              this.$message({
+                type: 'success',
+                message: '密码修改成功，请重新登录'
+              });
+              
+              // 清空表单
+              this.passwordForm = {
+                currentPassword: '',
+                newPassword: '',
+                confirmPassword: ''
+              };
+              
+              // 3秒后退出登录
+              setTimeout(() => {
+                this.logout();
+              }, 3000);
+            }, 1000);
+          } else {
+            return false;
+          }
+        });
+      },
+      
+      // 保存通知设置
+      saveNotificationSettings() {
+        // 模拟保存操作
+        setTimeout(() => {
+          this.$message({
+            type: 'success',
+            message: '通知设置保存成功'
+          });
+        }, 500);
+      },
+      
+      // 头像上传成功回调
+      handleAvatarSuccess(res, file) {
+        // 模拟上传成功
+        this.basicForm.avatar = URL.createObjectURL(file.raw);
+      },
+      
+      // 头像上传前检查
+      beforeAvatarUpload(file) {
+        const isJPG = file.type === 'image/jpeg';
+        const isPNG = file.type === 'image/png';
+        const isLt2M = file.size / 1024 / 1024 < 2;
+        
+        if (!isJPG && !isPNG) {
+          this.$message.error('上传头像图片只能是 JPG 或 PNG 格式!');
+          return false;
+        }
+        if (!isLt2M) {
+          this.$message.error('上传头像图片大小不能超过 2MB!');
+          return false;
+        }
+        
+        // 模拟上传，实际项目中应该返回true让组件处理上传
+        this.basicForm.avatar = URL.createObjectURL(file);
+        return false;
+      },
+      
+      // 身份证照片上传前检查
+      beforeIdCardUpload(file) {
+        const isJPG = file.type === 'image/jpeg';
+        const isPNG = file.type === 'image/png';
+        const isLt5M = file.size / 1024 / 1024 < 5;
+        
+        if (!isJPG && !isPNG) {
+          this.$message.error('上传身份证照片只能是 JPG 或 PNG 格式!');
+          return false;
+        }
+        if (!isLt5M) {
+          this.$message.error('上传身份证照片大小不能超过 5MB!');
+          return false;
+        }
+        
+        return true;
+      },
+      
+      // 身份证正面照片上传成功回调
+      handleIdCardFrontSuccess(res, file) {
+        // 模拟上传成功
+        this.verifyForm.idCardFront = URL.createObjectURL(file.raw);
+      },
+      
+      // 身份证反面照片上传成功回调
+      handleIdCardBackSuccess(res, file) {
+        // 模拟上传成功
+        this.verifyForm.idCardBack = URL.createObjectURL(file.raw);
+      },
+      
+      // 处理绑定手机号
+      handleBindPhone() {
+        this.phoneForm.phone = this.basicForm.phone || '';
+        this.phoneDialogVisible = true;
+        // 延迟重置表单校验结果
+        this.$nextTick(() => {
+          this.$refs.phoneForm && this.$refs.phoneForm.clearValidate();
+        });
+      },
+      
+      // 发送手机验证码
+      sendPhoneCode() {
+        this.$refs.phoneForm.validateField('phone', (errorMsg) => {
+          if (!errorMsg) {
+            this.isCodeSending = true;
+            this.codeButtonText = `重新发送(${this.countdown}s)`;
+            
+            const timer = setInterval(() => {
+              this.countdown--;
+              this.codeButtonText = `重新发送(${this.countdown}s)`;
+              if (this.countdown <= 0) {
+                clearInterval(timer);
+                this.codeButtonText = '获取验证码';
+                this.isCodeSending = false;
+                this.countdown = 60;
+              }
+            }, 1000);
+          }
+        });
+      },
+      
+      // 确认绑定手机号
+      confirmBindPhone() {
+        this.$refs.phoneForm.validate((valid) => {
+          if (valid) {
+            // 模拟绑定成功
+            setTimeout(() => {
+              this.basicForm.phone = this.phoneForm.phone;
+              this.phoneDialogVisible = false;
+              this.$message({
+                type: 'success',
+                message: '手机号绑定成功'
+              });
+            }, 1000);
+          } else {
+            return false;
+          }
+        });
+      },
+      
+      // 处理绑定邮箱
+      handleBindEmail() {
+        this.emailForm.email = this.basicForm.email || '';
+        this.emailDialogVisible = true;
+        // 延迟重置表单校验结果
+        this.$nextTick(() => {
+          this.$refs.emailForm && this.$refs.emailForm.clearValidate();
+        });
+      },
+      
+      // 发送邮箱验证码
+      sendEmailCode() {
+        this.$refs.emailForm.validateField('email', (errorMsg) => {
+          if (!errorMsg) {
+            this.isEmailCodeSending = true;
+            this.emailCodeButtonText = `重新发送(${this.emailCountdown}s)`;
+            
+            const timer = setInterval(() => {
+              this.emailCountdown--;
+              this.emailCodeButtonText = `重新发送(${this.emailCountdown}s)`;
+              if (this.emailCountdown <= 0) {
+                clearInterval(timer);
+                this.emailCodeButtonText = '获取验证码';
+                this.isEmailCodeSending = false;
+                this.emailCountdown = 60;
+              }
+            }, 1000);
+          }
+        });
+      },
+      
+      // 确认绑定邮箱
+      confirmBindEmail() {
+        this.$refs.emailForm.validate((valid) => {
+          if (valid) {
+            // 模拟绑定成功
+            setTimeout(() => {
+              this.basicForm.email = this.emailForm.email;
+              this.emailDialogVisible = false;
+              this.$message({
+                type: 'success',
+                message: '邮箱绑定成功'
+              });
+            }, 1000);
+          } else {
+            return false;
+          }
+        });
+      },
+      
+      // 处理实名认证
+      handleVerify() {
+        this.verifyDialogVisible = true;
+        if (!this.securityInfo.isVerified) {
+          // 延迟重置表单校验结果
+          this.$nextTick(() => {
+            this.$refs.verifyForm && this.$refs.verifyForm.clearValidate();
+          });
+        }
+      },
+      
+      // 提交实名认证
+      submitVerify() {
+        this.$refs.verifyForm.validate((valid) => {
+          if (valid) {
+            if (!this.verifyForm.idCardFront || !this.verifyForm.idCardBack) {
+              this.$message.error('请上传身份证正反面照片');
+              return;
+            }
+            
+            // 模拟认证成功
+            setTimeout(() => {
+              this.securityInfo = {
+                isVerified: true,
+                realName: this.verifyForm.realName,
+                idCard: this.verifyForm.idCard,
+                verifyTime: this.formatDate(new Date())
+              };
+              this.verifyDialogVisible = false;
+              this.$message({
+                type: 'success',
+                message: '实名认证提交成功'
+              });
+            }, 1500);
+          } else {
+            return false;
+          }
+        });
+      },
+      
+      // 格式化日期
+      formatDate(date) {
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        const hour = date.getHours().toString().padStart(2, '0');
+        const minute = date.getMinutes().toString().padStart(2, '0');
+        const second = date.getSeconds().toString().padStart(2, '0');
+        
+        return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+      },
+      
+      // 隐藏手机号中间部分
+      maskPhone(phone) {
+        if (!phone) return '';
+        return phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+      },
+      
+      // 隐藏邮箱中间部分
+      maskEmail(email) {
+        if (!email) return '';
+        const parts = email.split('@');
+        if (parts.length !== 2) return email;
+        
+        let name = parts[0];
+        const domain = parts[1];
+        
+        if (name.length <= 3) {
+          name = name.substring(0, 1) + '***';
+        } else {
+          name = name.substring(0, 3) + '***';
+        }
+        
+        return `${name}@${domain}`;
+      },
+      
+      // 隐藏真实姓名
+      maskName(name) {
+        if (!name) return '';
+        return name.substring(0, 1) + '*'.repeat(name.length - 1);
+      },
+      
+      // 隐藏身份证号中间部分
+      maskIdCard(idCard) {
+        if (!idCard) return '';
+        return idCard.replace(/(\d{4})\d{10}(\d{4})/, '$1**********$2');
+      },
+      
+      // 退出登录
+      logout() {
+        // 清除商家信息和token
+        sessionStorage.removeItem("merchantToken");
+        sessionStorage.removeItem("merchantInfo");
+        // 跳转到登录页
+        location.href = "/merchant-login.html";
+      }
+    },
+    created() {
+      // 检查是否登录
+      const merchantToken = sessionStorage.getItem("merchantToken");
+      if (!merchantToken) {
+        location.href = "/merchant-login.html";
+        return;
+      }
+      
+      // 获取商家信息
+      const merchantInfoStr = sessionStorage.getItem("merchantInfo");
+      if (merchantInfoStr) {
+        this.merchantInfo = JSON.parse(merchantInfoStr);
+        this.basicForm = JSON.parse(JSON.stringify(this.merchantInfo));
+      } else {
+        this.fetchMerchantInfo();
+      }
+    },
+  });
+</script>
+</body>
+</html> 

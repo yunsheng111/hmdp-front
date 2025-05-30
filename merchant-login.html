@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>商家登录 - 黑马点评</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/login.css" rel="stylesheet">
+  <!-- 引入字体图标 -->
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" rel="stylesheet">
+
+  <style type="text/css">
+    :root {
+      --primary-color: #f63;
+      --primary-hover: #ff7d4d;
+      --secondary-color: #409eff;
+      --text-color: #333;
+      --light-text: #8c939d;
+      --border-color: #e4e7ed;
+      --bg-color: #f8f9fa;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      --radius: 8px;
+    }
+    
+    body {
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 0;
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+    
+    .login-container {
+      max-width: 480px;
+      margin: 0 auto;
+      background-color: #fff;
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
+      min-height: 100vh;
+    }
+    
+    @media (min-width: 768px) {
+      .login-container {
+        margin: 40px auto;
+        min-height: calc(100vh - 80px);
+      }
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #ff7d4d, #f63);
+      color: white;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(246, 102, 51, 0.3);
+    }
+    
+    .header-back-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .header-back-btn:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .header-title {
+      flex: 1;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+      margin-right: 32px;
+    }
+    
+    .content {
+      padding: 30px 25px;
+    }
+    
+    .merchant-logo {
+      text-align: center;
+      margin-bottom: 25px;
+      animation: fadeIn 0.8s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .merchant-logo img {
+      width: 90px;
+      height: 90px;
+      border-radius: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 5px;
+      background-color: white;
+      transition: transform 0.3s ease;
+    }
+    
+    .merchant-logo img:hover {
+      transform: scale(1.05);
+    }
+    
+    .merchant-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--text-color);
+      margin-bottom: 35px;
+      text-align: center;
+      position: relative;
+      padding-bottom: 15px;
+    }
+    
+    .merchant-title:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 3px;
+      background-color: var(--primary-color);
+      border-radius: 3px;
+    }
+    
+    .login-form {
+      padding-top: 0;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    /* 自定义 Element UI 组件样式 */
+    .login-tabs .el-tabs__nav-wrap::after {
+      height: 1px;
+      background-color: #ebeef5;
+    }
+    
+    .login-tabs .el-tabs__active-bar {
+      background-color: var(--primary-color);
+      height: 3px;
+    }
+    
+    .login-tabs .el-tabs__item {
+      font-size: 16px;
+      color: var(--light-text);
+      padding: 0 15px 12px;
+    }
+    
+    .login-tabs .el-tabs__item.is-active {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+    
+    .login-tabs .el-tabs__item:hover {
+      color: var(--primary-hover);
+    }
+    
+    .el-input__inner {
+      border-radius: var(--radius);
+      height: 45px;
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+    
+    .el-input__inner:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(246, 102, 51, 0.2);
+    }
+    
+    .el-input__prefix {
+      left: 12px;
+    }
+    
+    .el-input--prefix .el-input__inner {
+      padding-left: 40px;
+    }
+    
+    .el-button {
+      border-radius: var(--radius);
+      height: 45px;
+      font-size: 16px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      border: none;
+    }
+    
+    .el-button--primary {
+      background-color: var(--primary-color);
+    }
+    
+    .el-button--primary:hover, .el-button--primary:focus {
+      background-color: var(--primary-hover);
+      box-shadow: 0 4px 12px rgba(246, 102, 51, 0.4);
+    }
+    
+    .el-button--success {
+      background-color: #67c23a;
+    }
+    
+    .el-button--success:hover, .el-button--success:focus {
+      background-color: #85ce61;
+      box-shadow: 0 4px 12px rgba(103, 194, 58, 0.3);
+    }
+    
+    .el-button--success[disabled] {
+      background-color: #b3e19d;
+      border-color: #b3e19d;
+    }
+    
+    .login-form-item {
+      margin-bottom: 20px;
+      position: relative;
+    }
+    
+    .phone-input-group {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .register-link {
+      text-align: center;
+      margin-top: 20px;
+      color: var(--light-text);
+      font-size: 14px;
+    }
+    
+    .register-link a {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .register-link a:hover {
+      color: var(--primary-hover);
+      text-decoration: underline;
+    }
+    
+    .login-radio {
+      margin-top: 30px;
+      display: flex;
+      align-items: flex-start;
+      font-size: 13px;
+      color: var(--light-text);
+      padding: 10px;
+      background-color: var(--bg-color);
+      border-radius: var(--radius);
+    }
+    
+    .login-radio input[type="radio"] {
+      margin-right: 8px;
+      margin-top: 3px;
+      cursor: pointer;
+    }
+    
+    .login-radio a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+    
+    .login-radio a:hover {
+      text-decoration: underline;
+    }
+    
+    .footer {
+      text-align: center;
+      padding: 20px 0;
+      font-size: 12px;
+      color: var(--light-text);
+      border-top: 1px solid var(--border-color);
+      margin-top: 30px;
+    }
+    
+    /* 动画效果 */
+    @keyframes slideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .el-tab-pane {
+      animation: slideIn 0.4s ease;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="login-container">
+    <div class="header">
+      <div class="header-back-btn" @click="goBack"><i class="el-icon-arrow-left"></i></div>
+      <div class="header-title">商家中心</div>
+    </div>
+    <div class="content">
+      <div class="merchant-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="90" height="90" style="filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));">
+          <!-- 背景圆形 -->
+          <circle cx="256" cy="256" r="240" fill="#f63" />
+          <!-- 店铺图标 -->
+          <g fill="#fff">
+            <!-- 店铺屋顶 -->
+            <path d="M128 180h256c8.84 0 16-7.16 16-16v-16c0-8.84-7.16-16-16-16H128c-8.84 0-16 7.16-16 16v16c0 8.84 7.16 16 16 16z"/>
+            <!-- 店铺主体 -->
+            <path d="M400 212H112c-8.84 0-16 7.16-16 16v160c0 8.84 7.16 16 16 16h288c8.84 0 16-7.16 16-16V228c0-8.84-7.16-16-16-16zm-40 128h-80v-48h80v48zm-208 0v-48h80v48h-80z"/>
+            <!-- 店铺招牌 -->
+            <path d="M376 132H136c-4.42 0-8 3.58-8 8v16c0 4.42 3.58 8 8 8h240c4.42 0 8-3.58 8-8v-16c0-4.42-3.58-8-8-8z"/>
+          </g>
+          <!-- 商家文字 -->
+          <text x="256" y="380" font-family="Arial, sans-serif" font-size="40" font-weight="bold" text-anchor="middle" fill="#fff">商家</text>
+        </svg>
+      </div>
+      <div class="merchant-title">商家账号登录</div>
+      <div class="login-form">
+        <el-tabs v-model="activeTab" class="login-tabs">
+          <el-tab-pane label="账号密码登录" name="account">
+            <div class="login-form-item">
+              <el-input placeholder="请输入账号" v-model="accountForm.account" prefix-icon="el-icon-user">
+              </el-input>
+            </div>
+            <div class="login-form-item">
+              <el-input placeholder="请输入密码" v-model="accountForm.password" prefix-icon="el-icon-lock" show-password>
+              </el-input>
+            </div>
+            <el-button @click="loginByAccount" type="primary" style="width: 100%;">登录</el-button>
+          </el-tab-pane>
+          <el-tab-pane label="手机号登录" name="phone">
+            <div class="login-form-item phone-input-group">
+              <el-input style="width: 62%" placeholder="请输入手机号" v-model="phoneForm.phone" prefix-icon="el-icon-mobile-phone">
+              </el-input>
+              <el-button style="width: 36%" @click="sendCode" type="success" :disabled="disabled">{{codeBtnMsg}}</el-button>
+            </div>
+            <div class="login-form-item">
+              <el-input placeholder="请输入验证码" v-model="phoneForm.code" prefix-icon="el-icon-message">
+              </el-input>
+            </div>
+            <el-button @click="loginByPhone" type="primary" style="width: 100%;">登录</el-button>
+          </el-tab-pane>
+        </el-tabs>
+        <div class="register-link">
+          还没有商家账号？<a href="merchant-register.html">立即注册</a>
+        </div>
+      </div>
+      <div class="login-radio">
+        <div>
+          <input type="radio" id="agreement" name="readed" v-model="radio" value="1">
+          <label for="agreement"></label>
+        </div>
+        <div>
+          我已阅读并同意
+          <a href="javascript:void(0)">《黑马点评商家服务协议》</a>、
+          <a href="javascript:void(0)">《隐私政策》</a>
+          等，接受免除或者限制责任、诉讼管辖约定等粗体标示条款
+        </div>
+      </div>
+      <div class="footer">
+        © 2024 黑马点评 - 商家服务平台
+      </div>
+    </div>
+  </div>
+</div>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/merchant-common.js"></script>
+<script src="./js/footer.js"></script>
+<script>
+  const app = new Vue({
+    el: "#app",
+    data: {
+      radio: "",
+      activeTab: "account", // 默认选中账号密码登录
+      disabled: false, // 发送短信按钮
+      codeBtnMsg: "发送验证码", // 发送短信按钮提示
+      accountForm: {
+        account: "",
+        password: ""
+      },
+      phoneForm: {
+        phone: "",
+        code: ""
+      }
+    },
+    methods: {
+      // 辅助函数：处理常见的测试账号和密码
+      handleTestAccount() {
+        // 如果是测试账号，自动填充正确的密码
+        const testAccounts = {
+          "merchant1": "123456",
+          "merchant2": "123456",
+          "merchant3": "123456",
+          "test": "123456"
+        };
+        
+        if (testAccounts[this.accountForm.account]) {
+          console.log("检测到测试账号，自动填充密码");
+          this.accountForm.password = testAccounts[this.accountForm.account];
+          return true;
+        }
+        return false;
+      },
+      
+      loginByAccount() {
+        if(!this.radio){
+          this.$message({
+            message: "请先确认阅读用户协议！",
+            type: "warning",
+            duration: 2000
+          });
+          return
+        }
+        if(!this.accountForm.account || !this.accountForm.password){
+          this.$message({
+            message: "账号和密码不能为空！",
+            type: "warning",
+            duration: 2000
+          });
+          return
+        }
+        
+        // 处理测试账号
+        this.handleTestAccount();
+        
+        console.log("准备登录，账号:", this.accountForm.account, "密码:", this.accountForm.password);
+        
+        // 显示加载中
+        const loading = this.$loading({
+          lock: true,
+          text: '登录中...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(255, 255, 255, 0.7)'
+        });
+        
+        // 发送登录请求
+        merchantAxios.post("/merchant/login", this.accountForm)
+        .then((response) => {
+          loading.close();
+          console.log("登录成功，响应数据:", response.data);
+          if(response.data.success){
+            // 保存商家信息和token到session
+            sessionStorage.setItem("merchantToken", response.data.data.token);
+            sessionStorage.setItem("merchantInfo", JSON.stringify(response.data.data.merchantInfo));
+            // 显示成功消息
+            this.$message({
+              message: "登录成功，正在跳转...",
+              type: "success",
+              duration: 1500,
+              onClose: () => {
+                // 跳转到商家中心
+                location.href = "/merchant-center.html"
+              }
+            });
+          } else {
+            this.$message.error(response.data.errorMsg || "登录失败");
+          }
+        })
+        .catch(err => {
+          loading.close();
+          console.error("登录失败详情:", err);
+          // 如果是字符串直接显示
+          if(typeof err === 'string') {
+            this.$message.error(err);
+          } 
+          // 如果有response属性，尝试从中获取错误信息
+          else if(err.response && err.response.data) {
+            console.error("服务器返回的错误:", err.response.data);
+            this.$message.error(err.response.data.errorMsg || "服务器异常，请稍后重试");
+          } 
+          // 其他情况显示通用错误
+          else {
+            this.$message.error("登录请求失败，请检查网络连接");
+          }
+        })
+      },
+      loginByPhone() {
+        if(!this.radio){
+          this.$message({
+            message: "请先确认阅读用户协议！",
+            type: "warning",
+            duration: 2000
+          });
+          return
+        }
+        if(!this.phoneForm.phone || !this.phoneForm.code){
+          this.$message({
+            message: "手机号和验证码不能为空！",
+            type: "warning",
+            duration: 2000
+          });
+          return
+        }
+        
+        // 显示加载中
+        const loading = this.$loading({
+          lock: true,
+          text: '登录中...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(255, 255, 255, 0.7)'
+        });
+        
+        // 发送登录请求
+        merchantAxios.post("/merchant/login", this.phoneForm)
+        .then((response) => {
+          loading.close();
+          if(response.data.success){
+            // 保存商家信息和token到session
+            sessionStorage.setItem("merchantToken", response.data.data.token);
+            sessionStorage.setItem("merchantInfo", JSON.stringify(response.data.data.merchantInfo));
+            // 显示成功消息
+            this.$message({
+              message: "登录成功，正在跳转...",
+              type: "success",
+              duration: 1500,
+              onClose: () => {
+                // 跳转到商家中心
+                location.href = "/merchant-center.html"
+              }
+            });
+          } else {
+            this.$message.error(response.data.errorMsg || "登录失败");
+          }
+        })
+        .catch(err => {
+          loading.close();
+          console.error("手机登录失败:", err);
+          this.$message.error(typeof err === 'string' ? err : "服务器异常，请稍后重试");
+        })
+      },
+      goBack(){
+        location.href = "/index.html";
+      },
+      sendCode(){
+        if (!this.phoneForm.phone) {
+          this.$message({
+            message: "手机号不能为空",
+            type: "warning",
+            duration: 2000
+          });
+          return;
+        }
+        
+        // 显示加载中
+        const loading = this.$loading({
+          lock: true,
+          text: '发送中...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(255, 255, 255, 0.7)'
+        });
+        
+        // 发送验证码
+        merchantAxios.post("/merchant/code?phone="+this.phoneForm.phone)
+          .then((response) => {
+            loading.close();
+            if(response.data.success){
+              this.$message({
+                message: "验证码发送成功，请注意查收",
+                type: "success",
+                duration: 2000
+              });
+            } else {
+              this.$message.error(response.data.errorMsg || "验证码发送失败");
+            }
+          })
+          .catch(err => {
+            loading.close();
+            console.error("发送验证码失败:", err);
+            this.$message.error(typeof err === 'string' ? err : "服务器异常，请稍后重试");
+          });
+        // 禁用按钮
+        this.disabled = true;
+        // 按钮倒计时
+        let i = 60;
+        this.codeBtnMsg = (i--) + '秒后可重发'
+        let taskId = setInterval(() => this.codeBtnMsg = (i--) + '秒后可重发', 1000);
+        setTimeout(() => {
+          this.disabled = false;
+          clearInterval(taskId);
+          this.codeBtnMsg = "发送验证码";
+        }, 59000)
+      }
+    }
+  })
+</script>
+</body>
+</html>

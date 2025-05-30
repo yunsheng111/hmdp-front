@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评 - 商户分类管理</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+      background-color: #f5f7fa;
+    }
+    .admin-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    .admin-sidebar {
+      width: 220px;
+      background-color: #304156;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      transition: width 0.3s;
+      position: fixed;
+      height: 100vh;
+      z-index: 1000;
+    }
+    .admin-logo {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #263445;
+      padding: 0 16px;
+    }
+    .admin-logo img {
+      height: 32px;
+      margin-right: 8px;
+    }
+    .admin-logo h1 {
+      color: #fff;
+      font-size: 18px;
+      margin: 0;
+      white-space: nowrap;
+    }
+    .admin-main {
+      flex: 1;
+      margin-left: 220px;
+      padding: 15px;
+      background-color: #f5f7fa;
+      min-height: 100vh;
+    }
+    .admin-header {
+      height: 60px;
+      background-color: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 15px;
+      margin-bottom: 15px;
+    }
+    .admin-content {
+      background-color: #fff;
+      border-radius: 4px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      min-height: calc(100vh - 90px);
+    }
+    .admin-user-dropdown {
+      display: flex;
+      align-items: center;
+    }
+    .admin-user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .el-menu {
+      border-right: none;
+      background-color: #304156;
+    }
+    .el-menu-item {
+      color: #bfcbd9;
+    }
+    .el-menu-item:hover, .el-menu-item:focus {
+      background-color: #263445;
+    }
+    .el-menu-item.is-active {
+      color: #409EFF;
+      background-color: #263445;
+    }
+    .shop-type-icon-table {
+        width: 30px;
+        height: 30px;
+        vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="admin-container">
+    <!-- 侧边栏导航 -->
+    <div class="admin-sidebar">
+      <div class="admin-logo">
+        <img src="./imgs/logo.png" alt="黑马点评">
+        <h1>管理员控制台</h1>
+      </div>
+      <el-menu
+        default-active="4" 
+        class="el-menu-vertical"
+        background-color="#304156"
+        text-color="#bfcbd9"
+        active-text-color="#409EFF">
+        <el-menu-item index="1" @click="navigateTo('admin-dashboard.html')">
+          <i class="el-icon-s-home"></i>
+          <span slot="title">控制台</span>
+        </el-menu-item>
+        <el-menu-item index="2" @click="navigateTo('admin-users.html')">
+          <i class="el-icon-user"></i>
+          <span slot="title">用户管理</span>
+        </el-menu-item>
+        <el-menu-item index="3" @click="navigateTo('admin-merchants.html')">
+          <i class="el-icon-s-shop"></i>
+          <span slot="title">商户管理</span>
+        </el-menu-item>
+        <el-menu-item index="4" @click="navigateTo('admin-shop-types.html')">
+          <i class="el-icon-s-grid"></i>
+          <span slot="title">商户分类管理</span>
+        </el-menu-item>
+        <el-menu-item index="5" @click="navigateTo('admin-content.html')">
+          <i class="el-icon-document-checked"></i>
+          <span slot="title">内容审核</span>
+        </el-menu-item>
+        <el-menu-item index="6" @click="navigateTo('admin-statistics.html')">
+          <i class="el-icon-data-line"></i>
+          <span slot="title">系统监控</span>
+        </el-menu-item>
+        <el-menu-item index="7" @click="logout">
+          <i class="el-icon-switch-button"></i>
+          <span slot="title">退出登录</span>
+        </el-menu-item>
+      </el-menu>
+    </div>
+    
+    <!-- 主要内容区域 -->
+    <div class="admin-main">
+      <!-- 顶部栏 -->
+      <div class="admin-header">
+        <div class="admin-header-left">
+          <i class="el-icon-s-fold" style="font-size: 20px; cursor: pointer;"></i>
+        </div>
+        <div class="admin-user-dropdown">
+          <img :src="adminInfo.avatar || './imgs/default-avatar.png'" class="admin-user-avatar">
+          <el-dropdown trigger="click">
+            <span class="el-dropdown-link">
+              {{adminInfo.username || '管理员'}} <i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item icon="el-icon-user">个人信息</el-dropdown-item>
+              <el-dropdown-item icon="el-icon-setting">系统设置</el-dropdown-item>
+              <el-dropdown-item icon="el-icon-switch-button" @click.native="logout">退出登录</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+      </div>
+      
+      <!-- 内容区域 -->
+      <div class="admin-content">
+        <h2 class="mb-3">商户分类管理</h2>
+        
+        <!-- 操作按钮 -->
+        <div style="margin-bottom: 20px;">
+          <el-button type="primary" icon="el-icon-plus" @click="handleAdd">新增分类</el-button>
+        </div>
+        
+        <!-- 商户分类列表表格 -->
+        <el-table
+          v-loading="tableLoading"
+          :data="shopTypeList"
+          border
+          style="width: 100%">
+          <el-table-column
+            type="index"
+            width="50"
+            label="序号"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="id"
+            label="分类ID"
+            width="100"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="name"
+            label="分类名称"
+            min-width="150">
+          </el-table-column>
+          <el-table-column
+            label="图标"
+            width="100"
+            align="center">
+            <template slot-scope="scope">
+              <img :src="scope.row.icon || './imgs/default-type.png'" class="shop-type-icon-table" alt="分类图标">
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="sort"
+            label="排序"
+            width="80"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            label="操作"
+            width="180"
+            align="center">
+            <template slot-scope="scope">
+              <el-button
+                size="mini"
+                @click="handleEdit(scope.row)">编辑</el-button>
+              <el-button
+                size="mini"
+                type="danger"
+                @click="handleDelete(scope.row)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        
+        <!-- 分页 -->
+        <div class="pagination-container" style="text-align: right; margin-top: 20px;">
+          <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="pageParams.page"
+            :page-sizes="[10, 20, 50, 100]"
+            :page-size="pageParams.size"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="total">
+          </el-pagination>
+        </div>
+
+        <!-- 新增/编辑商户分类弹窗 -->
+        <el-dialog
+          :title="dialogTitle"
+          :visible.sync="dialogVisible"
+          width="40%"
+          :close-on-click-modal="false"
+          @close="resetForm('shopTypeFormRef')">
+          <el-form :model="shopTypeForm" :rules="shopTypeRules" ref="shopTypeFormRef" label-width="100px">
+            <el-form-item label="分类名称" prop="name">
+              <el-input v-model="shopTypeForm.name" placeholder="请输入分类名称"></el-input>
+            </el-form-item>
+            <el-form-item label="分类图标URL" prop="icon">
+              <el-input v-model="shopTypeForm.icon" placeholder="请输入图标URL或上传"></el-input>
+              <!-- TODO: 可增加图片上传功能 -->
+            </el-form-item>
+            <el-form-item label="排序值" prop="sort">
+              <el-input-number v-model="shopTypeForm.sort" :min="1" label="排序值"></el-input-number>
+            </el-form-item>
+          </el-form>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="dialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="submitForm('shopTypeFormRef')">确 定</el-button>
+          </span>
+        </el-dialog>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script>
+  const adminToken = sessionStorage.getItem("adminToken");
+  const adminInfoStr = sessionStorage.getItem("adminInfo");
+  
+  if (!adminToken) {
+    // location.href = "admin-login.html"; // 实际项目中应启用
+  }
+  
+  const app = new Vue({
+    el: "#app",
+    data: {
+      adminInfo: adminInfoStr ? JSON.parse(adminInfoStr) : {},
+      tableLoading: false,
+      shopTypeList: [],
+      pageParams: {
+        page: 1,
+        size: 10
+      },
+      total: 0,
+      dialogVisible: false, 
+      dialogStatus: '', // 'create' 或 'update'
+      shopTypeForm: {
+        id: null,
+        name: '',
+        icon: '',
+        sort: 1
+      },
+      shopTypeRules: {
+        name: [
+          { required: true, message: '请输入分类名称', trigger: 'blur' },
+          { min: 2, max: 10, message: '长度在 2 到 10 个字符', trigger: 'blur' }
+        ],
+        icon: [
+          { required: true, message: '请输入图标URL', trigger: 'blur' } 
+          // 可根据实际情况增加URL格式校验
+        ],
+        sort: [
+          { required: true, message: '请输入排序值', trigger: 'blur' }
+        ]
+      }
+    },
+    computed: {
+        dialogTitle() {
+            return this.dialogStatus === 'create' ? '新增商户分类' : '编辑商户分类';
+        }
+    },
+    created() {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${adminToken}`;
+      this.fetchShopTypes();
+    },
+    methods: {
+      navigateTo(path) {
+        location.href = path;
+      },
+      fetchShopTypes() {
+        this.tableLoading = true;
+        axios.get("/api/admin/shop-types", { params: this.pageParams })
+          .then(({data}) => {
+            if(data.success){
+                this.shopTypeList = data.data.list || [];
+                this.total = data.data.total || 0;
+            } else {
+                this.$message.error(data.msg || "获取商户分类列表失败");
+            }
+          })
+          .catch(err => {
+            console.error("获取商户分类列表失败", err);
+            this.$message.error("获取商户分类列表失败，请重试");
+          })
+          .finally(() => {
+            this.tableLoading = false;
+          });
+      },
+      handleSizeChange(size) {
+        this.pageParams.size = size;
+        this.fetchShopTypes();
+      },
+      handleCurrentChange(page) {
+        this.pageParams.page = page;
+        this.fetchShopTypes();
+      },
+      resetForm(formName) {
+        if (this.$refs[formName]) {
+          this.$refs[formName].resetFields();
+        }
+        this.shopTypeForm = { id: null, name: '', icon: '', sort: 1 };
+      },
+      handleAdd() {
+        this.resetForm('shopTypeFormRef');
+        this.dialogStatus = 'create';
+        this.dialogVisible = true;
+      },
+      handleEdit(row) {
+        this.dialogStatus = 'update';
+        // 深拷贝一份数据到表单，避免直接修改列表中的数据
+        this.shopTypeForm = JSON.parse(JSON.stringify(row)); 
+        this.dialogVisible = true;
+      },
+      submitForm(formName) {
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            if (this.dialogStatus === 'create') {
+              // 新增逻辑
+              const { name, icon, sort } = this.shopTypeForm;
+              axios.post("/api/admin/shop-types", { name, icon, sort })
+                .then(({data}) => {
+                  if(data.success){
+                    this.$message.success("新增分类成功");
+                    this.dialogVisible = false;
+                    this.fetchShopTypes(); // 刷新列表
+                  } else {
+                    this.$message.error(data.msg || "新增分类失败");
+                  }
+                })
+                .catch(err => {
+                  console.error("新增分类失败", err);
+                  this.$message.error("新增分类失败，请重试");
+                });
+            } else {
+              // 更新逻辑
+              const { id, name, icon, sort } = this.shopTypeForm;
+              axios.put(`/api/admin/shop-types/${id}`, { name, icon, sort })
+                .then(({data}) => {
+                  if(data.success){
+                    this.$message.success("更新分类成功");
+                    this.dialogVisible = false;
+                    this.fetchShopTypes(); // 刷新列表
+                  } else {
+                    this.$message.error(data.msg || "更新分类失败");
+                  }
+                })
+                .catch(err => {
+                  console.error("更新分类失败", err);
+                  this.$message.error("更新分类失败，请重试");
+                });
+            }
+          } else {
+            console.log('表单校验失败!');
+            return false;
+          }
+        });
+      },
+      handleDelete(row) {
+        this.$confirm(`确定要删除商户分类 "${row.name}" 吗? 删除后可能影响关联商户的显示。`, '警告', {
+          confirmButtonText: '确定删除',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          axios.delete(`/api/admin/shop-types/${row.id}`)
+            .then(({data}) => {
+              if(data.success){
+                this.$message.success("删除分类成功");
+                this.fetchShopTypes(); // 刷新列表
+              } else {
+                this.$message.error(data.msg || "删除分类失败");
+              }
+            })
+            .catch(err => {
+              console.error("删除分类失败", err);
+              this.$message.error("删除分类失败，请重试");
+            });
+        }).catch(() => {
+          // 用户取消删除
+        });
+      },
+      logout() {
+        axios.post("/api/admin/logout")
+          .then(() => {
+            sessionStorage.removeItem("adminToken");
+            sessionStorage.removeItem("adminInfo");
+            location.href = "admin-login.html";
+          })
+          .catch(err => {
+            console.error("退出失败", err);
+            // 即使退出接口失败，也清理前端会话并跳转
+            sessionStorage.removeItem("adminToken");
+            sessionStorage.removeItem("adminInfo");
+            location.href = "admin-login.html";
+          });
+      }
+    }
+  })
+</script>
+</body>
+</html> 

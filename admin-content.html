@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评 - 内容审核</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+      background-color: #f5f7fa;
+    }
+    .admin-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    .admin-sidebar {
+      width: 220px;
+      background-color: #304156;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      transition: width 0.3s;
+      position: fixed;
+      height: 100vh;
+      z-index: 1000;
+    }
+    .admin-logo {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #263445;
+      padding: 0 16px;
+    }
+    .admin-logo img {
+      height: 32px;
+      margin-right: 8px;
+    }
+    .admin-logo h1 {
+      color: #fff;
+      font-size: 18px;
+      margin: 0;
+      white-space: nowrap;
+    }
+    .admin-main {
+      flex: 1;
+      margin-left: 220px;
+      padding: 15px;
+      background-color: #f5f7fa;
+      min-height: 100vh;
+    }
+    .admin-header {
+      height: 60px;
+      background-color: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 15px;
+      margin-bottom: 15px;
+    }
+    .admin-content {
+      background-color: #fff;
+      border-radius: 4px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      min-height: calc(100vh - 90px);
+    }
+    .admin-user-dropdown {
+      display: flex;
+      align-items: center;
+    }
+    .admin-user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .el-menu {
+      border-right: none;
+      background-color: #304156;
+    }
+    .el-menu-item {
+      color: #bfcbd9;
+    }
+    .el-menu-item:hover, .el-menu-item:focus {
+      background-color: #263445;
+    }
+    .el-menu-item.is-active {
+      color: #409EFF;
+      background-color: #263445;
+    }
+    .tab-content-padding {
+        padding-top: 20px;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="admin-container">
+    <!-- 侧边栏导航 -->
+    <div class="admin-sidebar">
+      <div class="admin-logo">
+        <img src="./imgs/logo.png" alt="黑马点评">
+        <h1>管理员控制台</h1>
+      </div>
+      <el-menu
+        default-active="5" 
+        class="el-menu-vertical"
+        background-color="#304156"
+        text-color="#bfcbd9"
+        active-text-color="#409EFF">
+        <el-menu-item index="1" @click="navigateTo('admin-dashboard.html')">
+          <i class="el-icon-s-home"></i>
+          <span slot="title">控制台</span>
+        </el-menu-item>
+        <el-menu-item index="2" @click="navigateTo('admin-users.html')">
+          <i class="el-icon-user"></i>
+          <span slot="title">用户管理</span>
+        </el-menu-item>
+        <el-menu-item index="3" @click="navigateTo('admin-merchants.html')">
+          <i class="el-icon-s-shop"></i>
+          <span slot="title">商户管理</span>
+        </el-menu-item>
+        <el-menu-item index="4" @click="navigateTo('admin-shop-types.html')">
+          <i class="el-icon-s-grid"></i>
+          <span slot="title">商户分类管理</span>
+        </el-menu-item>
+        <el-menu-item index="5" @click="navigateTo('admin-content.html')">
+          <i class="el-icon-document-checked"></i>
+          <span slot="title">内容审核</span>
+        </el-menu-item>
+        <el-menu-item index="6" @click="navigateTo('admin-statistics.html')">
+          <i class="el-icon-data-line"></i>
+          <span slot="title">系统监控</span>
+        </el-menu-item>
+        <el-menu-item index="7" @click="logout">
+          <i class="el-icon-switch-button"></i>
+          <span slot="title">退出登录</span>
+        </el-menu-item>
+      </el-menu>
+    </div>
+    
+    <!-- 主要内容区域 -->
+    <div class="admin-main">
+      <!-- 顶部栏 -->
+      <div class="admin-header">
+        <div class="admin-header-left">
+          <i class="el-icon-s-fold" style="font-size: 20px; cursor: pointer;"></i>
+        </div>
+        <div class="admin-user-dropdown">
+          <img :src="adminInfo.avatar || './imgs/default-avatar.png'" class="admin-user-avatar">
+          <el-dropdown trigger="click">
+            <span class="el-dropdown-link">
+              {{adminInfo.username || '管理员'}} <i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item icon="el-icon-user">个人信息</el-dropdown-item>
+              <el-dropdown-item icon="el-icon-setting">系统设置</el-dropdown-item>
+              <el-dropdown-item icon="el-icon-switch-button" @click.native="logout">退出登录</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+      </div>
+      
+      <!-- 内容区域 -->
+      <div class="admin-content">
+        <h2 class="mb-3">内容审核</h2>
+        
+        <el-tabs v-model="activeTabName" @tab-click="handleTabClick">
+          <el-tab-pane label="商品审核" name="productAudit">
+            <div class="tab-content-padding">
+              <el-table
+                v-loading="productTableLoading"
+                :data="pendingProductList"
+                border
+                style="width: 100%">
+                <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
+                <el-table-column prop="productId" label="商品ID" width="100" align="center"></el-table-column>
+                <el-table-column prop="productName" label="商品名称" min-width="200"></el-table-column>
+                <el-table-column prop="shopName" label="所属商铺" min-width="150"></el-table-column>
+                <el-table-column prop="submitTime" label="提交时间" width="180" align="center"></el-table-column>
+                <el-table-column prop="status" label="状态" width="120" align="center">
+                    <template slot-scope="scope">
+                        <el-tag :type="scope.row.status === 'PENDING_APPROVAL' ? 'warning' : 'info'">
+                            {{ scope.row.status === 'PENDING_APPROVAL' ? '待审核' : scope.row.status }}
+                        </el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" width="100" align="center">
+                  <template slot-scope="scope">
+                    <el-button size="mini" type="primary" @click="handleProductAuditDialog(scope.row)">审核</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div class="pagination-container" style="text-align: right; margin-top: 20px;">
+                <el-pagination
+                  @size-change="handleProductSizeChange"
+                  @current-change="handleProductCurrentChange"
+                  :current-page="productPageParams.page"
+                  :page-sizes="[10, 20, 50]"
+                  :page-size="productPageParams.size"
+                  layout="total, sizes, prev, pager, next, jumper"
+                  :total="productTotal">
+                </el-pagination>
+              </div>
+            </div>
+          </el-tab-pane>
+          
+          <el-tab-pane label="评论审核" name="commentAudit">
+            <div class="tab-content-padding">
+              <!-- 评论审核内容区 -->
+              <div style="margin-bottom: 15px;">
+                <el-select v-model="commentPageParams.type" placeholder="筛选评论类型" clearable @change="fetchPendingComments">
+                  <el-option label="所有类型" value=""></el-option>
+                  <el-option label="店铺评价" value="shop_review"></el-option>
+                  <el-option label="博客评论" value="blog_comment"></el-option>
+                  <!-- 可根据实际业务增加其他类型 -->
+                </el-select>
+              </div>
+              <el-table
+                v-loading="commentTableLoading"
+                :data="pendingCommentList"
+                border
+                style="width: 100%">
+                <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
+                <el-table-column prop="commentId" label="评论ID" width="80" align="center"></el-table-column>
+                <el-table-column prop="content" label="评论内容" min-width="250">
+                    <template slot-scope="scope">
+                        <el-popover trigger="hover" placement="top" width="300">
+                            <p>{{ scope.row.content }}</p>
+                            <div slot="reference" class="name-wrapper">
+                                {{ scope.row.content.length > 50 ? scope.row.content.substring(0, 50) + '...' : scope.row.content }}
+                            </div>
+                        </el-popover>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="userName" label="用户" width="120"></el-table-column>
+                <el-table-column prop="targetType" label="对象类型" width="120">
+                    <template slot-scope="scope">
+                        {{ scope.row.targetType === 'shop_review' ? '店铺评价' : (scope.row.targetType === 'blog_comment' ? '博客评论' : scope.row.targetType) }}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="targetName" label="对象名称" min-width="150"></el-table-column>
+                <el-table-column prop="submitTime" label="提交时间" width="170" align="center"></el-table-column>
+                <el-table-column label="状态" width="100" align="center">
+                    <template slot-scope="scope">
+                        <el-tag :type="getCommentStatusTagType(scope.row.status)">
+                            {{ getCommentStatusText(scope.row.status) }}
+                        </el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" width="100" align="center">
+                  <template slot-scope="scope">
+                    <el-button size="mini" type="primary" @click="handleCommentAuditDialog(scope.row)" v-if="scope.row.status === 'PENDING_APPROVAL'">审核</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div class="pagination-container" style="text-align: right; margin-top: 20px;">
+                <el-pagination
+                  @size-change="handleCommentSizeChange"
+                  @current-change="handleCommentCurrentChange"
+                  :current-page="commentPageParams.page"
+                  :page-sizes="[10, 20, 50]"
+                  :page-size="commentPageParams.size"
+                  layout="total, sizes, prev, pager, next, jumper"
+                  :total="commentTotal">
+                </el-pagination>
+              </div>
+            </div>
+          </el-tab-pane>
+          
+          <el-tab-pane label="举报处理" name="reportProcessing">
+            <div class="tab-content-padding">
+              <!-- 举报处理内容区 -->
+              <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+                <el-select v-model="reportPageParams.status" placeholder="处理状态" clearable @change="fetchReports">
+                  <el-option label="所有状态" value=""></el-option>
+                  <el-option label="待处理" :value="0"></el-option>
+                  <el-option label="已处理" :value="1"></el-option>
+                </el-select>
+                <el-select v-model="reportPageParams.reportType" placeholder="举报内容类型" clearable @change="fetchReports">
+                  <el-option label="所有类型" value=""></el-option>
+                  <el-option label="商品" value="product"></el-option>
+                  <el-option label="评论" value="comment"></el-option>
+                  <el-option label="用户资料" value="user_profile"></el-option>
+                  <el-option label="博客文章" value="blog_post"></el-option>
+                  <!-- 可根据后端支持的类型扩展 -->
+                </el-select>
+              </div>
+              <el-table
+                v-loading="reportTableLoading"
+                :data="reportList"
+                border
+                style="width: 100%">
+                <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
+                <el-table-column prop="reportId" label="举报ID" width="80" align="center"></el-table-column>
+                <el-table-column prop="reporterName" label="举报人" width="120"></el-table-column>
+                <el-table-column prop="reportedContentType" label="被举报类型" width="120">
+                    <template slot-scope="scope">
+                        {{ getReportedContentTypeText(scope.row.reportedContentType) }}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="reportedObjectId" label="被举报对象ID" width="120" align="center"></el-table-column>
+                <el-table-column prop="reportedContentSummary" label="被举报摘要" min-width="200">
+                    <template slot-scope="scope">
+                         <el-popover trigger="hover" placement="top" width="300">
+                            <p><strong>举报理由:</strong> {{ scope.row.reason }}</p>
+                            <hr v-if="scope.row.reportedContentSummary && scope.row.reason" style="margin: 5px 0;"/>
+                            <p>{{ scope.row.reportedContentSummary }}</p>
+                            <div slot="reference" class="name-wrapper">
+                                {{ scope.row.reportedContentSummary && scope.row.reportedContentSummary.length > 40 ? scope.row.reportedContentSummary.substring(0, 40) + '...' : scope.row.reportedContentSummary || '无摘要' }}
+                                <span v-if="!scope.row.reportedContentSummary && scope.row.reason" style="font-style: italic;">(摘要为空, 查看理由)</span>
+                            </div>
+                        </el-popover>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="reportTime" label="举报时间" width="170" align="center"></el-table-column>
+                <el-table-column label="处理状态" width="100" align="center">
+                    <template slot-scope="scope">
+                        <el-tag :type="getReportStatusTagType(scope.row.status)">
+                            {{ getReportStatusText(scope.row.status) }}
+                        </el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" width="100" align="center">
+                  <template slot-scope="scope">
+                    <el-button size="mini" type="warning" @click="handleReportProcessDialog(scope.row)" v-if="scope.row.status === 0">处理</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div class="pagination-container" style="text-align: right; margin-top: 20px;">
+                <el-pagination
+                  @size-change="handleReportSizeChange"
+                  @current-change="handleReportCurrentChange"
+                  :current-page="reportPageParams.page"
+                  :page-sizes="[10, 20, 50]"
+                  :page-size="reportPageParams.size"
+                  layout="total, sizes, prev, pager, next, jumper"
+                  :total="reportTotal">
+                </el-pagination>
+              </div>
+            </div>
+          </el-tab-pane>
+        </el-tabs>
+
+        <!-- 商品审核弹窗 -->
+        <el-dialog
+          title="商品信息审核"
+          :visible.sync="productAuditDialogVisible"
+          width="50%"
+          :close-on-click-modal="false">
+          <div v-if="currentProduct">
+            <el-descriptions :column="2" border direction="vertical">
+                <el-descriptions-item label="商品ID">{{ currentProduct.productId }}</el-descriptions-item>
+                <el-descriptions-item label="商品名称">{{ currentProduct.productName }}</el-descriptions-item>
+                <el-descriptions-item label="所属商铺">{{ currentProduct.shopName }}</el-descriptions-item>
+                <el-descriptions-item label="提交时间">{{ currentProduct.submitTime }}</el-descriptions-item>
+                <!-- 可根据需要展示更多商品信息 -->
+            </el-descriptions>
+            <el-form :model="productAuditForm" ref="productAuditFormRef" label-width="80px" style="margin-top: 20px;">
+              <el-form-item label="审核结果" prop="status" :rules="[{ required: true, message: '请选择审核结果', trigger: 'change' }]">
+                <el-radio-group v-model="productAuditForm.status">
+                  <el-radio label="APPROVED">通过</el-radio>
+                  <el-radio label="REJECTED">不通过</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="审核意见" prop="reason" :rules="productAuditForm.status === 'REJECTED' ? [{ required: true, message: '不通过时必须填写审核意见', trigger: 'blur' }] : []">
+                <el-input type="textarea" v-model="productAuditForm.reason" placeholder="请输入审核意见"></el-input>
+              </el-form-item>
+            </el-form>
+          </div>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="productAuditDialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="submitProductAudit">确 定</el-button>
+          </span>
+        </el-dialog>
+
+        <!-- 评论审核弹窗 -->
+        <el-dialog
+          title="用户评论审核"
+          :visible.sync="commentAuditDialogVisible"
+          width="50%"
+          :close-on-click-modal="false">
+          <div v-if="currentComment">
+            <el-descriptions :column="1" border direction="vertical">
+                <el-descriptions-item label="评论ID">{{ currentComment.commentId }}</el-descriptions-item>
+                <el-descriptions-item label="评论用户">{{ currentComment.userName }}</el-descriptions-item>
+                <el-descriptions-item label="评论对象">{{ currentComment.targetType === 'shop_review' ? '店铺' : '博客' }}: {{ currentComment.targetName }}</el-descriptions-item>
+                <el-descriptions-item label="提交时间">{{ currentComment.submitTime }}</el-descriptions-item>
+                <el-descriptions-item label="评论内容">
+                    <div style="max-height: 200px; overflow-y: auto;">{{ currentComment.content }}</div>
+                </el-descriptions-item>
+            </el-descriptions>
+            <el-form :model="commentAuditForm" ref="commentAuditFormRef" label-width="80px" style="margin-top: 20px;">
+              <el-form-item label="审核结果" prop="status" :rules="[{ required: true, message: '请选择审核结果', trigger: 'change' }]">
+                <el-radio-group v-model="commentAuditForm.status">
+                  <el-radio label="VISIBLE">显示</el-radio>
+                  <el-radio label="HIDDEN">隐藏</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="审核意见" prop="reason" :rules="commentAuditForm.status === 'HIDDEN' ? [{ required: false, message: '隐藏时可填写审核意见', trigger: 'blur' }] : []">
+                <el-input type="textarea" v-model="commentAuditForm.reason" placeholder="请输入审核意见（可选）"></el-input>
+              </el-form-item>
+            </el-form>
+          </div>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="commentAuditDialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="submitCommentAudit">确 定</el-button>
+          </span>
+        </el-dialog>
+
+        <!-- 举报处理弹窗 -->
+        <el-dialog
+          title="举报信息处理"
+          :visible.sync="reportProcessDialogVisible"
+          width="50%"
+          :close-on-click-modal="false">
+          <div v-if="currentReport">
+            <el-descriptions :column="1" border direction="vertical">
+                <el-descriptions-item label="举报ID">{{ currentReport.reportId }}</el-descriptions-item>
+                <el-descriptions-item label="举报人">{{ currentReport.reporterName }}</el-descriptions-item>
+                <el-descriptions-item label="被举报类型">{{ getReportedContentTypeText(currentReport.reportedContentType) }} (ID: {{ currentReport.reportedObjectId }})</el-descriptions-item>
+                <el-descriptions-item label="举报理由">{{ currentReport.reason }}</el-descriptions-item>
+                <el-descriptions-item label="被举报内容摘要">
+                    <div style="max-height: 150px; overflow-y: auto;">{{ currentReport.reportedContentSummary || '无摘要信息' }}</div>
+                </el-descriptions-item>
+                <el-descriptions-item label="举报时间">{{ currentReport.reportTime }}</el-descriptions-item>
+            </el-descriptions>
+            <el-form :model="reportProcessForm" ref="reportProcessFormRef" label-width="100px" style="margin-top: 20px;">
+              <el-form-item label="处理动作" prop="action" :rules="[{ required: true, message: '请选择处理动作', trigger: 'change' }]">
+                <el-select v-model="reportProcessForm.action" placeholder="请选择处理动作" style="width:100%;">
+                  <el-option
+                    v-for="item in reportActionOptions"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="处理备注" prop="remarks" :rules="[{ required: true, message: '请输入处理备注', trigger: 'blur' }]">
+                <el-input type="textarea" v-model="reportProcessForm.remarks" placeholder="请输入处理备注信息"></el-input>
+              </el-form-item>
+              <el-form-item label="封禁天数" prop="banDurationDays" 
+                v-if="reportProcessForm.action === 'BAN_USER'" 
+                :rules="reportProcessForm.action === 'BAN_USER' ? [{ required: true, message: '请输入封禁天数', trigger: 'blur' }, { type: 'number', message: '封禁天数必须为数字值'}] : []">
+                <el-input-number v-model="reportProcessForm.banDurationDays" :min="1" placeholder="请输入封禁天数"></el-input-number>
+              </el-form-item>
+            </el-form>
+          </div>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="reportProcessDialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="submitReportProcess">确 定处理</el-button>
+          </span>
+        </el-dialog>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script>
+  const adminToken = sessionStorage.getItem("adminToken");
+  const adminInfoStr = sessionStorage.getItem("adminInfo");
+  
+  if (!adminToken) {
+    // location.href = "admin-login.html"; 
+  }
+  
+  const app = new Vue({
+    el: "#app",
+    data: {
+      adminInfo: adminInfoStr ? JSON.parse(adminInfoStr) : {},
+      activeTabName: 'productAudit', //默认激活的标签页
+      
+      // 商品审核相关数据
+      productTableLoading: false,
+      pendingProductList: [],
+      productPageParams: {
+        page: 1,
+        size: 10
+      },
+      productTotal: 0,
+      productAuditDialogVisible: false,
+      currentProduct: null, // 当前审核的商品
+      productAuditForm: {
+        status: '', // 'APPROVED' 或 'REJECTED'
+        reason: ''
+      },
+      
+      // 评论审核相关数据
+      commentTableLoading: false,
+      pendingCommentList: [],
+      commentPageParams: {
+        page: 1,
+        size: 10,
+        type: '' // 可选的评论类型筛选
+      },
+      commentTotal: 0,
+      commentAuditDialogVisible: false,
+      currentComment: null, // 当前审核的评论
+      commentAuditForm: {
+        status: '', // 'VISIBLE' 或 'HIDDEN'
+        reason: ''
+      },
+
+      // 举报处理相关数据
+      reportTableLoading: false,
+      reportList: [],
+      reportPageParams: {
+        page: 1,
+        size: 10,
+        status: '', // 0-待处理, 1-已处理 (或者后端定义的其他值)
+        reportType: '' // e.g., 'product', 'comment', 'user_profile', 'blog_post'
+      },
+      reportTotal: 0,
+      reportProcessDialogVisible: false,
+      currentReport: null,
+      reportProcessForm: {
+        action: '', // 'DELETE_CONTENT', 'WARN_USER', 'BAN_USER', 'IGNORE_REPORT'
+        remarks: '',
+        banDurationDays: null
+      },
+      reportActionOptions: [
+        { value: 'DELETE_CONTENT', label: '删除内容' },
+        { value: 'WARN_USER', label: '警告用户' },
+        { value: 'BAN_USER', label: '封禁用户' },
+        { value: 'IGNORE_REPORT', label: '忽略举报' }
+      ]
+    },
+    created() {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${adminToken}`;
+      if(this.activeTabName === 'productAudit'){
+        this.fetchPendingProducts();
+      } else if(this.activeTabName === 'commentAudit'){
+        this.fetchPendingComments();
+      } else if(this.activeTabName === 'reportProcessing'){
+        this.fetchReports(); 
+      }
+    },
+    methods: {
+      navigateTo(path) {
+        location.href = path;
+      },
+      handleTabClick(tab, event) {
+        // console.log(tab, event);
+        // 可根据tab.name加载对应数据
+        if(tab.name === 'productAudit'){
+          this.fetchPendingProducts();
+        } else if(tab.name === 'commentAudit'){
+          this.fetchPendingComments();
+        } else if(tab.name === 'reportProcessing'){
+          this.fetchReports(); 
+        }
+      },
+      // --- 商品审核方法 START ---
+      fetchPendingProducts() {
+        this.productTableLoading = true;
+        axios.get("/api/admin/content/products/pending", { params: this.productPageParams })
+          .then(({data}) => {
+            if(data.success){
+                this.pendingProductList = data.data.list || [];
+                this.productTotal = data.data.total || 0;
+            } else {
+                this.$message.error(data.msg || "获取待审核商品列表失败");
+            }
+          })
+          .catch(err => {
+            console.error("获取待审核商品列表失败", err);
+            this.$message.error("获取待审核商品列表失败，请重试");
+          })
+          .finally(() => {
+            this.productTableLoading = false;
+          });
+      },
+      handleProductSizeChange(size) {
+        this.productPageParams.size = size;
+        this.fetchPendingProducts();
+      },
+      handleProductCurrentChange(page) {
+        this.productPageParams.page = page;
+        this.fetchPendingProducts();
+      },
+      handleProductAuditDialog(product) {
+        this.currentProduct = product;
+        // 重置表单
+        this.productAuditForm = { status: '', reason: '' };
+        if(this.$refs.productAuditFormRef){
+            this.$refs.productAuditFormRef.resetFields();
+        }
+        this.productAuditDialogVisible = true;
+      },
+      submitProductAudit(){
+        this.$refs.productAuditFormRef.validate((valid) => {
+          if (valid) {
+            const auditData = {
+                status: this.productAuditForm.status,
+                reason: this.productAuditForm.reason
+            };
+            axios.put(`/api/admin/content/products/${this.currentProduct.productId}/audit`, auditData)
+              .then(({data}) => {
+                if(data.success){
+                  this.$message.success("商品审核操作成功");
+                  this.productAuditDialogVisible = false;
+                  this.fetchPendingProducts(); // 刷新列表
+                } else {
+                  this.$message.error(data.msg || "商品审核操作失败");
+                }
+              })
+              .catch(err => {
+                console.error("商品审核操作失败", err);
+                this.$message.error("商品审核操作失败，请重试");
+              });
+          } else {
+            console.log('商品审核表单校验失败!');
+            return false;
+          }
+        });
+      },
+      // --- 商品审核方法 END ---
+      
+      // --- 评论审核方法 START ---
+      fetchPendingComments() {
+        this.commentTableLoading = true;
+        axios.get("/api/admin/content/comments/pending", { params: this.commentPageParams })
+          .then(({data}) => {
+            if(data.success){
+                this.pendingCommentList = data.data.list || [];
+                this.commentTotal = data.data.total || 0;
+            } else {
+                this.$message.error(data.msg || "获取待审核评论列表失败");
+            }
+          })
+          .catch(err => {
+            console.error("获取待审核评论列表失败", err);
+            this.$message.error("获取待审核评论列表失败，请重试");
+          })
+          .finally(() => {
+            this.commentTableLoading = false;
+          });
+      },
+      handleCommentSizeChange(size) {
+        this.commentPageParams.size = size;
+        this.fetchPendingComments();
+      },
+      handleCommentCurrentChange(page) {
+        this.commentPageParams.page = page;
+        this.fetchPendingComments();
+      },
+      handleCommentAuditDialog(comment) {
+        this.currentComment = comment;
+        this.commentAuditForm = { status: '', reason: '' }; // 重置表单
+        if(this.$refs.commentAuditFormRef){
+            this.$refs.commentAuditFormRef.resetFields();
+        }
+        this.commentAuditDialogVisible = true;
+      },
+      submitCommentAudit(){
+        this.$refs.commentAuditFormRef.validate((valid) => {
+          if (valid) {
+            const auditData = {
+                status: this.commentAuditForm.status,
+                reason: this.commentAuditForm.reason
+            };
+            axios.put(`/api/admin/content/comments/${this.currentComment.commentId}/audit`, auditData)
+              .then(({data}) => {
+                if(data.success){
+                  this.$message.success("评论审核操作成功");
+                  this.commentAuditDialogVisible = false;
+                  this.fetchPendingComments(); // 刷新列表
+                } else {
+                  this.$message.error(data.msg || "评论审核操作失败");
+                }
+              })
+              .catch(err => {
+                console.error("评论审核操作失败", err);
+                this.$message.error("评论审核操作失败，请重试");
+              });
+          } else {
+            console.log('评论审核表单校验失败!');
+            return false;
+          }
+        });
+      },
+      getCommentStatusText(status){
+        // PENDING_APPROVAL, VISIBLE, HIDDEN
+        if(status === 'PENDING_APPROVAL') return '待审核';
+        if(status === 'VISIBLE') return '已显示';
+        if(status === 'HIDDEN') return '已隐藏';
+        return status;
+      },
+      getCommentStatusTagType(status){
+        if(status === 'PENDING_APPROVAL') return 'warning';
+        if(status === 'VISIBLE') return 'success';
+        if(status === 'HIDDEN') return 'info';
+        return 'info';
+      },
+      // --- 评论审核方法 END ---
+
+      // --- 举报处理方法 START ---
+      fetchReports(){
+        this.reportTableLoading = true;
+        const params = {...this.reportPageParams};
+        // 后端期望 status 为数字类型，如果为空字符串则不传或传null
+        if(params.status === '') {
+            delete params.status;
+        }
+        if(params.reportType === ''){
+            delete params.reportType;
+        }
+
+        axios.get("/api/admin/content/reports", { params })
+          .then(({data}) => {
+            if(data.success){
+                this.reportList = data.data.list || [];
+                this.reportTotal = data.data.total || 0;
+            } else {
+                this.$message.error(data.msg || "获取举报列表失败");
+            }
+          })
+          .catch(err => {
+            console.error("获取举报列表失败", err);
+            this.$message.error("获取举报列表失败，请重试");
+          })
+          .finally(() => {
+            this.reportTableLoading = false;
+          });
+      },
+      handleReportSizeChange(size) {
+        this.reportPageParams.size = size;
+        this.fetchReports();
+      },
+      handleReportCurrentChange(page) {
+        this.reportPageParams.page = page;
+        this.fetchReports();
+      },
+      handleReportProcessDialog(report){
+        this.currentReport = report;
+        this.reportProcessForm = { action: '', remarks: '', banDurationDays: null };
+        if(this.$refs.reportProcessFormRef){
+            this.$refs.reportProcessFormRef.resetFields();
+        }
+        this.reportProcessDialogVisible = true;
+      },
+      submitReportProcess(){
+        this.$refs.reportProcessFormRef.validate((valid) => {
+          if (valid) {
+            const processData = {
+                action: this.reportProcessForm.action,
+                remarks: this.reportProcessForm.remarks
+            };
+            if(this.reportProcessForm.action === 'BAN_USER'){
+                processData.banDurationDays = this.reportProcessForm.banDurationDays;
+            }
+
+            axios.put(`/api/admin/content/reports/${this.currentReport.reportId}/process`, processData)
+              .then(({data}) => {
+                if(data.success){
+                  this.$message.success("举报处理成功");
+                  this.reportProcessDialogVisible = false;
+                  this.fetchReports(); // 刷新列表
+                } else {
+                  this.$message.error(data.msg || "举报处理失败");
+                }
+              })
+              .catch(err => {
+                console.error("举报处理失败", err);
+                this.$message.error("举报处理失败，请重试");
+              });
+          } else {
+            console.log('举报处理表单校验失败!');
+            return false;
+          }
+        });
+      },
+      getReportStatusText(status){
+        // API 文档: 0-待处理, 1-已处理
+        if(status === 0) return '待处理';
+        if(status === 1) return '已处理';
+        return status; // 以防有其他状态
+      },
+      getReportStatusTagType(status){
+        if(status === 0) return 'warning';
+        if(status === 1) return 'success';
+        return 'info';
+      },
+      getReportedContentTypeText(type){
+          const typeMap = {
+              'product': '商品',
+              'comment': '评论',
+              'user_profile': '用户资料',
+              'blog_post': '博客文章'
+          };
+          return typeMap[type] || type;
+      },
+      // --- 举报处理方法 END ---
+
+      logout() {
+        axios.post("/api/admin/logout")
+          .then(() => {
+            sessionStorage.removeItem("adminToken");
+            sessionStorage.removeItem("adminInfo");
+            location.href = "admin-login.html";
+          })
+          .catch(err => {
+            console.error("退出失败", err);
+            sessionStorage.removeItem("adminToken");
+            sessionStorage.removeItem("adminInfo");
+            location.href = "admin-login.html";
+          });
+      }
+    }
+  })
+</script>
+</body>
+</html> 
