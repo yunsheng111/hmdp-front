@@ -1,0 +1,1186 @@
+/* user-info.css - 用户信息页面样式 */
+
+/* 添加全局禁止用户选择文本效果，提升用户体验 */
+.blog-tabs, .blog-tab-group, .blog-tab, .blogger-select-container, 
+.blogger-select-label, .read-filter, .el-select, .el-input,
+.blogger-option, .blog-item, .blog-box {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.el-tabs--bottom .el-tabs__item.is-bottom:nth-child(2), .el-tabs--bottom .el-tabs__item.is-top:nth-child(2), .el-tabs--top .el-tabs__item.is-bottom:nth-child(2), .el-tabs--top .el-tabs__item.is-top:nth-child(2) {
+    padding-left: 15px;
+}
+
+.el-tabs, .el-tab-pane {
+    height: 100%;
+}
+
+.el-tabs__nav-wrap::after {
+    height: 1px;
+}
+
+.el-tabs__content {
+    height: 90%;
+    padding-bottom: 60px;
+    padding-top: 0; /* 移除顶部内边距 */
+}
+
+/* 减少标签栏与子标签之间的间距 */
+.el-tabs__header {
+    margin-bottom: 5px;
+}
+
+.el-tab-pane {
+    padding-top: 0;
+}
+
+/* 优化子标签栏样式 */
+.blog-tabs {
+    display: flex;
+    margin-bottom: 10px;
+    margin-top: 0; /* 减少顶部间距 */
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #fff;
+    padding: 4px 10px; /* 减小内边距 */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.3s ease;
+    max-width: 100%;
+    width: auto;
+    flex-wrap: wrap; /* 允许内容换行 */
+    row-gap: 8px; /* 行间距 */
+}
+
+/* 修改博主选择组样式 */
+.blog-tab-group {
+    display: flex;
+    background-color: #f0f0f0;
+    border-radius: 16px;
+    padding: 2px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    align-items: center;
+    flex-wrap: nowrap;
+    width: auto;
+    min-width: 240px;
+    flex: 1; /* 允许占用更多空间 */
+    overflow-x: auto; /* 允许在极小屏幕上横向滚动 */
+    -webkit-overflow-scrolling: touch; /* 提高移动端滚动体验 */
+}
+
+/* 博主标签样式 */
+.blog-tab {
+    padding: 4px 12px;
+    border-radius: 14px;
+    margin-right: 0;
+    cursor: pointer;
+    background-color: transparent;
+    transition: all 0.3s ease;
+    font-size: 13px;
+    white-space: nowrap;
+    flex-shrink: 0; /* 防止被压缩 */
+}
+
+.blog-tab.active {
+    background-color: #ff6633;
+    color: white;
+    box-shadow: 0 2px 8px rgba(255, 102, 51, 0.3);
+}
+
+.blog-tab:hover:not(.active) {
+    background-color: #f0f0f0;
+    transform: translateY(-1px);
+}
+
+/* 添加博主选择相关样式 */
+.blogger-select-container {
+    display: flex;
+    align-items: center;
+    margin-left: 12px; /* 增加左侧间距 */
+    min-width: 180px;  /* 增加最小宽度从120px到180px */
+    max-width: 240px;  /* 增加最大宽度从160px到240px */
+    white-space: nowrap; /* 确保内容不换行 */
+    flex-shrink: 0; /* 防止容器被压缩 */
+}
+
+.blogger-select-label {
+    font-size: 12px;
+    color: #606266;
+    margin-right: 5px;
+    white-space: nowrap;
+}
+
+.blogger-select {
+    width: 100%;
+    max-width: 180px; /* 增加最大宽度从120px到180px */
+    min-width: 120px; /* 添加最小宽度 */
+}
+
+.blogger-option {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+    overflow: hidden; /* 防止内容溢出 */
+}
+
+.blogger-option span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(100% - 32px); /* 减去头像和边距的宽度 */
+}
+
+.blogger-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-right: 8px;
+    object-fit: cover;
+    border: 1px solid #eee;
+}
+
+/* 自定义下拉选择框样式 */
+.el-select-dropdown__item {
+    padding: 0 15px;
+}
+
+.el-select-dropdown__item.selected .blogger-option {
+    color: #ff6633;
+}
+
+.el-select-dropdown__item.hover .blogger-option {
+    background-color: #f5f7fa;
+}
+
+/* 添加下拉菜单样式优化 */
+.el-select-dropdown.el-popper {
+    min-width: 180px !important; /* 强制最小宽度 */
+    max-width: 250px !important; /* 设置最大宽度 */
+}
+
+.el-select-dropdown__item {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 确保在小屏幕上布局合理 */
+@media screen and (max-width: 768px) {
+    .blog-tabs {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .blog-tab-group {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap; /* 允许内容在小屏幕上换行 */
+    }
+    
+    .blogger-select-container {
+        margin: 5px 0 5px 10px;
+        flex: 0 0 auto;
+        max-width: 100%; /* 在小屏幕上允许占用全宽 */
+    }
+    
+    .blogger-select {
+        max-width: 150px; /* 增加小屏幕上的宽度从100px到150px */
+    }
+    
+    .read-filter {
+        margin-left: 10px;
+        margin-top: 0; /* 移除顶部外边距，因为现在在同一行 */
+    }
+}
+
+.blog-tabs.is-scrolling {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 为固定标签栏下方内容添加顶部间距 */
+.blog-container, .blog-list, .empty-blog-tip {
+    margin-top: 5px; /* 减少顶部间距 */
+}
+
+/* 确保标签栏固定后不会遮挡其他元素 */
+.el-tabs__content {
+    padding-top: 0; /* 移除顶部内边距 */
+}
+
+/* 优化个人信息区域样式 */
+.basic {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 20px 16px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #fff, #f9f9f9);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.basic::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 150px;
+    height: 150px;
+    background: linear-gradient(135deg, rgba(255, 102, 51, 0.05), rgba(255, 102, 51, 0.1));
+    border-radius: 50%;
+    transform: translate(30%, -30%);
+    z-index: 0;
+}
+
+.basic-icon {
+    position: relative;
+    margin-right: 16px;
+    z-index: 1;
+}
+
+.basic-icon img {
+    width: 76px;
+    height: 76px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.basic-icon:hover img {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(255, 102, 51, 0.2);
+}
+
+.basic-info {
+    flex: 1;
+    z-index: 1;
+}
+
+.basic-info .name {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+}
+
+.basic-info span {
+    display: inline-flex;
+    align-items: center;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 12px;
+    padding: 3px 8px;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-radius: 12px;
+}
+
+.basic-info span::before {
+    content: "\e7a5"; /* 使用Element UI的位置图标 */
+    font-family: element-icons !important;
+    margin-right: 4px;
+    font-size: 14px;
+    color: #ff6633;
+}
+
+.edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 16px;
+    background: linear-gradient(135deg, #ff8052, #ff6633);
+    color: white;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(255, 102, 51, 0.2);
+}
+
+.edit-btn::before {
+    content: "\e78c"; /* 使用Element UI的编辑图标 */
+    font-family: element-icons !important;
+    margin-right: 5px;
+    font-size: 14px;
+}
+
+.edit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(255, 102, 51, 0.3);
+}
+
+.edit-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 5px rgba(255, 102, 51, 0.3);
+}
+
+/* 个人简介优化样式 */
+.introduce {
+    display: flex;
+    align-items: center;
+    padding: 8px 20px; /* 减少上下padding从15px到8px */
+    margin: 8px auto;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+    min-height: 40px; /* 减少最小高度从60px到40px */
+    position: relative;
+    transition: all 0.3s ease;
+    max-width: 70%;
+    width: 100%;
+}
+
+.introduce:hover {
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.introduce-content {
+    flex: 1;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #333;
+    word-break: break-word;
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.introduce-placeholder {
+    display: flex;
+    align-items: center;
+    color: #909399;
+    font-size: 14px; /* 减小字体大小 */
+    cursor: pointer;
+    width: 100%;
+    justify-content: center; /* 添加居中效果 */
+}
+
+.introduce-placeholder i {
+    font-size: 16px; /* 减小图标大小 */
+    margin-left: 8px;
+    color: #ff6633;
+}
+
+.introduce-edit {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    color: #ff6633;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/* 笔记为空时的提示样式 */
+.empty-blog-tip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+    text-align: center;
+    background-color: #fafafa;
+    border-radius: 10px;
+    margin: 20px 0;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+}
+
+.empty-blog-tip img {
+    width: 120px;
+    margin-bottom: 15px;
+    opacity: 0.8;
+}
+
+.empty-blog-tip .title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.empty-blog-tip .desc {
+    font-size: 14px;
+    color: #999;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.publish-blog-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 20px;
+    background: linear-gradient(135deg, #ff8052, #ff6633);
+    color: white;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255, 102, 51, 0.3);
+    transition: all 0.3s ease;
+}
+
+.publish-blog-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 102, 51, 0.4);
+}
+
+.publish-blog-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(255, 102, 51, 0.3);
+}
+
+.publish-blog-btn i {
+    margin-right: 5px;
+    font-size: 16px;
+}
+
+/* 添加博客项悬停动画效果 */
+.blog-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* 修改博客列表样式，使其与blog-container保持一致 */
+.blog-list {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow-y: auto;
+    max-height: calc(100vh - 300px);
+    padding: 0 8px;
+}
+
+.blog-item {
+    position: relative;
+    display: flex !important;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+    background-color: #fff;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    margin-bottom: 5px;
+    padding: 0;
+    cursor: pointer;
+    /* 使用硬件加速优化动画 */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    perspective: 1000px;
+    will-change: transform, box-shadow;
+}
+
+/* 确保每个博客项独立，没有叠加效果 */
+.blog-item::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* 为博客项设置单独的动画样式 */
+.blog-item.hovered {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px 0 rgba(0, 0, 0, 0.1);
+    z-index: 1;
+}
+
+/* 修改博客盒子样式，使其与blog-item保持一致 */
+.blog-box {
+    position: relative;
+    display: flex !important;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 3px 12px 0 rgba(0, 0, 0, 0.08);
+    background-color: #fff;
+    transition: all 0.2s ease;
+    margin-bottom: 15px;
+    padding: 0;
+    cursor: pointer;
+    /* 使用硬件加速优化动画 */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    perspective: 1000px;
+    will-change: transform, box-shadow;
+    height: auto; /* 确保高度根据内容自动调整 */
+}
+
+.blog-box:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px 0 rgba(0, 0, 0, 0.12);
+}
+
+/* 确保每个博客盒子独立，没有叠加效果 */
+.blog-box::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* 为博客盒子设置单独的动画样式 */
+.blog-box.hovered {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px 0 rgba(0, 0, 0, 0.1);
+    z-index: 1;
+}
+
+/* 修复博客操作按钮悬停效果 */
+.blog-actions div {
+    transition: all 0.2s ease;
+}
+
+.blog-actions div:hover {
+    color: #ff6633;
+    transform: scale(1.05);
+}
+
+/* 确保博客徽章显示正常 */
+.blog-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: linear-gradient(135deg, #ff8052, #ff6633);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    z-index: 2;
+    box-shadow: 0 2px 6px rgba(255, 102, 51, 0.3);
+    pointer-events: none; /* 防止徽章干扰鼠标事件 */
+}
+
+/* 添加博客图片和信息样式统一 */
+.blog-img, .blog-img2 {
+    width: 120px;
+    height: 120px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+/* 为关注笔记中的图片设置新样式 */
+.blog-box .blog-img2 {
+    width: 120px;
+    height: 120px;
+    border-radius: 0;
+    margin: 0;
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.blog-box .blog-img2::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0));
+    pointer-events: none;
+}
+
+.blog-box .blog-img2 img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.blog-item:hover .blog-img img, .blog-box:hover .blog-img2 img {
+    transform: scale(1.05);
+}
+
+.blog-info {
+    flex: 1;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.blog-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    color: #333;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.blog-meta {
+    display: flex;
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 0;
+    margin-top: 5px;
+}
+
+.blog-date, .blog-views {
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
+}
+
+.blog-date i, .blog-views i {
+    margin-right: 5px;
+    font-size: 14px;
+}
+
+.blog-actions {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+}
+
+.blog-liked, .blog-comments {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: #666;
+    margin-right: 15px;
+    cursor: pointer;
+}
+
+.blog-liked img {
+    width: 16px;
+    height: 16px;
+    margin-right: 5px;
+}
+
+.blog-comments i {
+    margin-right: 5px;
+    font-size: 14px;
+}
+
+/* 新增博主信息样式 - 放在顶部 */
+.blog-author {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.blog-user-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 8px;
+}
+
+.blog-user-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.blog-user-name {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+
+/* 优化关注笔记中的博主信息样式 */
+.blog-box .blog-info {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+}
+
+.blog-box .blog-author {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.blog-box .blog-title {
+    margin-bottom: 8px;
+    font-size: 15px;
+    line-height: 1.4;
+    max-height: 42px; /* 约为两行文本的高度 */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.blog-box .blog-actions {
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
+.blog-box .blog-meta {
+    margin-top: 5px;
+    font-size: 12px;
+    color: #999;
+}
+
+.blog-box .blog-date, 
+.blog-box .blog-views {
+    font-size: 12px;
+}
+
+/* 去除旧的底部博主信息栏 */
+.blog-foot {
+    display: none;
+}
+
+/* 为移动端优化触摸响应 */
+@media (hover: none) {
+    .blog-item:active, .blog-box:active {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    }
+}
+
+/* 修改header样式，为退出按钮腾出空间 */
+.header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 44px;
+    line-height: 44px;
+    background-color: #fff;
+    border-bottom: 1px solid #f1f1f1;
+    z-index: 9;
+    padding: 0 15px;
+}
+
+.header-title {
+    flex: 1;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+}
+
+.header-back-btn {
+    font-size: 20px;
+    color: #333;
+    cursor: pointer;
+}
+
+/* 修改退出按钮样式，适应header */
+.logout-btn {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 15px;
+    background-color: rgba(0, 0, 0, 0.03);
+    transition: all 0.3s ease;
+}
+
+.logout-btn::before {
+    content: "\e78e"; /* 使用Element UI的退出图标 */
+    font-family: element-icons !important;
+    margin-right: 4px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    color: #ff6633;
+    background-color: rgba(255, 102, 51, 0.08);
+}
+
+.logout-btn:hover::before {
+    transform: translateX(-2px);
+}
+
+/* 添加未读标记样式 */
+.unread-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #ff6633;
+    color: white;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+    z-index: 10;
+    box-shadow: 0 0 5px rgba(255, 102, 51, 0.5);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(255, 102, 51, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 5px rgba(255, 102, 51, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(255, 102, 51, 0);
+    }
+}
+
+/* 关注标签中的未读计数样式 */
+.unread-count {
+    color: #ff6633;
+    font-weight: bold;
+    margin-left: 2px;
+    background-color: rgba(255, 102, 51, 0.1);
+    padding: 1px 5px;
+    border-radius: 10px;
+}
+
+/* 添加已读/未读切换按钮样式 */
+.read-filter {
+    display: flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 14px;
+    cursor: pointer;
+    background-color: #f5f5f5;
+    transition: all 0.3s ease;
+    font-size: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    margin-left: 12px; /* 增加左边距，与其他元素保持间隔 */
+    white-space: nowrap; /* 防止文本换行 */
+    flex-shrink: 0; /* 防止被压缩 */
+    height: 28px; /* 设置固定高度，与下拉框高度接近 */
+}
+
+.read-filter.active {
+    background-color: #ff6633;
+    color: white;
+    box-shadow: 0 2px 6px rgba(255, 102, 51, 0.3);
+    border-color: #ff6633;
+}
+
+.read-filter:hover:not(.active) {
+    background-color: #f0f0f0;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.read-filter i {
+    margin-right: 3px;
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+.read-filter:hover i {
+    transform: rotate(45deg);
+}
+
+.read-filter.active:hover i {
+    transform: rotate(0deg) scale(1.1);
+}
+
+/* 替换为下拉选择框样式 */
+.read-filter-select {
+    margin-left: 12px;
+    width: 120px;
+    flex-shrink: 0; /* 防止被压缩 */
+    white-space: nowrap; /* 防止文本换行 */
+}
+
+/* 自定义下拉框样式，使其与页面风格统一 */
+.read-filter-select .el-input__inner {
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    background-color: #f5f5f5;
+}
+
+.read-filter-select .el-input__inner:hover,
+.read-filter-select .el-input__inner:focus {
+    border-color: #ff6633;
+    box-shadow: 0 3px 8px rgba(255, 102, 51, 0.2);
+}
+
+.read-filter-select .el-select__caret {
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.read-filter-select:hover .el-select__caret {
+    color: #ff6633;
+}
+
+/* 查看更多按钮样式 */
+.view-more-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    margin-top: 15px;
+    color: #ffffff;
+    background-color: #ff6633;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(255, 102, 51, 0.3);
+    transition: all 0.3s ease;
+}
+
+.view-more-btn:hover {
+    background-color: #ff5722;
+    box-shadow: 0 4px 12px rgba(255, 102, 51, 0.5);
+    transform: translateY(-2px);
+}
+
+.view-more-btn .blog-count {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.3);
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin: 0 5px;
+    font-size: 14px;
+}
+
+.view-more-btn i {
+    margin-left: 5px;
+    transition: transform 0.3s ease;
+    color: #ffffff;
+}
+
+.view-more-btn:hover i {
+    transform: translateX(3px);
+}
+
+/* 为固定标签栏下方内容添加顶部间距 */
+.blog-container, .blog-list, .empty-blog-tip {
+    margin-top: 10px;
+}
+
+/* 确保标签栏固定后不会遮挡其他元素 */
+.el-tabs__content {
+    padding-top: 10px;
+}
+
+/* 空状态提示样式（未选择博主、博主无笔记） */
+.no-blogger-selected, .empty-blogger-notes {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+    text-align: center;
+    background-color: #fafafa;
+    border-radius: 10px;
+    margin: 20px 0;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+    min-height: 200px;
+}
+
+.no-blogger-selected img, .empty-blogger-notes img {
+    width: 120px;
+    margin-bottom: 15px;
+    opacity: 0.8;
+}
+
+.no-blogger-selected .title, .empty-blogger-notes .title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.no-blogger-selected .desc, .empty-blogger-notes .desc {
+    font-size: 14px;
+    color: #999;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+/* 优化下拉框在移动设备上的显示 */
+@media screen and (max-width: 576px) {
+    .blog-tabs {
+        padding: 4px 8px;
+    }
+    
+    .blogger-select-container {
+        margin: 5px 0 5px 8px;
+        min-width: 150px; /* 增加最小宽度 */
+    }
+    
+    .blogger-select-label {
+        font-size: 11px;
+    }
+    
+    .blogger-select {
+        max-width: 120px; /* 增加宽度从80px到120px */
+        min-width: 100px; /* 添加最小宽度 */
+    }
+    
+    .read-filter {
+        margin-top: 5px;
+        font-size: 12px;
+        padding: 2px 8px;
+        margin-left: 8px; /* 减小左边距以适应小屏幕 */
+    }
+    
+    /* 添加下拉框在移动设备上的样式 */
+    .read-filter-select {
+        margin-left: 8px;
+        width: 110px;
+        margin-top: 5px;
+    }
+    
+    .blog-tab {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+}
+
+/* 关注列表样式 */
+.follow-list {
+  padding: 10px;
+}
+.follow-item {
+  display: flex;
+  padding: 15px;
+  border-bottom: 1px solid #f2f2f2;
+  align-items: center;
+}
+.follow-user-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 15px;
+}
+.follow-user-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.follow-user-info {
+  flex: 1;
+}
+.follow-user-name {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.follow-user-intro {
+  font-size: 14px;
+  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.empty-follow-tip {
+  text-align: center;
+  padding: 30px 0;
+}
+.empty-follow-tip img {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 15px;
+}
+.empty-follow-tip .title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+.empty-follow-tip .desc {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* 加载状态提示样式 */
+.loading-status {
+  text-align: center;
+  padding: 15px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  color: #ff6633;
+  font-weight: 500;
+}
+
+.loading-indicator i {
+  margin-right: 8px;
+  font-size: 16px;
+  animation: rotate 1s linear infinite;
+}
+
+.no-more-data {
+  padding: 10px;
+  color: #999;
+  font-size: 13px;
+  font-style: italic;
+  position: relative;
+}
+
+.no-more-data::before,
+.no-more-data::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 15%;
+  height: 1px;
+  background-color: #ddd;
+}
+
+.no-more-data::before {
+  left: 20%;
+}
+
+.no-more-data::after {
+  right: 20%;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+} 

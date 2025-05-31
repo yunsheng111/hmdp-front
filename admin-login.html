@@ -296,7 +296,7 @@
         this.loading = true;
         
         // 调用管理员登录接口
-        adminAxios.post("/admin/login", this.form)
+        adminAxios.post("/admin/auth/login", this.form)
           .then((data) => {
             this.loading = false;
             

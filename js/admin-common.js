@@ -1,80 +1,73 @@
-// 管理员专用common.js
-let adminCommonURL = "/api";
-// 设置后台服务地址
+// {{CHENGQI:
+// Action: Added
+// Timestamp: [2024-07-31 19:00:00 +08:00]
+// Reason: P-MOD-001 Frontend Integration - Centralized Axios configuration for Admin APIs.
+// Principle_Applied: DRY, SRP, High Cohesion
+// Architectural_Note (AR): This file encapsulates admin API communication logic.
+// Documentation_Note (DW): Created admin-common.js for Sa-Token integration.
+// }}
+// {{START MODIFICATIONS}}
+// 创建一个 Axios 实例专门用于管理员后台接口
 const adminAxios = axios.create({
-  baseURL: adminCommonURL,
-  timeout: 2000
+  baseURL: '/api', // 使用nginx代理，避免跨域问题
+  timeout: 5000 // 请求超时时间
 });
 
-// request拦截器，将管理员token放入头中
+// 请求拦截器
 adminAxios.interceptors.request.use(
   config => {
-    let adminToken = sessionStorage.getItem("adminToken");
-    if(adminToken) config.headers['admin-token'] = adminToken
-    return config
+    // 从 sessionStorage 获取 token
+    const token = sessionStorage.getItem('adminToken');
+    if (token) {
+      // 如果存在 token，则添加到请求头
+      // 使用Sa-Token配置的token名称
+      config.headers['satoken'] = token;
+      // 同时设置Authorization头，确保兼容性
+      config.headers['authorization'] = token;
+    }
+    return config;
   },
   error => {
-    console.log(error)
-    return Promise.reject(error)
+    // 对请求错误做些什么
+    console.error('Request error:', error);
+    return Promise.reject(error);
   }
-)
+);
 
-adminAxios.interceptors.response.use(function (response) {
-  // 判断执行结果
-  if (!response.data.success) {
-    return Promise.reject(response.data.errorMsg)
-  }
-  return response.data;
-}, function (error) {
-  // 一般是服务端异常或者网络异常
-  console.log("请求错误详情:", error);
-  
-  // 如果有响应对象
-  if(error.response) {
-    console.log("错误状态码:", error.response.status);
-    console.log("错误数据:", error.response.data);
+// 响应拦截器
+adminAxios.interceptors.response.use(
+  response => {
+    // 2xx 范围内的状态码都会触发该函数。
+    // 对响应数据做点什么
+    if (response.data && response.data.success === false) {
+      // 后端业务逻辑判定为失败 (Result.fail)
+      console.error('API Error:', response.data.errorMsg || 'Unknown error');
+      return Promise.reject(response.data.errorMsg || '操作失败');
+    }
+    // 直接返回 data 部分，简化调用层级
+    return response.data;
+  },
+  error => {
+    // 超出 2xx 范围的状态码都会触发该函数。
+    // 对响应错误做点什么
+    console.error('Response Error:', error.response || error.message);
     
-    // 处理401未授权错误
-    if(error.response.status == 401){
-      // 管理员未登录，跳转到管理员登录页
-      setTimeout(() => {
-        location.href = "admin-login.html"
-      }, 200);
-      return Promise.reject("请先登录");
+    // 401错误表示未登录或token失效
+    if (error.response && error.response.status === 401) {
+      // 清除本地存储的token和用户信息
+      sessionStorage.removeItem('adminToken');
+      sessionStorage.removeItem('adminInfo');
+      
+      // 检查是否是获取统计数据的请求
+      const isStatsRequest = error.config && error.config.url && error.config.url.includes('/admin/stats/');
+      
+      // 如果不是统计数据请求且不是登录页面，则跳转到登录页
+      if (!isStatsRequest && location.pathname !== '/admin-login.html') {
+        location.href = '/admin-login.html';
+      }
     }
     
-    // 返回服务器的错误信息
-    return Promise.reject(error.response.data?.errorMsg || "服务器异常");
+    return Promise.reject(error.response ? error.response.data.errorMsg || error.message : error.message || '请求失败');
   }
-  
-  // 处理请求错误（没有response对象）
-  if(error.request) {
-    console.log("请求发送失败:", error.request);
-    return Promise.reject("网络请求失败，请检查网络连接");
-  }
-  
-  // 其他错误
-  return Promise.reject("请求错误: " + error.message);
-});
-
-adminAxios.defaults.paramsSerializer = function(params) {
-  let p = "";
-  Object.keys(params).forEach(k => {
-    if(params[k]){
-      p = p + "&" + k + "=" + params[k]
-    }
-  })
-  return p;
-}
-
-const adminUtil = {
-  adminCommonURL,
-  getUrlParam(name) {
-    let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
-    let r = window.location.search.substr(1).match(reg);
-    if (r != null) {
-      return decodeURI(r[2]);
-    }
-    return "";
-  }
-} 
+);
+// {{END MODIFICATIONS}} 

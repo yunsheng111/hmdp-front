@@ -405,11 +405,13 @@
             };
             // 显示提示但不跳转
             this.$message.warning('获取统计数据失败，显示模拟数据');
+            
+            // 不再尝试刷新页面或重新验证身份
           });
       },
       logout() {
         // 调用登出接口
-        adminAxios.post("/admin/logout")
+        adminAxios.post("/admin/auth/logout")
           .then(() => {
             // 清除本地存储的token和用户信息
             sessionStorage.removeItem('adminToken');

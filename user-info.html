@@ -12,438 +12,7 @@
   <link rel="stylesheet" href="./css/element.css">
   <link href="./css/main.css" rel="stylesheet">
   <link href="./css/info.css" rel="stylesheet">
-
-  <style type="text/css">
-      .el-tabs--bottom .el-tabs__item.is-bottom:nth-child(2), .el-tabs--bottom .el-tabs__item.is-top:nth-child(2), .el-tabs--top .el-tabs__item.is-bottom:nth-child(2), .el-tabs--top .el-tabs__item.is-top:nth-child(2) {
-          padding-left: 15px;
-      }
-
-      .el-tabs, .el-tab-pane {
-          height: 100%;
-      }
-
-      .el-tabs__nav-wrap::after {
-          height: 1px;
-      }
-      
-      .el-tabs__content {
-          height: 90%;
-          padding-bottom: 60px;
-      }
-      
-      /* 优化个人信息区域样式 */
-      .basic {
-          display: flex;
-          align-items: center;
-          position: relative;
-          padding: 20px 16px;
-          margin-bottom: 8px;
-          background: linear-gradient(135deg, #fff, #f9f9f9);
-          border-radius: 12px;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-          transition: all 0.3s ease;
-          overflow: hidden;
-      }
-      
-      .basic::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          right: 0;
-          width: 150px;
-          height: 150px;
-          background: linear-gradient(135deg, rgba(255, 102, 51, 0.05), rgba(255, 102, 51, 0.1));
-          border-radius: 50%;
-          transform: translate(30%, -30%);
-          z-index: 0;
-      }
-      
-      .basic-icon {
-          position: relative;
-          margin-right: 16px;
-          z-index: 1;
-      }
-      
-      .basic-icon img {
-          width: 76px;
-          height: 76px;
-          object-fit: cover;
-          border-radius: 50%;
-          border: 3px solid white;
-          box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-          transition: all 0.3s ease;
-      }
-      
-      .basic-icon:hover img {
-          transform: scale(1.05);
-          box-shadow: 0 5px 15px rgba(255, 102, 51, 0.2);
-      }
-      
-      .basic-info {
-          flex: 1;
-          z-index: 1;
-      }
-      
-      .basic-info .name {
-          font-size: 20px;
-          font-weight: 600;
-          color: #333;
-          margin-bottom: 6px;
-          display: flex;
-          align-items: center;
-      }
-      
-      .basic-info span {
-          display: inline-flex;
-          align-items: center;
-          font-size: 14px;
-          color: #666;
-          margin-bottom: 12px;
-          padding: 3px 8px;
-          background-color: rgba(0, 0, 0, 0.03);
-          border-radius: 12px;
-      }
-      
-      .basic-info span::before {
-          content: "\e7a5"; /* 使用Element UI的位置图标 */
-          font-family: element-icons !important;
-          margin-right: 4px;
-          font-size: 14px;
-          color: #ff6633;
-      }
-      
-      .edit-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 6px 16px;
-          background: linear-gradient(135deg, #ff8052, #ff6633);
-          color: white;
-          border-radius: 20px;
-          font-size: 14px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          box-shadow: 0 3px 8px rgba(255, 102, 51, 0.2);
-      }
-      
-      .edit-btn::before {
-          content: "\e78c"; /* 使用Element UI的编辑图标 */
-          font-family: element-icons !important;
-          margin-right: 5px;
-          font-size: 14px;
-      }
-      
-      .edit-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 5px 12px rgba(255, 102, 51, 0.3);
-      }
-      
-      .edit-btn:active {
-          transform: translateY(1px);
-          box-shadow: 0 2px 5px rgba(255, 102, 51, 0.3);
-      }
-      
-      /* 个人简介优化样式 */
-      .introduce {
-          display: flex;
-          align-items: center;
-          padding: 15px 20px;
-          margin: 8px 10px;
-          background-color: #fff;
-          border-radius: 10px;
-          box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
-          min-height: 60px;
-          position: relative;
-          transition: all 0.3s ease;
-      }
-      
-      .introduce:hover {
-          box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.1);
-          transform: translateY(-2px);
-      }
-      
-      .introduce-content {
-          flex: 1;
-          font-size: 16px;
-          line-height: 1.6;
-          color: #333;
-          word-break: break-word;
-          max-height: 200px;
-          overflow-y: auto;
-          padding-right: 10px;
-      }
-      
-      .introduce-placeholder {
-          display: flex;
-          align-items: center;
-          color: #909399;
-          font-size: 16px;
-          cursor: pointer;
-          width: 100%;
-      }
-      
-      .introduce-placeholder i {
-          font-size: 18px;
-          margin-left: 8px;
-          color: #ff6633;
-      }
-      
-      .introduce-edit {
-          position: absolute;
-          right: 15px;
-          top: 15px;
-          color: #ff6633;
-          font-size: 20px;
-          cursor: pointer;
-      }
-      
-      /* 笔记为空时的提示样式 */
-      .empty-blog-tip {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 30px 20px;
-          text-align: center;
-          background-color: #fafafa;
-          border-radius: 10px;
-          margin: 20px 0;
-          box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
-      }
-      
-      .empty-blog-tip img {
-          width: 120px;
-          margin-bottom: 15px;
-          opacity: 0.8;
-      }
-      
-      .empty-blog-tip .title {
-          font-size: 16px;
-          font-weight: 500;
-          color: #333;
-          margin-bottom: 8px;
-      }
-      
-      .empty-blog-tip .desc {
-          font-size: 14px;
-          color: #999;
-          margin-bottom: 20px;
-          line-height: 1.5;
-      }
-      
-      .publish-blog-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          height: 40px;
-          padding: 0 20px;
-          background: linear-gradient(135deg, #ff8052, #ff6633);
-          color: white;
-          border-radius: 20px;
-          font-size: 14px;
-          font-weight: 500;
-          cursor: pointer;
-          box-shadow: 0 4px 12px rgba(255, 102, 51, 0.3);
-          transition: all 0.3s ease;
-      }
-      
-      .publish-blog-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 16px rgba(255, 102, 51, 0.4);
-      }
-      
-      .publish-blog-btn:active {
-          transform: translateY(1px);
-          box-shadow: 0 2px 8px rgba(255, 102, 51, 0.3);
-      }
-      
-      .publish-blog-btn i {
-          margin-right: 5px;
-          font-size: 16px;
-      }
-      
-      /* 添加博客项悬停动画效果 */
-      .blog-container {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          gap: 15px;
-      }
-      
-      .blog-item {
-          position: relative;
-          display: flex !important;
-          border-radius: 8px;
-          overflow: hidden;
-          box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
-          background-color: #fff;
-          transition: transform 0.15s ease, box-shadow 0.15s ease;
-          margin-bottom: 5px;
-          padding: 0;
-          cursor: pointer;
-          /* 使用硬件加速优化动画 */
-          -webkit-backface-visibility: hidden;
-          backface-visibility: hidden;
-          transform: translateZ(0);
-          perspective: 1000px;
-          will-change: transform, box-shadow;
-      }
-      
-      /* 确保每个博客项独立，没有叠加效果 */
-      .blog-item::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          pointer-events: none;
-          z-index: -1;
-      }
-      
-      /* 为博客项设置单独的动画样式 */
-      .blog-item.hovered {
-          transform: translateY(-5px);
-          box-shadow: 0 8px 20px 0 rgba(0, 0, 0, 0.1);
-          z-index: 1;
-      }
-      
-      .blog-list {
-          position: relative;
-      }
-      
-      .blog-box {
-          position: relative;
-          border-radius: 8px;
-          overflow: hidden;
-          background-color: #fff;
-          box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
-          transition: transform 0.15s ease, box-shadow 0.15s ease;
-          margin-bottom: 15px;
-          cursor: pointer;
-          /* 使用硬件加速优化动画 */
-          -webkit-backface-visibility: hidden;
-          backface-visibility: hidden;
-          transform: translateZ(0);
-          perspective: 1000px;
-          will-change: transform, box-shadow;
-      }
-      
-      /* 确保每个博客盒子独立，没有叠加效果 */
-      .blog-box::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          pointer-events: none;
-          z-index: -1;
-      }
-      
-      /* 为博客盒子设置单独的动画样式 */
-      .blog-box.hovered {
-          transform: translateY(-5px);
-          box-shadow: 0 8px 20px 0 rgba(0, 0, 0, 0.1);
-          z-index: 1;
-      }
-      
-      /* 修复博客操作按钮悬停效果 */
-      .blog-actions div {
-          transition: all 0.2s ease;
-      }
-      
-      .blog-actions div:hover {
-          color: #ff6633;
-          transform: scale(1.05);
-      }
-      
-      /* 确保博客徽章显示正常 */
-      .blog-badge {
-          position: absolute;
-          top: 10px;
-          right: 10px;
-          background: linear-gradient(135deg, #ff8052, #ff6633);
-          color: white;
-          padding: 2px 8px;
-          border-radius: 10px;
-          font-size: 12px;
-          z-index: 2;
-          box-shadow: 0 2px 6px rgba(255, 102, 51, 0.3);
-          pointer-events: none; /* 防止徽章干扰鼠标事件 */
-      }
-      
-      /* 为移动端优化触摸响应 */
-      @media (hover: none) {
-          .blog-item:active {
-              transform: translateY(-3px);
-              box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-          }
-          
-          .blog-box:active {
-              transform: translateY(-3px);
-              box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-          }
-      }
-
-      /* 修改header样式，为退出按钮腾出空间 */
-      .header {
-          position: relative;
-          display: flex;
-          align-items: center;
-          height: 44px;
-          line-height: 44px;
-          background-color: #fff;
-          border-bottom: 1px solid #f1f1f1;
-          z-index: 9;
-          padding: 0 15px;
-      }
-      
-      .header-title {
-          flex: 1;
-          text-align: center;
-          font-size: 16px;
-          font-weight: 500;
-          color: #333;
-      }
-      
-      .header-back-btn {
-          font-size: 20px;
-          color: #333;
-          cursor: pointer;
-      }
-
-      /* 修改退出按钮样式，适应header */
-      .logout-btn {
-          display: flex;
-          align-items: center;
-          font-size: 14px;
-          color: #666;
-          cursor: pointer;
-          padding: 5px 10px;
-          border-radius: 15px;
-          background-color: rgba(0, 0, 0, 0.03);
-          transition: all 0.3s ease;
-      }
-      
-      .logout-btn::before {
-          content: "\e78e"; /* 使用Element UI的退出图标 */
-          font-family: element-icons !important;
-          margin-right: 4px;
-          font-size: 14px;
-          transition: all 0.3s ease;
-      }
-      
-      .logout-btn:hover {
-          color: #ff6633;
-          background-color: rgba(255, 102, 51, 0.08);
-      }
-      
-      .logout-btn:hover::before {
-          transform: translateX(-2px);
-      }
-  </style>
+  <link href="./css/user-info.css" rel="stylesheet">
 
 </head>
 
@@ -481,18 +50,61 @@
   <div class="content">
     <el-tabs v-model="activeName" @tab-click="handleClick">
       <el-tab-pane label="笔记" name="1">
-        <!-- 笔记为空时的提示 -->
-        <div v-if="blogs.length === 0" class="empty-blog-tip">
+        <!-- 添加子标签 -->
+        <div class="blog-tabs" v-if="blogs.length > 0 || activeSubTab === 'follow'">
+          <div class="blog-tab-group">
+            <div class="blog-tab" :class="{ active: activeSubTab === 'my' }" @click="switchSubTab('my')">我的</div>
+            <div class="blog-tab" :class="{ active: activeSubTab === 'follow' }" @click="switchSubTab('follow')">关注</div>
+            
+            <!-- 调整博主选择框结构 -->
+            <div class="blogger-select-container" v-if="activeSubTab === 'follow'">
+              <span class="blogger-select-label">关注的博主：</span>
+              <el-select 
+                v-model="selectedBloggerId" 
+                placeholder="选择博主" 
+                class="blogger-select" 
+                size="small"
+                filterable
+                @change="handleBloggerChange">
+                <el-option
+                  v-for="user in followUsers"
+                  :key="user.id"
+                  :label="user.nickName"
+                  :value="user.id">
+                  <div class="blogger-option">
+                    <img class="blogger-avatar" :src="user.icon || '/imgs/icons/default-icon.png'" alt="">
+                    <span>{{user.nickName}}</span>
+                  </div>
+                </el-option>
+              </el-select>
+            </div>
+            
+            <!-- 移动已读/未读切换按钮到这里，单独作为一个元素 -->
+            <el-select 
+              v-model="readFilterValue" 
+              placeholder="筛选笔记" 
+              class="read-filter-select" 
+              size="small"
+              @change="handleReadFilterChange"
+              v-if="activeSubTab === 'follow'">
+              <el-option :value="false" label="查看全部"></el-option>
+              <el-option :value="true" label="只看未读"></el-option>
+            </el-select>
+          </div>
+        </div>
+        
+        <!-- 笔记为空时的提示 - 仅保留我的笔记为空的情况 -->
+        <div v-if="blogs.length === 0 && activeSubTab === 'my'" class="empty-blog-tip">
           <img src="/imgs/empty-notes.png" alt="暂无笔记" onerror="this.src='/imgs/icons/default-icon.png'">
           <div class="title">还没有发布过笔记哦</div>
           <div class="desc">分享你的精彩时刻，记录美好生活<br>快来发布你的第一篇笔记吧！</div>
-          <div class="publish-blog-btn" @click="toPublishBlog">
+          <div class="publish-blog-btn" @click="toPublishBlog()">
             <i class="el-icon-edit"></i> 立即发布笔记
           </div>
         </div>
         
-        <!-- 笔记列表 -->
-        <div v-else class="blog-container">
+        <!-- 我的笔记列表 -->
+        <div v-if="activeSubTab === 'my' && blogs.length > 0" class="blog-container">
           <div v-for="b in blogs.slice(0, 4)" :key="b.id" class="blog-item" @click="toBlogDetail(b)">
             <div class="blog-img"><img :src="b.images.split(',')[0]" alt=""></div>
             <div class="blog-info">
@@ -512,27 +124,95 @@
             查看更多笔记 <span class="blog-count">(共{{blogs.length}}篇)</span> <i class="el-icon-arrow-right"></i>
           </div>
         </div>
+        
+        <!-- 关注的人的笔记列表 - 重新布局 -->
+        <div v-if="activeSubTab === 'follow'" class="blog-list" @scroll="onScroll">
+          <!-- 当未选择博主时显示提示 -->
+          <div class="no-blogger-selected" v-if="!selectedBloggerId">
+            <img src="/imgs/empty-notes.png" alt="请选择博主" onerror="this.src='/imgs/icons/default-icon.png'">
+            <div class="title">请先选择一位关注的博主</div>
+            <div class="desc">从上方下拉列表中选择一位您关注的博主<br>查看他们的最新动态</div>
+          </div>
+          
+          <!-- 选择了博主但没有笔记时显示提示 -->
+          <div class="empty-blogger-notes" v-else-if="blogs2.length === 0">
+            <img src="/imgs/empty-notes.png" alt="暂无笔记" onerror="this.src='/imgs/icons/default-icon.png'">
+            <div class="title">没有找到该博主的{{ showUnreadOnly ? '未读' : '' }}笔记</div>
+            <div class="desc">
+              该博主{{ showUnreadOnly ? '暂无未读笔记' : '还没有发布笔记' }}
+              <br>{{ showUnreadOnly ? '可以切换到"查看全部"模式浏览' : '可以关注更多好友，发现精彩内容' }}
+            </div>
+          </div>
+          
+          <!-- 博客列表 -->
+          <div class="blog-box" v-for="b in blogs2" :key="b.id" @click="toBlogDetail(b)" v-else>
+            <!-- 添加未读标记，只有未读博客显示 -->
+            <div class="unread-badge" v-if="!b.isRead"></div>
+            <!-- 图片部分 -->
+            <div class="blog-img2"><img :src="b.img" alt=""></div>
+            <!-- 内容部分 -->
+            <div class="blog-info">
+              <!-- 博主信息移到顶部 -->
+              <div class="blog-author">
+                <div class="blog-user-icon"><img :src="b.icon || '/imgs/icons/default-icon.png'" alt=""></div>
+                <div class="blog-user-name">{{b.name}}</div>
+              </div>
+              
+              <!-- 笔记标题 -->
+              <div class="blog-title">{{b.title}}</div>
+              
+              <!-- 点赞评论 -->
+              <div class="blog-actions">
+                <div class="blog-liked" @click.stop="addLike(b)">
+                  <img src="/imgs/thumbup.png" alt=""> {{b.liked}}
+                </div>
+                <div class="blog-comments" @click.stop><i class="el-icon-chat-dot-round"></i> {{b.comments || 0}}</div>
+              </div>
+              
+              <!-- 发布时间和浏览量 -->
+              <div class="blog-meta">
+                <div class="blog-date"><i class="el-icon-time"></i> {{b.createTime ? new Date(b.createTime).toLocaleDateString() : '最近'}}</div>
+                <div class="blog-views"><i class="el-icon-view"></i> {{b.views || Math.floor(Math.random() * 100) + 10}}</div>
+              </div>
+            </div>
+            
+            <div class="blog-badge" v-if="b.liked > 3">热门</div>
+          </div>
+          
+          <!-- 加载状态提示 -->
+          <div class="loading-status" v-if="selectedBloggerId && blogs2.length > 0">
+            <div class="loading-indicator" v-if="isLoadingMore">
+              <i class="el-icon-loading"></i> 加载中...
+            </div>
+            <div class="no-more-data" v-else-if="noMoreData">
+              没有更多笔记了
+            </div>
+            <!-- 添加查看更多笔记按钮 -->
+            <div class="view-more-btn" v-if="!isLoadingMore && blogs2.length > 0" @click="viewAllBloggerBlogs">
+              查看更多笔记 <i class="el-icon-arrow-right"></i>
+            </div>
+          </div>
+        </div>
       </el-tab-pane>
       <el-tab-pane label="评价" name="2">评价</el-tab-pane>
       <el-tab-pane label="粉丝(0)" name="3">粉丝(0)</el-tab-pane>
-      <el-tab-pane label="关注(0)" name="4">
-        <div class="blog-list" @scroll="onScroll">
-          <div class="blog-box" v-for="b in blogs2" :key="b.id">
-            <div class="blog-img2" @click="toBlogDetail(b)"><img :src="b.img" alt=""></div>
-            <div class="blog-title">{{b.title}}</div>
-            <div class="blog-foot">
-              <div class="blog-user-icon"><img :src="b.icon || '/imgs/icons/default-icon.png'" alt=""></div>
-              <div class="blog-user-name">{{b.name}}</div>
-              <div class="blog-liked" @click="addLike(b)">
-                <svg t="1646634642977" class="icon" viewBox="0 0 1024 1024" version="1.1"
-                     xmlns="http://www.w3.org/2000/svg" p-id="2187" width="14" height="14">
-                  <path
-                      d="M160 944c0 8.8-7.2 16-16 16h-32c-26.5 0-48-21.5-48-48V528c0-26.5 21.5-48 48-48h32c8.8 0 16 7.2 16 16v448zM96 416c-53 0-96 43-96 96v416c0 53 43 96 96 96h96c17.7 0 32-14.3 32-32V448c0-17.7-14.3-32-32-32H96zM505.6 64c16.2 0 26.4 8.7 31 13.9 4.6 5.2 12.1 16.3 10.3 32.4l-23.5 203.4c-4.9 42.2 8.6 84.6 36.8 116.4 28.3 31.7 68.9 49.9 111.4 49.9h271.2c6.6 0 10.8 3.3 13.2 6.1s5 7.5 4 14l-48 303.4c-6.9 43.6-29.1 83.4-62.7 112C815.8 944.2 773 960 728.9 960h-317c-33.1 0-59.9-26.8-59.9-59.9v-455c0-6.1 1.7-12 5-17.1 69.5-109 106.4-234.2 107-364h41.6z m0-64h-44.9C427.2 0 400 27.2 400 60.7c0 127.1-39.1 251.2-112 355.3v484.1c0 68.4 55.5 123.9 123.9 123.9h317c122.7 0 227.2-89.3 246.3-210.5l47.9-303.4c7.8-49.4-30.4-94.1-80.4-94.1H671.6c-50.9 0-90.5-44.4-84.6-95l23.5-203.4C617.7 55 568.7 0 505.6 0z"
-                      p-id="2188" :fill="b.isLike ? '#ff6633' : '#82848a'"></path>
-                </svg>
-                {{b.liked}}
-              </div>
+      <el-tab-pane :label="'关注(' + followCount + ')'" name="4">
+        <!-- 关注的博主列表 -->
+        <div class="follow-list">
+          <div class="follow-item" v-for="user in followUsers" :key="user.id">
+            <div class="follow-user-icon">
+              <img :src="user.icon || '/imgs/icons/default-icon.png'" alt="">
             </div>
+            <div class="follow-user-info">
+              <div class="follow-user-name">{{user.nickName}}</div>
+              <div class="follow-user-intro">{{user.introduce || '这个人很懒，还没有写简介'}}</div>
+            </div>
+          </div>
+          <!-- 无关注用户时显示 -->
+          <div class="empty-follow-tip" v-if="followUsers.length === 0">
+            <img src="/imgs/empty-follow.png" alt="暂无关注" onerror="this.src='/imgs/icons/default-icon.png'">
+            <div class="title">还没有关注任何人</div>
+            <div class="desc">去关注更多好友，发现精彩内容<br>探索更多有趣的人和故事！</div>
           </div>
         </div>
       </el-tab-pane>
@@ -552,6 +232,7 @@
     data: {
       user: "",
       activeName: "1",
+      activeSubTab: "my", // 添加子标签激活状态
       info: {},
       blogs: [],
       blogs2: [], // 关注的人的播客
@@ -561,12 +242,43 @@
       },
       count: 5,
       isReachBottom: false,
+      isLoadingMore: false, // 添加加载更多状态标识
+      noMoreData: false, // 添加无更多数据标识
+      currentBloggerPage: 1, // 添加当前博主博客页码
       resizeObserver: null, // 用于监测DOM变化
       lastHoveredElement: null, // 记录最后悬停的元素
       mouseMoveRAF: null, // 用于存储requestAnimationFrame的ID
+      unreadCount: 0, // 未读笔记数量
+      lastUnreadCount: 0, // 上一次的未读数量，用于比较变化
+      showUnreadOnly: true, // 添加是否只显示未读的状态
+      readFilterValue: true, // 添加readFilterValue，默认与showUnreadOnly保持一致
+      allBlogs2: [], // 存储所有的关注博客
+      followCount: 0, // 关注人数
+      followUsers: [], // 关注的人列表
+      selectedBloggerId: null, // 添加选择的博主ID
+      originalAllBlogs2: [], // 存储原始博客列表，用于筛选
+    },
+    computed: {
+      // 移除unreadLabel计算属性，直接在模板中使用
+    },
+    watch: {
+      unreadCount(newVal, oldVal) {
+        this.lastUnreadCount = oldVal;
+        
+        // 如果未读数量增加，可以添加一些提示效果
+        if (newVal > oldVal && oldVal !== 0) {
+          this.$message({
+            message: `您有 ${newVal} 条未读笔记`,
+            type: 'info',
+            duration: 3000
+          });
+        }
+      }
     },
     created() {
       this.queryUser();
+      // 初始化readFilterValue与showUnreadOnly保持一致
+      this.readFilterValue = this.showUnreadOnly;
     },
     mounted() {
       // 监听页面滚动
@@ -580,7 +292,7 @@
       
       // 监听窗口大小变化和标签页切换
       window.addEventListener('resize', this.reinitializeHoverEffects);
-      window.addEventListener('visibilitychange', this.reinitializeHoverEffects);
+      window.addEventListener('visibilitychange', this.handleVisibilityChange);
       
       // 初始化时确保所有hovered类被清除
       this.clearAllHoveredClasses();
@@ -590,7 +302,7 @@
       document.removeEventListener('mousemove', this.handleMouseMove);
       document.removeEventListener('mouseleave', this.handleMouseLeave);
       window.removeEventListener('resize', this.reinitializeHoverEffects);
-      window.removeEventListener('visibilitychange', this.reinitializeHoverEffects);
+      window.removeEventListener('visibilitychange', this.handleVisibilityChange);
       
       // 取消任何正在进行的动画帧请求
       if (this.mouseMoveRAF) {
@@ -640,6 +352,20 @@
             
             // 滚动时也重新检查悬停效果
             this.reinitializeHoverEffects();
+          });
+        }
+        
+        // 添加博客标签栏滚动监听
+        const blogTabs = document.querySelectorAll('.blog-tabs');
+        if (blogTabs.length) {
+          document.addEventListener('scroll', () => {
+            blogTabs.forEach(tabBar => {
+              if (window.scrollY > 150) {
+                tabBar.classList.add('is-scrolling');
+              } else {
+                tabBar.classList.remove('is-scrolling');
+              }
+            });
           });
         }
       },
@@ -828,9 +554,29 @@
               return;
             }
             let {list, ...params} = data;
-            list.forEach(b => b.img = b.images.split(",")[0])
-            this.blogs2 = clear ? list : this.blogs2.concat(list);
+            // 设置图片和其他属性
+            list.forEach(b => {
+              b.img = b.images.split(",")[0];
+              // 添加评论数属性，如果不存在则默认为0
+              b.comments = b.comments || 0;
+              // 添加浏览数属性，如果不存在则随机生成
+              b.views = b.views || Math.floor(Math.random() * 100) + 10;
+            });
+            
+            // 存储所有博客
+            this.allBlogs2 = clear ? list : this.allBlogs2.concat(list);
+            // 保存原始数据用于筛选
+            this.originalAllBlogs2 = [...this.allBlogs2];
+            
+            // 使用统一的方法更新显示
+            this.updateBlogDisplay();
+            
             this.params = params;
+            
+            // 如果是首次加载，查询关注的用户列表
+            if (clear && this.followUsers.length === 0) {
+              this.queryFollowUsers();
+            }
             
             // 数据更新后重新初始化悬停效果
             this.$nextTick(() => {
@@ -849,10 +595,24 @@
             this.queryUserInfo();
             // 查询用户笔记
             this.queryBlogs();
+            // 初始化关注数量
+            this.initFollowCount();
           })
           .catch(err => {
             location.href = "user-login.html"
           })
+      },
+      // 初始化关注数量
+      initFollowCount() {
+        axios.get("/follow/count/" + this.user.id)
+          .then(({data}) => {
+            if (data) {
+              this.followCount = data.followee || 0;
+            }
+          })
+          .catch(err => {
+            console.error("获取关注数量失败", err);
+          });
       },
       goBack() {
         history.back();
@@ -886,8 +646,16 @@
           .catch(this.$message.error)
       },
       handleClick(r) {
+        // 更新当前激活的标签
+        this.activeName = r.name;
+        
         if (r.name === '4') {
-          this.queryBlogsOfFollow(true);
+          // 查询关注的用户列表
+          this.queryFollowUsers();
+        } else if (r.name === '1') {
+          // 笔记标签页默认显示"我的"子标签
+          this.activeSubTab = 'my';
+          this.queryBlogs();
         }
         // 标签切换后重新初始化悬停效果
         this.$nextTick(() => {
@@ -897,10 +665,53 @@
           // 延迟初始化，确保DOM已更新
           setTimeout(() => {
             this.initBlogHoverEffects();
+            
+            // 重新初始化标签栏滚动监听
+            const blogTabs = document.querySelectorAll('.blog-tabs');
+            if (blogTabs.length) {
+              blogTabs.forEach(tabBar => {
+                if (window.scrollY > 150) {
+                  tabBar.classList.add('is-scrolling');
+                } else {
+                  tabBar.classList.remove('is-scrolling');
+                }
+              });
+            }
           }, 200);
         });
       },
+      // 查询关注的用户列表
+      queryFollowUsers() {
+        axios.get("/follow/followees/" + this.user.id)
+          .then(({data}) => {
+            if (!data) {
+              this.followUsers = [];
+              this.followCount = 0;
+              return;
+            }
+            // 保存关注的用户列表
+            this.followUsers = data || [];
+            // 更新关注数量
+            this.followCount = this.followUsers.length;
+            
+            // 如果正在"关注"标签下，确保下拉选择框数据已更新
+            if (this.activeSubTab === 'follow') {
+              this.$nextTick(() => {
+                this.initBlogHoverEffects();
+              });
+            }
+          })
+          .catch(err => {
+            console.error("获取关注列表失败", err);
+            this.$message.error("获取关注列表失败");
+            this.followUsers = [];
+            this.followCount = 0;
+          });
+      },
       addLike(b) {
+        // 阻止事件冒泡，防止点击喜欢按钮时跳转到详情页
+        event && event.stopPropagation();
+        
         axios.put("/blog/like/" + b.id)
           .then(({data}) => {
             this.queryBlogById(b);
@@ -914,9 +725,16 @@
           .then(({data}) => {
             b.liked = data.liked;
             b.isLike = data.isLike;
+            
+            // 检查是否需要添加热门标记
+            if (b.liked > 3) {
+              // 通过Vue的响应式更新
+              this.$set(b, 'isHot', true);
+            }
           })
           .catch(() => {
-            this.$message.error
+            this.$message.error('获取博客信息失败');
+            // 临时增加点赞数，提升用户体验
             b.liked++;
           })
       },
@@ -926,16 +744,51 @@
         let scrollHeight = e.target.scrollHeight;
         if (scrollTop === 0) {
           // 到顶部了，查询一次
-          this.queryBlogsOfFollow(true);
+          if (!this.selectedBloggerId) {
+            // 只有在未选择博主时才刷新关注时间线
+            this.queryBlogsOfFollow(true);
+          }
         } else if (scrollTop + offsetHeight + 1 > scrollHeight && !this.isReachBottom) {
-          this.isReachBottom = true
-          // 再次查询下一页数据
-          this.queryBlogsOfFollow();
+          this.isReachBottom = true;
+          // 根据当前状态决定加载哪种类型的数据
+          if (this.selectedBloggerId) {
+            // 选择了博主，加载该博主的更多博客
+            this.loadMoreBloggerBlogs();
+          } else {
+            // 未选择博主，加载关注时间线的更多博客
+            this.queryBlogsOfFollow();
+          }
         } else {
-          this.isReachBottom = false
+          this.isReachBottom = false;
         }
       },
       toBlogDetail(b) {
+        // 如果是在关注子标签或关注标签页点击博客，则将该博客标记为已读
+        if (this.activeSubTab === 'follow' || this.activeName === '4') {
+          // 通知服务器该博客已读
+          axios.post("/blog/read/" + b.id)
+            .then(response => {
+              // 更新未读数量
+              if (response.data && response.data.success) {
+                this.unreadCount = response.data.data;
+                
+                // 在本地列表中将该博客标记为已读
+                const blogInList = this.allBlogs2.find(item => item.id === b.id);
+                if (blogInList) {
+                  blogInList.isRead = true;
+                  
+                  // 如果当前是只看未读模式，需要更新显示列表
+                  if (this.showUnreadOnly) {
+                    this.updateBlogDisplay();
+                  }
+                }
+              }
+            })
+            .catch(err => {
+              console.error("通知服务器博客已读失败", err);
+            });
+        }
+        
         // 跳转到博客详情页
         location.href = `user-blog-detail.html?id=${b.id}`;
       },
@@ -969,6 +822,257 @@
       handleMouseLeave() {
         // 清除所有悬停状态
         this.clearAllHoveredClasses();
+      },
+      // 获取未读笔记数量
+      fetchUnreadCount() {
+        // 初始化时可能还没有加载博客
+        if (this.allBlogs2.length > 0) {
+          this.unreadCount = this.allBlogs2.filter(blog => !blog.isRead).length;
+        } else {
+          this.unreadCount = 0;
+        }
+      },
+      handleVisibilityChange() {
+        // 移除当页面变为可见时获取未读数量的代码
+        // 当页面变为可见时，获取最新的未读数量
+        // if (document.visibilityState === 'visible') {
+        //   this.fetchUnreadCount();
+        // }
+      },
+      // 切换子标签
+      switchSubTab(tab) {
+        if (this.activeSubTab === tab) return;
+        this.activeSubTab = tab;
+        
+        if (tab === 'follow') {
+          // 重置博主选择
+          this.selectedBloggerId = null;
+          // 查询关注的博客
+          this.queryBlogsOfFollow(true);
+          // 查询关注的用户列表
+          this.queryFollowUsers();
+        } else {
+          this.queryBlogs();
+        }
+        
+        // 子标签切换后重新初始化悬停效果
+        this.$nextTick(() => {
+          this.initBlogHoverEffects();
+          
+          // 确保标签栏固定效果正常
+          const blogTabs = document.querySelectorAll('.blog-tabs');
+          if (blogTabs.length) {
+            blogTabs.forEach(tabBar => {
+              // 确保标签栏始终保持正确的固定状态
+              if (window.scrollY > 150) {
+                tabBar.classList.add('is-scrolling');
+              } else {
+                tabBar.classList.remove('is-scrolling');
+              }
+            });
+          }
+        });
+      },
+      // 切换已读/未读过滤器
+      handleReadFilterChange(value) {
+        // 如果值没有变化，不做处理
+        if (value === this.showUnreadOnly) return;
+        
+        this.showUnreadOnly = value;
+        
+        // 如果选择了博主，无论如何都重新获取该博主的数据
+        if (this.selectedBloggerId) {
+          // 重置状态并重新获取该博主的数据
+          this.currentBloggerPage = 1;
+          this.isLoadingMore = true;
+          this.noMoreData = false;
+          this.filterBlogsByBlogger();
+        } else {
+          // 否则只更新显示
+          this.updateBlogDisplay();
+        }
+      },
+      // 更新博客显示列表
+      updateBlogDisplay() {
+        if (!this.allBlogs2 || this.allBlogs2.length === 0) {
+          this.blogs2 = [];
+          this.unreadCount = 0;
+          return;
+        }
+        
+        // 如果选择了博主但没有筛选结果，返回空列表
+        if (this.activeSubTab === 'follow' && this.selectedBloggerId && 
+            !this.allBlogs2.some(blog => blog.userId === this.selectedBloggerId)) {
+          this.blogs2 = [];
+          return;
+        }
+        
+        if (this.showUnreadOnly) {
+          // 只显示未读博客
+          this.blogs2 = this.allBlogs2.filter(blog => !blog.isRead);
+          
+          // 如果过滤后没有未读博客，显示提示
+          if (this.blogs2.length === 0 && this.allBlogs2.length > 0) {
+            this.$message({
+              message: '没有未读笔记，已切换为显示全部',
+              type: 'info',
+              duration: 2000
+            });
+            this.showUnreadOnly = false;
+            this.blogs2 = [...this.allBlogs2];
+          }
+        } else {
+          // 显示所有博客
+          this.blogs2 = [...this.allBlogs2];
+        }
+        
+        // 更新未读计数
+        this.unreadCount = this.allBlogs2.filter(blog => !blog.isRead).length;
+        
+        // 更新后重新初始化悬停效果
+        this.$nextTick(() => {
+          this.initBlogHoverEffects();
+        });
+      },
+      handleBloggerChange() {
+        // 使用选定的博主ID过滤博客列表
+        this.filterBlogsByBlogger();
+      },
+      // 根据博主ID过滤博客
+      filterBlogsByBlogger() {
+        if (!this.selectedBloggerId) {
+          // 如果没有选择博主，显示空列表
+          this.blogs2 = [];
+          return;
+        }
+        
+        // 重置状态
+        this.isLoadingMore = true;
+        this.noMoreData = false;
+        
+        // 使用新的API端点，支持按照已读状态过滤
+        axios.get("/blog/of/user/status", {
+          params: {
+            id: this.selectedBloggerId,
+            current: this.currentBloggerPage,
+            size: 10, // 确保一次请求足够的数据
+            readStatus: this.showUnreadOnly ? "UNREAD" : "ALL" // 根据读取状态过滤
+          }
+        })
+        .then(({data}) => {
+          this.isLoadingMore = false;
+          
+          if (!data || !data.records || data.records.length === 0) {
+            this.blogs2 = [];
+            this.allBlogs2 = [];
+            return;
+          }
+          
+          // 获取博客列表
+          const records = data.records;
+          
+          // 检查是否还有更多数据
+          this.noMoreData = records.length < 10;
+          
+          // 处理博客列表，添加必要的属性
+          records.forEach(blog => {
+            // 设置图片
+            blog.img = blog.images ? blog.images.split(",")[0] : "";
+            // 添加评论数属性，如果不存在则默认为0
+            blog.comments = blog.comments || 0;
+            // 添加浏览数属性，如果不存在则随机生成
+            blog.views = blog.views || Math.floor(Math.random() * 100) + 10;
+            // 使用服务器返回的已读状态，而不是默认设置为已读
+            // blog.isRead = true;
+          });
+          
+          // 更新博客列表
+          this.allBlogs2 = records;
+          
+          // 更新显示
+          this.blogs2 = [...this.allBlogs2];
+          
+          // 更新未读计数
+          this.unreadCount = this.allBlogs2.filter(blog => !blog.isRead).length;
+          
+          // 重新初始化悬停效果
+          this.$nextTick(() => {
+            this.initBlogHoverEffects();
+          });
+        })
+        .catch(err => {
+          this.isLoadingMore = false;
+          console.error("获取博主博客失败", err);
+          this.$message.error("获取博主博客失败");
+          this.blogs2 = [];
+          this.allBlogs2 = [];
+        });
+      },
+      // 加载更多博主博客
+      loadMoreBloggerBlogs() {
+        if (!this.selectedBloggerId || this.isLoadingMore || this.noMoreData) return;
+        
+        this.isLoadingMore = true;
+        this.currentBloggerPage++;
+        
+        axios.get("/blog/of/user/status", {
+          params: {
+            id: this.selectedBloggerId,
+            current: this.currentBloggerPage,
+            size: 10,
+            readStatus: this.showUnreadOnly ? "UNREAD" : "ALL" // 根据读取状态过滤
+          }
+        })
+        .then(({data}) => {
+          this.isLoadingMore = false;
+          
+          if (!data || !data.records || data.records.length === 0) {
+            this.noMoreData = true;
+            return;
+          }
+          
+          // 检查是否还有更多数据
+          this.noMoreData = data.records.length < 10;
+          
+          // 处理博客列表，添加必要的属性
+          const newBlogs = data.records;
+          newBlogs.forEach(blog => {
+            // 设置图片
+            blog.img = blog.images ? blog.images.split(",")[0] : "";
+            // 添加评论数属性，如果不存在则默认为0
+            blog.comments = blog.comments || 0;
+            // 添加浏览数属性，如果不存在则随机生成
+            blog.views = blog.views || Math.floor(Math.random() * 100) + 10;
+            // 使用服务器返回的已读状态，而不是默认设置为已读
+            // blog.isRead = true;
+          });
+          
+          // 添加到现有列表
+          this.allBlogs2 = [...this.allBlogs2, ...newBlogs];
+          
+          // 直接更新显示，不需要过滤，因为服务器已经根据readStatus进行了过滤
+          this.blogs2 = [...this.allBlogs2];
+          
+          // 更新未读计数
+          this.unreadCount = this.allBlogs2.filter(blog => !blog.isRead).length;
+          
+          // 重新初始化悬停效果
+          this.$nextTick(() => {
+            this.initBlogHoverEffects();
+          });
+        })
+        .catch(err => {
+          this.isLoadingMore = false;
+          console.error("加载更多博主博客失败", err);
+          this.$message.error("加载更多博客失败");
+        });
+      },
+      // 查看博主所有笔记
+      viewAllBloggerBlogs() {
+        if (this.selectedBloggerId) {
+          // 跳转到用户博客页面，传递用户ID
+          location.href = `user-blogs.html?userId=${this.selectedBloggerId}`;
+        }
       },
     },
 
