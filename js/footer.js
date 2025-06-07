@@ -35,6 +35,8 @@ Vue.component("footBar", {
         location.href = "/user-info.html"
       } else if (i === 1){
         location.href = "/user-index.html"
+      } else if (i === 3) {
+        location.href = "/user-message.html"
       }
     }
   }

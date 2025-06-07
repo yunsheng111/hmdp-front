@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>消息 - 黑马点评</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/message.css" rel="stylesheet">
+</head>
+
+<body>
+<div id="app" v-cloak>
+  <!-- 页面头部 -->
+  <div class="page-header">
+    <div class="back-btn" @click="goBack"><i class="el-icon-arrow-left"></i></div>
+    <div class="title">消息</div>
+    <div style="width: 10%;"></div>
+  </div>
+
+  <!-- 未读统计区域 -->
+  <div class="unread-stats">
+    <div class="stats-title">未读博客</div>
+    <div class="stats-count">{{totalUnreadCount || 0}}</div>
+  </div>
+
+  <!-- 筛选区域 -->
+  <div class="filter-section">
+    <div class="filter-row">
+      <div class="filter-left">
+        <div class="filter-label">筛选条件</div>
+        <el-select v-model="selectedAuthorId" placeholder="请选择筛选条件" @change="onAuthorChange">
+          <el-option
+            v-for="option in authorOptions"
+            :key="option.value"
+            :label="option.label"
+            :value="option.value">
+          </el-option>
+        </el-select>
+      </div>
+      <div class="filter-right">
+        <el-button
+          v-if="blogs.length > 0 && blogs.some(blog => !blog.isRead)"
+          type="primary"
+          size="small"
+          @click="markAllAsRead"
+          :loading="markingAll"
+          :disabled="markingAll">
+          {{markingAll ? '标记中...' : '全部已读'}}
+        </el-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 博客列表 -->
+  <div class="message-list-container" @scroll="onScroll" ref="messageContainer">
+    <div v-for="blog in blogs" :key="blog.id"
+         class="message-blog-item"
+         :class="{ unread: !blog.isRead }"
+         @click="toBlogDetail(blog)">
+      
+      <div class="blog-img">
+        <img :src="blog.images ? blog.images.split(',')[0] : '/imgs/icons/default-blog.png'" alt="">
+      </div>
+      
+      <div class="blog-info">
+        <div class="blog-title">{{blog.title}}</div>
+        
+        <div class="blog-meta">
+          <div class="meta-item">
+            <i class="el-icon-time"></i>
+            <span>{{formatDate(blog.createTime)}}</span>
+          </div>
+        </div>
+        
+        <div class="blog-author">
+          <img class="author-avatar" :src="blog.icon || '/imgs/icons/default-icon.png'" alt="">
+          <span>{{blog.name}}</span>
+        </div>
+        
+        <div class="blog-actions">
+          <div class="blog-stats">
+            <div class="stat-item">
+              <i class="el-icon-view"></i>
+              <span>{{blog.liked || 0}}</span>
+            </div>
+            <div class="stat-item">
+              <i class="el-icon-chat-dot-round"></i>
+              <span>{{blog.comments || 0}}</span>
+            </div>
+          </div>
+          
+          <button v-if="!blog.isRead"
+                  class="read-btn"
+                  @click.stop="markAsRead(blog)"
+                  :disabled="blog.marking">
+            {{blog.marking ? '标记中...' : '标记已读'}}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 加载状态和空数据提示 -->
+    <div v-if="loading" class="loading-tip">
+      <i class="el-icon-loading"></i> 加载中...
+    </div>
+    
+    <div v-if="blogs.length === 0 && !loading" class="empty-tip">
+      <i class="el-icon-chat-dot-round"></i>
+      <div>暂无未读消息</div>
+    </div>
+    
+    <div v-if="reachBottom && blogs.length > 0" class="bottom-tip">
+      <span>— 已经到底了 —</span>
+    </div>
+  </div>
+
+  <!-- 底部导航 -->
+  <foot-bar :active-btn="3"></foot-bar>
+</div>
+
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/footer.js"></script>
+<script>
+  const app = new Vue({
+    el: "#app",
+    data: {
+      // 页面数据
+      totalUnreadCount: 0,        // 总未读数
+      authorOptions: [],          // 作者选项列表
+      selectedAuthorId: null,     // 选中的作者ID
+      blogs: [],                  // 博客列表
+      originalBlogs: null,        // 原始博客列表（用于计算真实的总未读数）
+
+      // 分页相关
+      lastId: null,               // 最后一条博客的时间戳（对应后端的max参数）
+      offset: 0,                  // 偏移量
+      loading: false,             // 加载状态
+      reachBottom: false,         // 是否已到底部
+      scrollTimer: null,          // 滚动防抖定时器
+
+      // 批量操作相关
+      markingAll: false,          // 批量标记已读状态
+    },
+    created() {
+      // 页面初始化
+      this.initMessagePage();
+    },
+    methods: {
+      // 返回上一页
+      goBack() {
+        history.back();
+      },
+      
+      // 初始化消息页面
+      initMessagePage() {
+        if (this.loading) return; // 防止重复调用
+
+        console.log('初始化消息页面');
+
+        // 重置选择状态和原始博客列表
+        this.selectedAuthorId = null;
+        this.originalBlogs = null;
+        this.totalUnreadCount = 0;
+
+        // 重置分页参数
+        this.resetPagination();
+
+        // 初始化作者选项（先设置一个默认的）
+        this.authorOptions = [
+          {
+            value: null,
+            label: '全部未读博客 (0)'
+          }
+        ];
+
+        // 直接调用loadBlogs获取数据
+        this.loadBlogs();
+      },
+      
+      // 设置作者选项（基于博客数据动态生成）
+      setupAuthorOptions() {
+        // 基于原始博客列表计算总未读数
+        const currentUnreadCount = this.originalBlogs.filter(blog => !blog.isRead).length;
+
+        // 更新总未读数为原始列表中的实际未读数
+        this.totalUnreadCount = currentUnreadCount;
+
+        // 从博客数据中提取作者信息
+        const authorMap = new Map();
+        this.originalBlogs.forEach(blog => {
+          if (!authorMap.has(blog.userId)) {
+            authorMap.set(blog.userId, {
+              authorId: blog.userId,
+              authorName: blog.name,
+              unreadCount: 0
+            });
+          }
+          // 计算该作者的未读数
+          if (!blog.isRead) {
+            const author = authorMap.get(blog.userId);
+            author.unreadCount++;
+          }
+        });
+
+        // 构建作者选项
+        this.authorOptions = [
+          {
+            value: null,
+            label: `全部未读博客 (${this.totalUnreadCount})`
+          }
+        ];
+
+        // 添加关注作者选项（显示所有作者，包括未读数为0的）
+        authorMap.forEach(author => {
+          this.authorOptions.push({
+            value: author.authorId,
+            label: `${author.authorName} (${author.unreadCount})`
+          });
+        });
+
+        console.log('设置作者选项完成，总未读数:', this.totalUnreadCount, '作者数:', this.authorOptions.length - 1);
+      },
+      
+      // 作者选择变化
+      onAuthorChange(authorId) {
+        console.log('切换作者筛选:', authorId);
+        this.selectedAuthorId = authorId;
+
+        if (authorId === null) {
+          // 选择全部时，重新加载初始数据
+          this.initMessagePage();
+        } else {
+          // 选择特定作者时，直接从后端获取该作者的未读博客
+          this.loadAuthorBlogs(authorId);
+        }
+      },
+
+      // 加载特定作者的未读博客
+      loadAuthorBlogs(authorId) {
+        console.log('加载作者的未读博客，作者ID:', authorId);
+
+        // 重置分页参数
+        this.resetPagination();
+
+        // 设置选中的作者ID
+        this.selectedAuthorId = authorId;
+
+        // 从后端加载该作者的未读博客
+        this.loadBlogs();
+      },
+      
+      // 重置分页参数
+      resetPagination() {
+        this.blogs = [];
+        this.lastId = Date.now() + 60000; // 使用当前时间 + 1分钟，确保包含最新博客
+        this.offset = 0;
+        this.reachBottom = false;
+      },
+      
+      // 加载博客列表
+      loadBlogs(isLoadMore = false) {
+        if (this.loading) return;
+        
+        this.loading = true;
+        
+        // 构建请求参数
+        let url = '/blog/of/follow';
+        const params = [];
+
+        // 确保使用合适的时间戳参数
+        if (this.lastId) {
+          params.push(`lastId=${this.lastId}`);
+        }
+        if (this.offset > 0) {
+          params.push(`offset=${this.offset}`);
+        }
+        if (this.selectedAuthorId) {
+          params.push(`authorId=${this.selectedAuthorId}`);
+        }
+
+        if (params.length > 0) {
+          url += '?' + params.join('&');
+        }
+        
+        console.log('请求博客列表:', url);
+        
+        axios.get(url)
+          .then(response => {
+            console.log('获取博客列表成功:', response);
+            console.log('请求URL:', url);
+            console.log('选中的作者ID:', this.selectedAuthorId);
+            const data = response.data;
+
+            if (data && data.list && data.list.length > 0) {
+              console.log('返回的博客数量:', data.list.length);
+              console.log('博客列表:', data.list);
+              console.log('筛选的作者ID:', this.selectedAuthorId);
+
+              // 调试：检查博客的isRead状态
+              console.log('博客isRead状态详情:');
+              data.list.forEach((blog, index) => {
+                console.log(`博客${index}: id=${blog.id}, title=${blog.title}, isRead=${blog.isRead}, type=${typeof blog.isRead}`);
+              });
+
+              // 过滤出未读的博客（消息页面只显示未读博客）
+              const unreadBlogs = data.list.filter(blog => !blog.isRead);
+              console.log('过滤后的未读博客数量:', unreadBlogs.length);
+
+              // 统计总博客数量
+              console.log('后端返回的总博客数量:', data.list.length);
+
+              if (isLoadMore) {
+                this.blogs = this.blogs.concat(unreadBlogs);
+                // 更新原始博客列表（保存所有博客，包括已读的）
+                if (this.originalBlogs && !this.selectedAuthorId) {
+                  this.originalBlogs = this.originalBlogs.concat(data.list);
+                }
+              } else {
+                this.blogs = unreadBlogs;
+                // 保存所有博客到原始列表（包括已读的），用于正确计算总数
+                if (!this.selectedAuthorId) {
+                  this.originalBlogs = [...data.list];
+                  console.log('更新原始博客列表，总数量:', this.originalBlogs.length);
+                  console.log('其中未读数量:', unreadBlogs.length);
+                }
+              }
+
+              // 更新分页参数
+              this.lastId = data.minTime;
+              this.offset = data.offset;
+              // 如果返回的博客数量少于最大页面大小，说明已经到底了
+              this.reachBottom = data.list.length < 3; // SystemConstants.MAX_PAGE_SIZE 通常是3
+
+              console.log('更新后的分页参数 - lastId:', this.lastId, 'offset:', this.offset, 'reachBottom:', this.reachBottom);
+
+              // 只有在查看全部时才更新总未读数和作者选项
+              if (!this.selectedAuthorId) {
+                // 如果是首次加载（不是加载更多），则设置作者选项
+                if (!isLoadMore) {
+                  this.setupAuthorOptions();
+                } else {
+                  this.updateTotalUnreadCount();
+                }
+              }
+            } else {
+              console.log('没有返回博客数据或数据为空');
+              if (!isLoadMore) {
+                this.blogs = [];
+
+                // 如果是按作者筛选且没有数据，提示用户
+                if (this.selectedAuthorId) {
+                  const authorName = this.getAuthorNameById(this.selectedAuthorId);
+                  this.$message.info(`${authorName}暂无未读博客`);
+                }
+              }
+              this.reachBottom = true;
+            }
+
+            this.loading = false;
+          })
+          .catch(err => {
+            console.error('获取博客列表失败:', err);
+            this.$message.error('获取博客列表失败，请稍后再试');
+            this.loading = false;
+            this.reachBottom = true;
+          });
+      },
+      
+      // 加载更多博客
+      loadMoreBlogs() {
+        if (this.loading || this.reachBottom) return;
+        console.log("加载更多博客");
+        this.loadBlogs(true);
+      },
+      
+      // 滚动事件处理
+      onScroll(e) {
+        if (this.scrollTimer) clearTimeout(this.scrollTimer);
+        
+        this.scrollTimer = setTimeout(() => {
+          const target = e.target;
+          const scrollTop = target.scrollTop;
+          const clientHeight = target.clientHeight;
+          const scrollHeight = target.scrollHeight;
+          
+          // 当滚动到底部前150px时加载更多
+          if (scrollTop + clientHeight + 150 >= scrollHeight && !this.reachBottom && !this.loading) {
+            console.log("触发加载更多");
+            this.loadMoreBlogs();
+          }
+        }, 100);
+      },
+      
+      // 格式化日期
+      formatDate(timestamp) {
+        if (!timestamp) return '未知时间';
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diff = now - date;
+        
+        // 小于1小时显示分钟
+        if (diff < 3600000) {
+          const minutes = Math.floor(diff / 60000);
+          return minutes <= 0 ? '刚刚' : `${minutes}分钟前`;
+        }
+        
+        // 小于24小时显示小时
+        if (diff < 86400000) {
+          const hours = Math.floor(diff / 3600000);
+          return `${hours}小时前`;
+        }
+        
+        // 超过24小时显示日期
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        return `${month}-${day}`;
+      },
+      
+      // 标记博客已读
+      markAsRead(blog) {
+        if (blog.marking) return;
+
+        blog.marking = true;
+
+        axios.post(`/blog/read/${blog.id}`)
+          .then(() => {
+            blog.isRead = true;
+            blog.marking = false;
+            this.$message.success('已标记为已读');
+
+            // 同时更新原始博客列表中的对应博客
+            if (this.originalBlogs) {
+              const originalBlog = this.originalBlogs.find(b => b.id === blog.id);
+              if (originalBlog) {
+                originalBlog.isRead = true;
+              }
+            }
+
+            // 从当前显示的博客列表中移除该博客
+            const index = this.blogs.findIndex(b => b.id === blog.id);
+            if (index !== -1) {
+              this.blogs.splice(index, 1);
+
+              // 如果当前博客列表为空，显示已经到底了的提示
+              if (this.blogs.length === 0) {
+                this.reachBottom = true;
+              }
+            }
+
+            // 更新作者选项（会自动重新计算总未读数）
+            this.updateAuthorOptions();
+          })
+          .catch(err => {
+            console.error('标记已读失败:', err);
+            this.$message.error('标记已读失败，请稍后再试');
+            blog.marking = false;
+          });
+      },
+
+      // 批量标记已读
+      markAllAsRead() {
+        if (this.markingAll) return;
+
+        // 获取当前显示的所有未读博客
+        const unreadBlogs = this.blogs.filter(blog => !blog.isRead);
+
+        if (unreadBlogs.length === 0) {
+          this.$message.info('没有未读博客需要标记');
+          return;
+        }
+
+        this.markingAll = true;
+
+        // 批量标记已读
+        const markPromises = unreadBlogs.map(blog => {
+          return axios.post(`/blog/read/${blog.id}`)
+            .then(() => {
+              // 标记成功
+              blog.isRead = true;
+
+              // 同时更新原始博客列表中的对应博客
+              if (this.originalBlogs) {
+                const originalBlog = this.originalBlogs.find(b => b.id === blog.id);
+                if (originalBlog) {
+                  originalBlog.isRead = true;
+                }
+              }
+
+              return { success: true, blogId: blog.id };
+            })
+            .catch(err => {
+              console.error(`标记博客${blog.id}已读失败:`, err);
+              return { success: false, blogId: blog.id, error: err };
+            });
+        });
+
+        Promise.all(markPromises)
+          .then(results => {
+            const successCount = results.filter(r => r.success).length;
+            const failCount = results.filter(r => !r.success).length;
+
+            if (failCount === 0) {
+              this.$message.success(`成功标记${successCount}篇博客为已读`);
+            } else {
+              this.$message.warning(`成功标记${successCount}篇，失败${failCount}篇`);
+            }
+
+            // 移除已标记为已读的博客
+            this.blogs = this.blogs.filter(blog => !blog.isRead);
+
+            // 如果当前博客列表为空，显示已经到底了的提示
+            if (this.blogs.length === 0) {
+              this.reachBottom = true;
+            }
+
+            // 更新作者选项（会自动重新计算总未读数）
+            this.updateAuthorOptions();
+
+            this.markingAll = false;
+          })
+          .catch(err => {
+            console.error('批量标记已读失败:', err);
+            this.$message.error('批量标记已读失败，请稍后再试');
+            this.markingAll = false;
+          });
+      },
+      
+      // 更新作者选项的未读数
+      updateAuthorOptions() {
+        if (this.authorOptions.length > 0 && this.originalBlogs) {
+          // 重新计算总未读数（基于原始博客列表）
+          this.totalUnreadCount = this.originalBlogs.filter(blog => !blog.isRead).length;
+
+          // 更新全部未读博客的计数
+          this.authorOptions[0].label = `全部未读博客 (${this.totalUnreadCount})`;
+
+          // 更新各个作者的未读数（基于原始博客列表中的实际未读数）
+          for (let i = 1; i < this.authorOptions.length; i++) {
+            const option = this.authorOptions[i];
+            const unreadCount = this.originalBlogs.filter(blog =>
+              blog.userId === option.value && !blog.isRead
+            ).length;
+
+            // 提取作者名称（去掉括号中的数字）
+            const authorName = option.label.replace(/\s*\(\d+\)$/, '');
+            option.label = `${authorName} (${unreadCount})`;
+          }
+
+          console.log('更新后的总未读数:', this.totalUnreadCount);
+        }
+      },
+      
+      // 跳转到博客详情
+      toBlogDetail(blog) {
+        location.href = `/user-blog-detail.html?id=${blog.id}`;
+      },
+
+      // 根据作者ID获取作者名称
+      getAuthorNameById(authorId) {
+        const option = this.authorOptions.find(opt => opt.value === authorId);
+        if (option) {
+          // 提取作者名称（去掉括号中的数字）
+          return option.label.replace(/\s*\(\d+\)$/, '');
+        }
+        return '该作者';
+      },
+
+      // 更新总未读数
+      updateTotalUnreadCount() {
+        if (!this.originalBlogs) return;
+
+        const newUnreadCount = this.originalBlogs.filter(blog => !blog.isRead).length;
+        if (newUnreadCount !== this.totalUnreadCount) {
+          console.log('总未读数变化:', this.totalUnreadCount, '->', newUnreadCount);
+          this.totalUnreadCount = newUnreadCount;
+
+          // 更新"全部未读博客"选项的标签
+          if (this.authorOptions.length > 0) {
+            this.authorOptions[0].label = `全部未读博客 (${this.totalUnreadCount})`;
+          }
+        }
+      }
+    }
+  });
+</script>
+</body>
+
+</html>

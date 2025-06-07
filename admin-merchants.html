@@ -415,13 +415,14 @@
 <!-- 引入组件库 -->
 <script src="./js/element.js"></script>
 <script src="./js/common.js"></script>
+<script src="./js/admin-common.js"></script>
 <script>
   // 检查管理员登录状态
   const adminToken = sessionStorage.getItem("adminToken");
   const adminInfoStr = sessionStorage.getItem("adminInfo");
   
   if (!adminToken) {
-    //location.href = "admin-login.html";
+    location.href = "admin-login.html";
   }
   
   const app = new Vue({
@@ -458,7 +459,6 @@
       }
     },
     created() {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${adminToken}`;
       this.fetchShopTypes();
       this.fetchMerchantList();
     },
@@ -467,8 +467,8 @@
         location.href = path;
       },
       fetchShopTypes(){
-        axios.get("/api/admin/shop-types")
-          .then(({data}) => {
+        adminAxios.get("/admin/shop-types")
+          .then(data => {
             if(data.success){
                 this.shopTypes = data.data.list || [];
             }else{
@@ -487,8 +487,8 @@
           ...this.searchForm
         };
         
-        axios.get("/api/admin/merchants", { params })
-          .then(({data}) => {
+        adminAxios.get("/admin/merchants", { params })
+          .then(data => {
             if(data.success){
                 this.merchantList = data.data.list || [];
                 this.total = data.data.total || 0;
@@ -547,8 +547,8 @@
         this.merchantQualifications = []; // 先清空
         this.merchantDetailVisible = true;
         try {
-          // 根据接口文档，使用 /api/admin/merchants/{merchantId}/qualifications 获取资质
-          const { data } = await axios.get(`/api/admin/merchants/${merchant.id}/qualifications`);
+          // 根据接口文档，使用 /admin/merchants/{merchantId}/qualifications 获取资质
+          const data = await adminAxios.get(`/admin/merchants/${merchant.id}/qualifications`);
           if (data.success) {
             this.merchantQualifications = data.data || [];
           } else {
@@ -571,11 +571,11 @@
       submitAudit() {
         this.$refs.auditFormRef.validate((valid) => {
           if (valid) {
-            // 根据接口文档，审核接口是 PUT /api/admin/merchants/applications/{applicationId}/audit
+            // 根据接口文档，审核接口是 PUT /admin/merchants/applications/{applicationId}/audit
             // 这里假设 merchant.id 就是 applicationId，如果后端设计不同，需要调整
             const applicationId = this.currentMerchant.id; 
-            axios.put(`/api/admin/merchants/applications/${applicationId}/audit`, this.auditForm)
-              .then(({data}) => {
+            adminAxios.put(`/admin/merchants/applications/${applicationId}/audit`, this.auditForm)
+              .then(data => {
                 if(data.success){
                   this.$message.success("审核操作成功");
                   this.merchantAuditVisible = false;
@@ -634,8 +634,8 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          axios.put(`/api/admin/merchants/${merchantId}/status`, { status: newStatus, reason: reason })
-            .then(({data}) => {
+          adminAxios.put(`/admin/merchants/${merchantId}/status`, { status: newStatus, reason: reason })
+            .then(data => {
                 if(data.success){
                     this.$message.success(`${actionText}商户成功`);
                     this.statusChangeDialogVisible = false;
@@ -653,7 +653,7 @@
         });
       },
       logout() {
-        axios.post("/api/admin/logout")
+        adminAxios.post("/admin/logout")
           .then(() => {
             sessionStorage.removeItem("adminToken");
             sessionStorage.removeItem("adminInfo");

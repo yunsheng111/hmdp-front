@@ -1,9 +1,9 @@
 /* user-info.css - 用户信息页面样式 */
 
 /* 添加全局禁止用户选择文本效果，提升用户体验 */
-.blog-tabs, .blog-tab-group, .blog-tab, .blogger-select-container, 
+.blog-tabs, .blog-tab-group, .blog-tab, .blogger-select-container,
 .blogger-select-label, .read-filter, .el-select, .el-input,
-.blogger-option, .blog-item, .blog-box {
+.blogger-option, .blog-item {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -206,10 +206,7 @@
     margin-top: 5px; /* 减少顶部间距 */
 }
 
-/* 确保标签栏固定后不会遮挡其他元素 */
-.el-tabs__content {
-    padding-top: 0; /* 移除顶部内边距 */
-}
+
 
 /* 优化个人信息区域样式 */
 .basic {
@@ -503,50 +500,7 @@
     z-index: 1;
 }
 
-/* 修改博客盒子样式，使其与blog-item保持一致 */
-.blog-box {
-    position: relative;
-    display: flex !important;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 3px 12px 0 rgba(0, 0, 0, 0.08);
-    background-color: #fff;
-    transition: all 0.2s ease;
-    margin-bottom: 15px;
-    padding: 0;
-    cursor: pointer;
-    /* 使用硬件加速优化动画 */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    transform: translateZ(0);
-    perspective: 1000px;
-    will-change: transform, box-shadow;
-    height: auto; /* 确保高度根据内容自动调整 */
-}
 
-.blog-box:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px 0 rgba(0, 0, 0, 0.12);
-}
-
-/* 确保每个博客盒子独立，没有叠加效果 */
-.blog-box::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none;
-    z-index: -1;
-}
-
-/* 为博客盒子设置单独的动画样式 */
-.blog-box.hovered {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px 0 rgba(0, 0, 0, 0.1);
-    z-index: 1;
-}
 
 /* 修复博客操作按钮悬停效果 */
 .blog-actions div {
@@ -573,44 +527,15 @@
     pointer-events: none; /* 防止徽章干扰鼠标事件 */
 }
 
-/* 添加博客图片和信息样式统一 */
-.blog-img, .blog-img2 {
+/* 添加博客图片样式 */
+.blog-img {
     width: 120px;
     height: 120px;
     overflow: hidden;
     flex-shrink: 0;
 }
 
-/* 为关注笔记中的图片设置新样式 */
-.blog-box .blog-img2 {
-    width: 120px;
-    height: 120px;
-    border-radius: 0;
-    margin: 0;
-    overflow: hidden;
-    flex-shrink: 0;
-    position: relative;
-}
-
-.blog-box .blog-img2::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(to right, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0));
-    pointer-events: none;
-}
-
-.blog-box .blog-img2 img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-}
-
-.blog-item:hover .blog-img img, .blog-box:hover .blog-img2 img {
+.blog-item:hover .blog-img img {
     transform: scale(1.05);
 }
 
@@ -680,88 +605,11 @@
     font-size: 14px;
 }
 
-/* 新增博主信息样式 - 放在顶部 */
-.blog-author {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #f5f5f5;
-}
 
-.blog-user-icon {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    overflow: hidden;
-    margin-right: 8px;
-}
-
-.blog-user-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.blog-user-name {
-    font-size: 14px;
-    color: #333;
-    font-weight: 500;
-}
-
-/* 优化关注笔记中的博主信息样式 */
-.blog-box .blog-info {
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    flex: 1;
-}
-
-.blog-box .blog-author {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #f5f5f5;
-}
-
-.blog-box .blog-title {
-    margin-bottom: 8px;
-    font-size: 15px;
-    line-height: 1.4;
-    max-height: 42px; /* 约为两行文本的高度 */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.blog-box .blog-actions {
-    margin-top: 3px;
-    margin-bottom: 3px;
-}
-
-.blog-box .blog-meta {
-    margin-top: 5px;
-    font-size: 12px;
-    color: #999;
-}
-
-.blog-box .blog-date, 
-.blog-box .blog-views {
-    font-size: 12px;
-}
-
-/* 去除旧的底部博主信息栏 */
-.blog-foot {
-    display: none;
-}
 
 /* 为移动端优化触摸响应 */
 @media (hover: none) {
-    .blog-item:active, .blog-box:active {
+    .blog-item:active {
         transform: translateY(-3px);
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
     }
@@ -824,20 +672,7 @@
     transform: translateX(-2px);
 }
 
-/* 添加未读标记样式 */
-.unread-badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: #ff6633;
-    color: white;
-    border-radius: 50%;
-    width: 10px;
-    height: 10px;
-    z-index: 10;
-    box-shadow: 0 0 5px rgba(255, 102, 51, 0.5);
-    animation: pulse 1.5s infinite;
-}
+
 
 @keyframes pulse {
     0% {
@@ -909,37 +744,7 @@
     transform: rotate(0deg) scale(1.1);
 }
 
-/* 替换为下拉选择框样式 */
-.read-filter-select {
-    margin-left: 12px;
-    width: 120px;
-    flex-shrink: 0; /* 防止被压缩 */
-    white-space: nowrap; /* 防止文本换行 */
-}
 
-/* 自定义下拉框样式，使其与页面风格统一 */
-.read-filter-select .el-input__inner {
-    border-radius: 14px;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
-    background-color: #f5f5f5;
-}
-
-.read-filter-select .el-input__inner:hover,
-.read-filter-select .el-input__inner:focus {
-    border-color: #ff6633;
-    box-shadow: 0 3px 8px rgba(255, 102, 51, 0.2);
-}
-
-.read-filter-select .el-select__caret {
-    color: #666;
-    transition: all 0.3s ease;
-}
-
-.read-filter-select:hover .el-select__caret {
-    color: #ff6633;
-}
 
 /* 查看更多按钮样式 */
 .view-more-btn {
@@ -983,15 +788,7 @@
     transform: translateX(3px);
 }
 
-/* 为固定标签栏下方内容添加顶部间距 */
-.blog-container, .blog-list, .empty-blog-tip {
-    margin-top: 10px;
-}
 
-/* 确保标签栏固定后不会遮挡其他元素 */
-.el-tabs__content {
-    padding-top: 10px;
-}
 
 /* 空状态提示样式（未选择博主、博主无笔记） */
 .no-blogger-selected, .empty-blogger-notes {
@@ -1055,12 +852,7 @@
         margin-left: 8px; /* 减小左边距以适应小屏幕 */
     }
     
-    /* 添加下拉框在移动设备上的样式 */
-    .read-filter-select {
-        margin-left: 8px;
-        width: 110px;
-        margin-top: 5px;
-    }
+
     
     .blog-tab {
         padding: 4px 8px;
@@ -1183,4 +975,315 @@
   to {
     transform: rotate(360deg);
   }
-} 
+}
+
+/* 添加未读消息徽章和计数的样式 */
+.el-tabs__item {
+  position: relative;
+}
+
+.unread-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #f56c6c;
+  color: white;
+  border-radius: 50%;
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
+  text-align: center;
+  font-size: 12px;
+  padding: 0 4px;
+}
+
+/* 未读消息通知样式 */
+.el-notification__content {
+  text-align: left;
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+/* 未读博客项样式 */
+.blog-item.unread {
+  position: relative;
+}
+
+.blog-item.unread::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  background-color: #f56c6c;
+  border-radius: 50%;
+}
+
+/* 标签页中的未读计数样式 */
+.el-tabs__item span.unread-count {
+  margin-left: 4px;
+  color: #f56c6c;
+  font-weight: bold;
+}
+
+/* 博主选择器中的未读计数样式 */
+.blogger-selector .el-select-dropdown__item .unread-count {
+  margin-left: 5px;
+  color: #f56c6c;
+  font-size: 12px;
+}
+
+/* 改进通知样式 */
+.el-notification {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.el-notification__title {
+  font-weight: 600;
+}
+
+.el-notification__content {
+  margin: 6px 0 0;
+  font-size: 14px;
+}
+
+/* 添加未读博客的悬停效果 */
+.blog-item.unread:hover::before {
+  background-color: #e6a23c;
+}
+
+/* 博客未读状态样式 */
+.blog-read-status {
+  color: #f56c6c;
+  margin-left: 10px;
+  font-size: 12px;
+}
+
+.blog-read-status i {
+  margin-right: 3px;
+}
+
+/* 改进博客项未读状态样式 */
+.blog-item.unread {
+  border-left: 3px solid #f56c6c;
+  padding-left: 12px;
+  background-color: rgba(245, 108, 108, 0.05);
+}
+
+.blog-item.unread .blog-title {
+  font-weight: 600;
+}
+
+/* 分页组件样式 */
+.follow-pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  padding: 15px 0;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.follow-pagination .el-pagination {
+  font-weight: 500;
+}
+
+.follow-pagination .el-pager li {
+  background-color: #f5f5f5;
+  color: #666;
+  border-radius: 4px;
+  margin: 0 2px;
+  transition: all 0.3s ease;
+}
+
+.follow-pagination .el-pager li:hover {
+  background-color: #ff6633;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.follow-pagination .el-pager li.active {
+  background-color: #ff6633;
+  color: white;
+  box-shadow: 0 2px 6px rgba(255, 102, 51, 0.3);
+}
+
+.follow-pagination .btn-prev,
+.follow-pagination .btn-next {
+  background-color: #f5f5f5;
+  color: #666;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.follow-pagination .btn-prev:hover,
+.follow-pagination .btn-next:hover {
+  background-color: #ff6633;
+  color: white;
+}
+
+/* 关注按钮样式 */
+.follow-actions {
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+  flex-shrink: 0;
+}
+
+.follow-actions .el-button {
+  min-width: 60px;
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+}
+
+.follow-actions .el-button--primary {
+  background: linear-gradient(135deg, #ff8052, #ff6633);
+  border: none;
+  box-shadow: 0 2px 6px rgba(255, 102, 51, 0.3);
+}
+
+.follow-actions .el-button--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(255, 102, 51, 0.4);
+}
+
+.follow-actions .el-button--default {
+  background-color: #f0f0f0;
+  color: #666;
+  border: 1px solid #e0e0e0;
+}
+
+.follow-actions .el-button--default:hover {
+  background-color: #e0e0e0;
+  color: #333;
+  transform: translateY(-1px);
+}
+
+/* 互关标识样式 */
+.mutual-follow-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff8052, #ff6633);
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  margin-left: 8px;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(255, 102, 51, 0.3);
+  animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+  0% {
+    box-shadow: 0 1px 3px rgba(255, 102, 51, 0.3);
+  }
+  50% {
+    box-shadow: 0 2px 6px rgba(255, 102, 51, 0.5);
+  }
+  100% {
+    box-shadow: 0 1px 3px rgba(255, 102, 51, 0.3);
+  }
+}
+
+/* 加载状态样式 */
+.follow-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.follow-loading i {
+  margin-right: 8px;
+  font-size: 16px;
+  color: #ff6633;
+}
+
+/* 优化关注列表项布局 */
+.follow-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #f2f2f2;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.follow-item:hover {
+  background-color: #fafafa;
+  transform: translateX(5px);
+}
+
+.follow-item:last-child {
+  border-bottom: none;
+}
+
+.follow-user-info {
+  flex: 1;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.follow-user-name {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.follow-user-intro {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* 响应式设计 */
+@media screen and (max-width: 768px) {
+  .follow-actions {
+    margin-left: 5px;
+  }
+
+  .follow-actions .el-button {
+    min-width: 50px;
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .mutual-follow-badge {
+    font-size: 9px;
+    padding: 1px 4px;
+    margin-left: 5px;
+  }
+
+  .follow-pagination {
+    padding: 10px 0;
+    margin-top: 15px;
+  }
+
+  .follow-item {
+    padding: 12px 10px;
+  }
+
+  .follow-user-name {
+    font-size: 15px;
+  }
+
+  .follow-user-intro {
+    font-size: 13px;
+  }
+}
+

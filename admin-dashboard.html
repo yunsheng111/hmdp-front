@@ -200,23 +200,23 @@
           <i class="el-icon-s-home"></i>
           <span slot="title">控制台</span>
         </el-menu-item>
-        <el-menu-item index="2">
+        <el-menu-item index="2" @click="navigateTo('admin-users.html')">
           <i class="el-icon-user"></i>
           <span slot="title">用户管理</span>
         </el-menu-item>
-        <el-menu-item index="3">
+        <el-menu-item index="3" @click="navigateTo('admin-merchants.html')">
           <i class="el-icon-s-shop"></i>
           <span slot="title">商户管理</span>
         </el-menu-item>
-        <el-menu-item index="4">
+        <el-menu-item index="4" @click="navigateTo('admin-shop-types.html')">
           <i class="el-icon-s-grid"></i>
           <span slot="title">商户分类管理</span>
         </el-menu-item>
-        <el-menu-item index="5">
+        <el-menu-item index="5" @click="navigateTo('admin-content.html')">
           <i class="el-icon-document-checked"></i>
           <span slot="title">内容审核</span>
         </el-menu-item>
-        <el-menu-item index="6">
+        <el-menu-item index="6" @click="navigateTo('admin-monitor.html')">
           <i class="el-icon-data-line"></i>
           <span slot="title">系统监控</span>
         </el-menu-item>
@@ -433,6 +433,11 @@
             sessionStorage.removeItem('adminInfo');
             location.href = "admin-login.html";
           });
+      },
+      navigateTo(path) {
+        // 实现导航到指定页面的逻辑
+        console.log(`导航到 ${path} 页面`);
+        window.location.href = path;
       }
     }
   });

@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+
+  <link href="./css/shop-detail.css" rel="stylesheet">
+  <link href="./css/main.css" rel="stylesheet">
+
+  <style type="text/css">
+    /* 评论相关样式 */
+    .comment-sort-options {
+      display: flex;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #f1f1f1;
+      padding-bottom: 10px;
+    }
+    .comment-sort-option {
+      margin-right: 15px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #666;
+    }
+    .comment-sort-option.active {
+      color: #f63;
+      font-weight: bold;
+      border-bottom: 2px solid #f63;
+    }
+    .comment-box {
+      display: flex;
+      padding: 15px 0;
+      border-bottom: 1px solid #f1f1f1;
+    }
+    .comment-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin-right: 10px;
+    }
+    .comment-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .comment-info {
+      flex: 1;
+    }
+    .comment-user {
+      font-weight: bold;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .comment-user span {
+      font-size: 12px;
+      background-color: #f6f6f6;
+      color: #999;
+      padding: 0 5px;
+      border-radius: 2px;
+      font-weight: normal;
+    }
+    .comment-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      color: #999;
+      font-size: 12px;
+    }
+    .comment-date {
+      color: #999;
+    }
+    .comment-action-btn {
+      cursor: pointer;
+      margin-left: 15px;
+    }
+    .comment-action-btn:hover {
+      color: #f63;
+    }
+    .comment-form {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+    }
+    .comment-form-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .comment-submit-btn {
+      margin-top: 15px;
+      text-align: right;
+    }
+    .comment-empty {
+      text-align: center;
+      padding: 30px 0;
+      color: #999;
+    }
+    .comment-pagination {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .order-select {
+      margin-top: 15px;
+      margin-bottom: 15px;
+    }
+
+    /* 商品展示相关样式 */
+    .shop-products {
+      padding: 15px;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+    .products-header h3 {
+      margin: 0 0 15px 0;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .products-container {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+    .product-categories {
+      width: 100px;
+      flex-shrink: 0;
+      margin-right: 12px;
+    }
+    .category-list {
+      border: 1px solid #f1f1f1;
+      border-radius: 6px;
+      background: #fff;
+    }
+    .category-item {
+      padding: 8px 12px;
+      border-bottom: 1px solid #f1f1f1;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.3s;
+      text-align: center;
+    }
+    .category-item:last-child {
+      border-bottom: none;
+    }
+    .category-item:hover {
+      background-color: #f9f9f9;
+    }
+    .category-item.active {
+      background-color: #f63;
+      color: white;
+      font-weight: bold;
+    }
+    .product-list {
+      flex: 1;
+      width: 100%;
+      max-width: 100%;
+    }
+    .products-loading, .products-empty {
+      text-align: center;
+      padding: 40px 0;
+      color: #999;
+    }
+    .products-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .product-card {
+      border: 1px solid #f1f1f1;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: all 0.3s;
+      display: flex;
+      padding: 12px;
+      background: #fff;
+      width: 100%;
+    }
+    .product-card:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .product-image {
+      width: 100px;
+      height: 100px;
+      overflow: hidden;
+      border-radius: 6px;
+      flex-shrink: 0;
+      margin-right: 12px;
+    }
+    .product-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .product-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .product-header {
+      margin-bottom: 8px;
+    }
+    .product-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+    }
+    .product-tags {
+      display: flex;
+      gap: 6px;
+      margin-left: 8px;
+    }
+    .product-tag {
+      background: #ff6633;
+      color: white;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 2px;
+      font-weight: normal;
+    }
+    .product-tag.new {
+      background: #52c41a;
+    }
+    .product-tag.hot {
+      background: #fa541c;
+    }
+    .product-description {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .product-stats {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: #999;
+    }
+    .product-sales {
+      display: flex;
+      align-items: center;
+    }
+    .product-rating {
+      display: flex;
+      align-items: center;
+    }
+    .product-price-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .product-price-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .product-price {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .product-price .current-price {
+      color: #f63;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .product-price .original-price {
+      color: #999;
+      font-size: 14px;
+      text-decoration: line-through;
+    }
+    .product-stock {
+      font-size: 12px;
+      color: #999;
+      margin-top: 4px;
+    }
+    .product-actions {
+      display: flex;
+      gap: 8px;
+      margin-right: 20px;
+    }
+    .spec-btn {
+      background: #fff;
+      border: 1px solid #f63;
+      color: #f63;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: 20px;
+    }
+    .add-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #f63;
+      color: white;
+      border: none;
+      font-size: 18px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-right: 20px;
+    }
+    .spec-btn:hover, .add-btn:hover {
+      opacity: 0.9;
+    }
+    .products-pagination {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    /* 购物车相关样式 */
+    .shopping-cart {
+      margin-top: 20px;
+      border: 1px solid #f1f1f1;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .cart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-bottom: 1px solid #f1f1f1;
+    }
+    .cart-header h4 {
+      margin: 0;
+      font-size: 16px;
+    }
+    .cart-items {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .cart-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 15px;
+      border-bottom: 1px solid #f1f1f1;
+    }
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+    .item-image {
+      width: 50px;
+      height: 50px;
+      margin-right: 10px;
+      overflow: hidden;
+      border-radius: 4px;
+    }
+    .item-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .item-info {
+      flex: 1;
+      margin-right: 10px;
+    }
+    .item-title {
+      font-size: 14px;
+      margin-bottom: 5px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .item-price {
+      font-size: 12px;
+      color: #f63;
+      font-weight: bold;
+    }
+    .item-quantity {
+      display: flex;
+      align-items: center;
+      margin-right: 10px;
+    }
+    .item-quantity .quantity {
+      margin: 0 10px;
+      font-weight: bold;
+    }
+    .cart-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-top: 1px solid #f1f1f1;
+    }
+    .cart-total {
+      font-size: 16px;
+      font-weight: bold;
+      color: #f63;
+    }
+
+    @media screen and (max-width: 768px) {
+      .products-container {
+        flex-direction: column;
+      }
+      .product-categories {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 12px;
+      }
+      .category-list {
+        display: flex;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+      .category-item {
+        border-bottom: none;
+        border-right: 1px solid #f1f1f1;
+        flex-shrink: 0;
+      }
+      .category-item:last-child {
+        border-right: none;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .product-image {
+        width: 80px;
+        height: 80px;
+      }
+    }
+
+    /* 规格选择相关样式 */
+    .spec-values-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .spec-value-btn {
+      transition: all 0.3s ease;
+      font-size: 14px;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .spec-value-btn:hover {
+      border-color: #f63 !important;
+      color: #f63 !important;
+      background-color: #fff5f5 !important;
+    }
+
+    .spec-value-btn:active {
+      transform: scale(0.95);
+    }
+
+    .current-spec-price {
+      font-weight: bold;
+      font-size: 18px;
+      color: #f63;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="header-back-btn" @click="goBack"><i class="el-icon-arrow-left"></i></div>
+    <div class="header-title"></div>
+    <div class="header-share">...</div>
+  </div>
+  <div class="top-bar"></div>
+  <div class="shop-info-box">
+    <div class="shop-title">{{shop.name}}</div>
+    <div class="shop-rate">
+      <el-rate
+          disabled v-model="shop.score/10"
+          text-color="#F63"
+          show-score
+      ></el-rate>
+      <span>{{commentStats.total || 0}}条</span>
+    </div>
+    <div class="shop-rate-info"> 口味:4.9  环境:4.8  服务:4.7 </div>
+    <div class="shop-rank">
+      <img src="/imgs/bd.png" width="63" height="20" alt="">
+      <span>拱墅区好评榜第3名</span>
+      <div><i class="el-icon-arrow-right"></i></div>
+    </div>
+    <div class="shop-images">
+      <div v-for="(s,i) in shop.images" :key="i">
+        <img :src="s" alt="">
+      </div>
+    </div>
+    <div class="shop-address">
+      <div><i class="el-icon-map-location"></i></div>
+      <span>{{shop.address}}</span>
+      <div style="width: 10px; flex-grow: 2; text-align: center; color: #e1e2e3">|</div>
+      <div style="margin: 0 5px"><img src="https://p0.meituan.net/travelcube/bf684aa196c870810655e45b1e52ce843484.png@24w_16h_40q" alt=""></div>
+      <div><img src="https://p0.meituan.net/travelcube/9277ace32123e0c9f59dedf4407892221566.png@24w_24h_40q" alt=""></div>
+    </div>
+  </div>
+  <div class="shop-divider"></div>
+  <div class="shop-open-time">
+    <span><i class="el-icon-watch"></i></span>
+    <div>营业时间</div>
+    <div>{{shop.openHours}}</div>
+    <span class="line-right">查看详情 <i class="el-icon-arrow-right"></i></span>
+  </div>
+  <div class="shop-divider"></div>
+  <div class="shop-voucher">
+    <div>
+      <span class="voucher-icon">券</span>
+      <span style="font-weight: bold;">代金券</span>
+    </div>
+    <div class="voucher-box" v-for="v in vouchers" :key="v.id" v-if="!isEnd(v)">
+      <div class="voucher-circle">
+        <div class="voucher-b"></div>
+        <div class="voucher-b"></div>
+        <div class="voucher-b"></div>
+      </div>
+      <div class="voucher-left">
+        <div class="voucher-title">{{v.title}}</div>
+        <div class="voucher-subtitle">{{v.subTitle}}</div>
+        <div class="voucher-price"><div>￥ {{util.formatPrice(v.payValue)}}</div>  <span>{{(v.payValue*10)/v.actualValue}}折</span></div>
+      </div>
+      <div class="voucher-right">
+        <div v-if="v.type" class="seckill-box">
+          <div class="voucher-btn" :class="{'disable-btn': isNotBegin(v) || v.stock < 1}" @click="seckill(v)">限时抢购</div>
+          <div class="seckill-stock">剩余 <span>{{v.stock}}</span> 张</div>
+          <div class="seckill-time">{{formatTime(v)}}</div>
+        </div>
+        <div class="voucher-btn" v-else>抢购</div>
+      </div>
+    </div>
+  </div>
+  <div class="shop-divider"></div>
+
+  <!-- 商品展示区域 -->
+  <div class="shop-products">
+    <!-- 商品区域标题 -->
+    <div class="products-header">
+      <h3>店内商品</h3>
+    </div>
+
+    <!-- 商品展示区域 -->
+    <div class="products-container">
+      <!-- 左侧：商品分类 -->
+      <div class="product-categories">
+        <div class="category-list">
+          <div
+            class="category-item"
+            :class="{'active': selectedCategoryId === null}"
+            @click="selectCategory(null)"
+          >
+            全部
+          </div>
+          <div
+            v-for="category in productCategories"
+            :key="category.id"
+            class="category-item"
+            :class="{'active': selectedCategoryId === category.id}"
+            @click="selectCategory(category.id)"
+          >
+            {{category.name}}
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧：商品列表 -->
+      <div class="product-list">
+        <!-- 加载中 -->
+        <div v-if="productsLoading" class="products-loading">
+          <i class="el-icon-loading"></i> 加载中...
+        </div>
+
+        <!-- 无商品时显示 -->
+        <div v-else-if="!products || products.length === 0" class="products-empty">
+          暂无商品
+        </div>
+
+        <!-- 商品列表 -->
+        <div v-else class="products-grid">
+          <div
+            v-for="product in products"
+            :key="product.id"
+            class="product-card"
+          >
+            <div class="product-image">
+              <img :src="getProductImage(product.images)" :alt="product.title">
+            </div>
+            <div class="product-info">
+              <div class="product-header">
+                <div class="product-title">
+                  {{product.title}}
+                  <div class="product-tags">
+                    <span v-if="product.isNew" class="product-tag new">新品</span>
+                    <span v-if="product.isHot" class="product-tag hot">热销</span>
+                    <span v-if="product.isPromotion" class="product-tag">特价</span>
+                  </div>
+                </div>
+                <div class="product-description">{{product.description}}</div>
+              </div>
+
+              <div class="product-stats">
+                <div class="product-sales">
+                  <span>月销 {{product.monthlySales || 0}}</span>
+                </div>
+                <div class="product-rating" v-if="product.rating">
+                  <el-rate
+                    disabled
+                    v-model="product.rating"
+                    size="small"
+                    show-score
+                    text-color="#ff9900"
+                  ></el-rate>
+                </div>
+              </div>
+
+              <div class="product-price-section">
+                <div class="product-price-info">
+                  <div class="product-price">
+                    <span class="current-price">¥{{formatPrice(product.price)}}</span>
+                    <span v-if="product.originalPrice && product.originalPrice > product.price"
+                          class="original-price">¥{{formatPrice(product.originalPrice)}}</span>
+                  </div>
+                  <div class="product-stock">库存: {{product.stock}}</div>
+                </div>
+                <div class="product-actions">
+                  <button v-if="product.specs && product.specs.length > 0" class="spec-btn" @click="selectSpec(product)">选规格</button>
+                  <button v-else class="add-btn" @click="addToCart(product)" :disabled="product.stock <= 0">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 分页 -->
+        <div class="products-pagination" v-if="productTotal > 0">
+          <el-pagination
+            background
+            layout="prev, pager, next"
+            :total="productTotal"
+            :page-size="productPageSize"
+            :current-page.sync="productCurrentPage"
+            @current-change="handleProductPageChange"
+          >
+          </el-pagination>
+        </div>
+      </div>
+    </div>
+
+    <!-- 购物车区域 -->
+    <div class="shopping-cart" v-if="cartItems.length > 0">
+      <div class="cart-header">
+        <h4>购物车 ({{cartTotalQuantity}})</h4>
+        <el-button type="text" @click="clearCart" size="small">清空</el-button>
+      </div>
+      <div class="cart-items">
+        <div
+          v-for="item in cartItems"
+          :key="item.id"
+          class="cart-item"
+        >
+          <div class="item-image">
+            <img :src="getProductImage(item.productImage)" :alt="item.productTitle">
+          </div>
+          <div class="item-info">
+            <div class="item-title">{{item.productTitle}}</div>
+            <div class="item-price">¥{{formatPrice(item.productPrice)}}</div>
+          </div>
+          <div class="item-quantity">
+            <el-button
+              size="mini"
+              @click="updateCartItemQuantity(item.id, item.quantity - 1)"
+              :disabled="item.quantity <= 1"
+            >-</el-button>
+            <span class="quantity">{{item.quantity}}</span>
+            <el-button
+              size="mini"
+              @click="updateCartItemQuantity(item.id, item.quantity + 1)"
+              :disabled="item.quantity >= item.productStock"
+            >+</el-button>
+          </div>
+          <div class="item-actions">
+            <el-button
+              type="text"
+              size="mini"
+              @click="removeFromCart(item.id)"
+            >删除</el-button>
+          </div>
+        </div>
+      </div>
+      <div class="cart-footer">
+        <div class="cart-total">
+          总计: ¥{{formatPrice(cartTotalPrice)}}
+        </div>
+        <el-button type="primary" @click="checkout">结算</el-button>
+      </div>
+    </div>
+  </div>
+
+  <div class="shop-divider"></div>
+  <div class="shop-comments">
+    <div class="comments-head">
+      <div>网友评价 <span>（{{commentStats.total || 0}}）</span></div>
+      <div><i class="el-icon-arrow-right"></i></div>
+    </div>
+    
+    <!-- 评论排序选项 -->
+    <div class="comment-sort-options">
+      <div 
+        class="comment-sort-option" 
+        :class="{'active': sortBy === 'time'}"
+        @click="changeSortBy('time')"
+      >
+        最新
+      </div>
+      <div 
+        class="comment-sort-option" 
+        :class="{'active': sortBy === 'hotness'}"
+        @click="changeSortBy('hotness')"
+      >
+        最热
+      </div>
+      <div 
+        class="comment-sort-option" 
+        :class="{'active': sortBy === 'rating'}"
+        @click="changeSortBy('rating')"
+      >
+        好评优先
+      </div>
+    </div>
+    
+    <!-- 评论标签 - 保留原有的标签区域 -->
+    <div class="comment-tags">
+      <div class="tag">味道赞(19)</div>
+      <div class="tag">牛肉赞(16)</div>
+      <div class="tag">菜品不错(11)</div>
+      <div class="tag">回头客(4)</div>
+      <div class="tag">分量足(4)</div>
+      <div class="tag">停车方便(3)</div>
+      <div class="tag">海鲜棒(3)</div>
+      <div class="tag">饮品赞(3)</div>
+      <div class="tag">朋友聚餐(6)</div>
+    </div>
+    
+    <!-- 评论列表 -->
+    <div class="comment-list">
+      <!-- 加载中 -->
+      <div v-if="commentsLoading" style="text-align: center; padding: 20px;">
+        <i class="el-icon-loading"></i> 加载中...
+      </div>
+      
+      <!-- 无评论时显示 -->
+      <div v-else-if="!comments || comments.length === 0" class="comment-empty">
+        暂无评论，快来发表第一条评论吧！
+      </div>
+      
+      <!-- 评论列表 -->
+      <div v-else>
+        <div class="comment-box" v-for="comment in comments" :key="comment.id">
+          <div class="comment-icon">
+            <img :src="comment.userIcon || 'https://p0.meituan.net/userheadpicbackend/57e44d6eba01aad0d8d711788f30a126549507.jpg%4048w_48h_1e_1c_1l%7Cwatermark%3D0'" alt="">
+          </div>
+          <div class="comment-info">
+            <div class="comment-user">
+              <div>{{comment.userNickname || '匿名用户'}}</div>
+              <div v-if="comment.isCurrentUserComment" class="comment-date">
+                <span>我的评论</span>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 5px;">
+              <el-rate disabled v-model="comment.rating" size="small"></el-rate>
+              <span class="comment-date" style="margin-left: 10px;">
+                {{formatDate(comment.createTime)}}
+              </span>
+            </div>
+            <div style="padding: 5px 0; font-size: 14px">
+              {{comment.content}}
+            </div>
+            
+            <!-- 评论操作区域 -->
+            <div class="comment-actions">
+              <div></div>
+              <div>
+                <span 
+                  v-if="comment.isCurrentUserComment" 
+                  class="comment-action-btn"
+                  @click="deleteComment(comment.id)"
+                >
+                  <i class="el-icon-delete"></i> 删除
+                </span>
+                <span 
+                  v-else
+                  class="comment-action-btn"
+                  @click="reportComment(comment.id)"
+                >
+                  <i class="el-icon-warning-outline"></i> 举报
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 分页 -->
+        <div class="comment-pagination">
+          <el-pagination
+            background
+            layout="prev, pager, next"
+            :total="commentStats.total || 0"
+            :page-size="5"
+            :current-page.sync="currentPage"
+            @current-change="handlePageChange"
+          >
+          </el-pagination>
+        </div>
+      </div>
+      
+      <!-- 查看全部评论 -->
+      <div style="display: flex; justify-content: space-between; padding: 15px 0; border-top: 1px solid #f1f1f1; margin-top: 10px;" @click="showAllComments">
+        <div>查看全部{{commentStats.total || 0}}条评价</div>
+        <div><i class="el-icon-arrow-right"></i></div>
+      </div>
+    </div>
+    
+    <!-- 评论表单 -->
+    <div class="comment-form" v-if="token">
+      <div class="comment-form-title">发表评论</div>
+      
+      <!-- 订单选择 -->
+      <div class="order-select">
+        <el-select v-model="commentForm.orderId" placeholder="选择要评价的订单" style="width: 100%">
+          <el-option
+            v-for="order in userOrders"
+            :key="order.id"
+            :label="'订单号: ' + order.id"
+            :value="order.id">
+          </el-option>
+        </el-select>
+        <div v-if="userOrders.length === 0" style="color: #999; font-size: 12px; margin-top: 5px;">
+          您暂无可评价的订单，完成订单后才能评价
+        </div>
+      </div>
+      
+      <!-- 评分 -->
+      <div style="margin-bottom: 15px;">
+        <div style="margin-bottom: 5px;">评分</div>
+        <el-rate v-model="commentForm.rating" :max="5"></el-rate>
+      </div>
+      
+      <!-- 评论内容 -->
+      <el-input
+        type="textarea"
+        :rows="4"
+        placeholder="分享你的用餐体验..."
+        v-model="commentForm.content">
+      </el-input>
+      
+      <!-- 提交按钮 -->
+      <div class="comment-submit-btn">
+        <el-button type="primary" size="small" @click="submitComment" :loading="submitting">
+          发表评论
+        </el-button>
+      </div>
+    </div>
+    
+    <!-- 未登录提示 -->
+    <div v-else class="comment-form" style="text-align: center;">
+      <el-button type="text" @click="goToLogin">登录后发表评论</el-button>
+    </div>
+  </div>
+  <div class="shop-divider"></div>
+  <div class="copyright">
+    copyright ©2024 hmdp.com
+  </div>
+</div>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script>
+
+  const app = new Vue({
+    el: "#app",
+    data: {
+      util,
+      shop: {},
+      vouchers: [],
+      // 评论相关数据
+      comments: [],
+      commentStats: {
+        total: 0
+      },
+      currentPage: 1,
+      sortBy: 'time',
+      order: 'desc',
+      commentsLoading: false,
+      // 评论表单
+      commentForm: {
+        shopId: '',
+        orderId: '',
+        rating: 5,
+        content: ''
+      },
+      submitting: false,
+      // 用户订单
+      userOrders: [],
+      // 登录状态
+      token: sessionStorage.getItem("token") || '',
+
+      // 商品相关数据
+      productCategories: [],
+      products: [],
+      selectedCategoryId: null,
+      productsLoading: false,
+      productCurrentPage: 1,
+      productPageSize: 8,
+      productTotal: 0,
+
+      // 购物车相关数据
+      cartItems: [],
+      cartTotalPrice: 0,
+      cartTotalQuantity: 0,
+
+      // 规格选择相关数据
+      currentProduct: null, // 当前选择规格的商品
+      selectedSpecs: {}, // 当前选中的规格 {specId: selectedValue}
+      specPriceMap: {}, // 规格价格映射表 {specCombination: price}
+      currentPrice: 0 // 当前选中规格组合的价格
+    },
+    created() {
+      // 获取参数
+      let shopId = util.getUrlParam("id");
+      this.commentForm.shopId = shopId;
+
+      // 查询酒店信息
+      this.queryShopById(shopId);
+      // 查询优惠券信息
+      this.queryVoucher(shopId);
+      // 查询评论信息
+      this.queryComments();
+
+      // 查询商品分类
+      this.loadProductCategories(shopId);
+      // 查询商品列表
+      this.loadProducts(shopId);
+
+      // 如果用户已登录，查询用户的可评论订单和购物车
+      if (this.checkLoginStatus()) {
+        this.queryUserOrders(shopId);
+        this.loadCart();
+      }
+    },
+    methods: {
+      // 检查登录状态
+      checkLoginStatus() {
+        this.token = sessionStorage.getItem("token") || '';
+        return !!this.token;
+      },
+
+      goBack() {
+        history.back();
+      },
+      queryShopById(shopId) {
+        axios.get("/shop/" + shopId)
+        .then(({data}) => {
+          data.images = data.images.split(",")
+          this.shop = data
+        })
+        .catch(this.$message.error)
+      },
+      queryVoucher(shopId) {
+        axios.get("/voucher/list/" + shopId)
+        .then(({data}) => {
+          this.vouchers = data;
+        })
+        .catch(this.$message.error)
+      },
+      formatTime(v){
+        let b = new Date(v.beginTime);
+        let e = new Date(v.endTime);
+        return b.getMonth() + 1 + "月" + b.getDate() + "日 "
+          +  b.getHours() + ":" + this.formatMinutes(b.getMinutes())
+          + " ~ "/*  + e.getMonth() + 1 + "月" + e.getDate() + "日 " */
+          +  e.getHours() + ":" + this.formatMinutes(e.getMinutes());
+      },
+      formatMinutes(m){
+        if(m < 10) m = "0" + m
+        return m;
+      },
+      isNotBegin(v){
+        return new Date(v.beginTime).getTime() > new Date().getTime();
+      },
+      isEnd(v){
+        return new Date(v.endTime).getTime() < new Date().getTime();
+      },
+      seckill(v){
+        if(!this.checkLoginStatus()){
+          this.$message.error("请先登录")
+          // 未登录，跳转
+          this.goToLogin();
+          return;
+        }
+        if(this.isNotBegin(v)){
+          this.$message.error("优惠券抢购尚未开始！")
+          return;
+        }
+        if(this.isEnd(v)){
+          this.$message.error("优惠券抢购已经结束！")
+          return;
+        }
+        if(v.stock < 1){
+          this.$message.error("库存不足，请刷新再试试！")
+          return;
+        }
+        let id = v.id;
+        // 秒杀抢购
+        axios.post("/voucher-order/seckill/" + id)
+        .then(({data}) => {
+          // 抢购成功，这里输出订单id，支付功能TODO
+          this.$message.success("抢购成功，订单id：" + data)
+        })
+        .catch(this.$message.error)
+      },
+      
+      // 评论相关方法
+      queryComments() {
+        this.commentsLoading = true;
+        const shopId = util.getUrlParam("id");
+        
+        axios.get(`/shop-comment/shop/${shopId}`, {
+          params: {
+            current: this.currentPage,
+            sortBy: this.sortBy,
+            order: this.order
+          }
+        })
+        .then(({data}) => {
+          this.comments = data.records || [];
+          this.commentStats.total = data.total || 0;
+          this.commentsLoading = false;
+        })
+        .catch(err => {
+          this.$message.error("获取评论失败");
+          this.commentsLoading = false;
+        });
+      },
+      
+      changeSortBy(sortType) {
+        this.sortBy = sortType;
+        this.currentPage = 1;
+        this.queryComments();
+      },
+      
+      handlePageChange(page) {
+        this.currentPage = page;
+        this.queryComments();
+      },
+      
+      formatDate(dateStr) {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+      },
+      
+      deleteComment(commentId) {
+        this.$confirm('确定要删除这条评论吗?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          axios.delete(`/shop-comment/${commentId}`)
+          .then(() => {
+            this.$message.success('评论已删除');
+            this.queryComments();
+          })
+          .catch(err => {
+            this.$message.error('删除失败：' + err.response?.data?.msg || '未知错误');
+          });
+        }).catch(() => {});
+      },
+      
+      reportComment(commentId) {
+        this.$prompt('请输入举报原因', '举报评论', {
+          confirmButtonText: '提交',
+          cancelButtonText: '取消',
+          inputPlaceholder: '例如：内容不实、广告信息等'
+        }).then(({ value }) => {
+          if (!value) {
+            this.$message.warning('请输入举报原因');
+            return;
+          }
+          
+          axios.post('/comment-report', {
+            commentId: commentId,
+            reason: value
+          })
+          .then(() => {
+            this.$message.success('举报已提交，感谢您的反馈');
+          })
+          .catch(err => {
+            this.$message.error('举报失败：' + err.response?.data?.msg || '未知错误');
+          });
+        }).catch(() => {});
+      },
+      
+      queryUserOrders(shopId) {
+        // 查询用户在该商店的已完成订单
+        axios.get('/order/user/completed', {
+          params: { shopId: shopId }
+        })
+        .then(({data}) => {
+          this.userOrders = data || [];
+        })
+        .catch(err => {
+          console.error('获取订单失败', err);
+          // 模拟订单数据用于演示
+          this.userOrders = [
+            { id: 10001, shopId: shopId, status: 3 },
+            { id: 10002, shopId: shopId, status: 3 }
+          ];
+        });
+      },
+      
+      submitComment() {
+        // 表单验证
+        if (!this.commentForm.orderId) {
+          this.$message.warning('请选择要评价的订单');
+          return;
+        }
+        
+        if (!this.commentForm.rating) {
+          this.$message.warning('请给出评分');
+          return;
+        }
+        
+        if (!this.commentForm.content || this.commentForm.content.trim() === '') {
+          this.$message.warning('请输入评论内容');
+          return;
+        }
+        
+        this.submitting = true;
+        
+        // 提交评论
+        axios.post('/shop-comment', this.commentForm)
+        .then(() => {
+          this.$message.success('评论发表成功');
+          // 重置表单
+          this.commentForm.orderId = '';
+          this.commentForm.rating = 5;
+          this.commentForm.content = '';
+          // 刷新评论列表
+          this.queryComments();
+          // 刷新可评论订单
+          this.queryUserOrders(this.commentForm.shopId);
+        })
+        .catch(err => {
+          this.$message.error('评论失败：' + err.response?.data?.msg || '未知错误');
+        })
+        .finally(() => {
+          this.submitting = false;
+        });
+      },
+      
+      showAllComments() {
+        // 可以跳转到专门的评论页面，这里简单实现为重新查询第一页
+        this.currentPage = 1;
+        this.queryComments();
+      },
+      
+      goToLogin() {
+        location.href = "/user-login.html?redirect=" + encodeURIComponent(location.href);
+      },
+
+      // 商品相关方法
+      loadProductCategories(shopId) {
+        axios.get(`/product/categories/${shopId}`)
+        .then(({data}) => {
+          this.productCategories = data || [];
+        })
+        .catch(err => {
+          console.error('获取商品分类失败', err);
+        });
+      },
+
+      loadProducts(shopId) {
+        this.productsLoading = true;
+
+        const params = {
+          current: this.productCurrentPage,
+          size: this.productPageSize
+        };
+
+        if (this.selectedCategoryId) {
+          params.categoryId = this.selectedCategoryId;
+        }
+
+        axios.get(`/product/shop/${shopId}`, { params })
+        .then(({data}) => {
+          // 使用后端返回的真实商品数据，添加一些展示数据
+          this.products = (data.records || []).map(product => ({
+            ...product,
+            isNew: Math.random() > 0.7, // 30% 概率显示新品标签
+            isHot: Math.random() > 0.8, // 20% 概率显示热销标签
+            isPromotion: Math.random() > 0.6, // 40% 概率显示特价标签
+            monthlySales: Math.floor(Math.random() * 1000) + 10, // 随机月销量
+            rating: Math.random() > 0.5 ? (Math.random() * 2 + 3).toFixed(1) : null, // 随机评分
+            originalPrice: product.price + Math.floor(Math.random() * 2000) + 500 // 原价
+            // 移除hasSpecs模拟数据，使用后端返回的真实specs数据
+          }));
+          this.productTotal = data.total || 0;
+          this.productsLoading = false;
+        })
+        .catch(err => {
+          console.error('获取商品列表失败', err);
+          this.productsLoading = false;
+        });
+      },
+
+      selectCategory(categoryId) {
+        this.selectedCategoryId = categoryId;
+        this.productCurrentPage = 1;
+        this.loadProducts(util.getUrlParam("id"));
+      },
+
+      handleProductPageChange(page) {
+        this.productCurrentPage = page;
+        this.loadProducts(util.getUrlParam("id"));
+      },
+
+      getProductImage(images) {
+        if (!images) return '/imgs/default-product.jpg';
+        const imageList = images.split(',');
+        return imageList[0] || '/imgs/default-product.jpg';
+      },
+
+      formatPrice(priceInCents) {
+        return (priceInCents / 100).toFixed(2);
+      },
+
+      // 生成规格选择HTML
+      generateSpecsHtml(specs) {
+        if (!specs || specs.length === 0) {
+          return '<div style="margin: 15px 0; color: #999;">该商品暂无规格选项</div>';
+        }
+
+        let html = '<div style="margin: 15px 0;"><strong>规格选择：</strong><br>';
+
+        specs.forEach((spec, specIndex) => {
+          html += `<div style="margin: 10px 0;" data-spec-id="${spec.id || specIndex}">`;
+          html += `<div style="margin-bottom: 5px; font-weight: bold;">
+            ${spec.name}${spec.required ? '<span style="color: #f63;">*</span>' : ''}：
+          </div>`;
+          html += `<div style="margin-top: 8px;" class="spec-values-container">`;
+
+          if (spec.values && spec.values.length > 0) {
+            spec.values.forEach((value, valueIndex) => {
+              const specId = spec.id || specIndex;
+              const isSelected = this.selectedSpecs[specId] === value;
+              const borderColor = isSelected ? '#f63' : '#ddd';
+              const textColor = isSelected ? '#f63' : '#666';
+              const backgroundColor = isSelected ? '#fff5f5' : 'white';
+
+              html += `<button
+                class="spec-value-btn"
+                data-spec-id="${specId}"
+                data-value="${value}"
+                style="
+                  margin: 4px;
+                  padding: 6px 12px;
+                  border: 1px solid ${borderColor};
+                  background: ${backgroundColor};
+                  color: ${textColor};
+                  border-radius: 4px;
+                  cursor: pointer;
+                  transition: all 0.3s;
+                "
+                onclick="app.selectSpecValue('${specId}', '${value}')"
+              >${value}</button>`;
+            });
+          } else {
+            html += '<span style="color: #999;">暂无可选规格值</span>';
+          }
+
+          html += `</div></div>`;
+        });
+
+        html += '</div>';
+        return html;
+      },
+
+      // 规格选择相关方法
+      selectSpecValue(specId, value) {
+        // 更新选中的规格
+        this.$set(this.selectedSpecs, specId, value);
+
+        // 重新计算价格
+        this.calculateCurrentPrice();
+
+        // 更新弹窗中的规格显示
+        this.updateSpecDisplay();
+
+        // 更新弹窗中的价格显示
+        this.updatePriceDisplay();
+      },
+
+      calculateCurrentPrice() {
+        if (!this.currentProduct) return;
+
+        // 基础价格
+        let basePrice = this.currentProduct.price;
+
+        // 这里可以根据规格组合计算价格
+        // 目前先使用基础价格，后续可以扩展为根据规格组合查询不同价格
+        this.currentPrice = basePrice;
+
+        // 如果有规格价格映射表，可以在这里查询
+        const specCombination = this.getSpecCombinationKey();
+        if (this.specPriceMap[specCombination]) {
+          this.currentPrice = this.specPriceMap[specCombination];
+        }
+      },
+
+      getSpecCombinationKey() {
+        // 生成规格组合的唯一键
+        const sortedSpecs = Object.keys(this.selectedSpecs).sort();
+        return sortedSpecs.map(specId => `${specId}:${this.selectedSpecs[specId]}`).join('|');
+      },
+
+      updateSpecDisplay() {
+        // 更新弹窗中规格按钮的选中状态
+        const specButtons = document.querySelectorAll('.spec-value-btn');
+        specButtons.forEach(btn => {
+          const specId = btn.getAttribute('data-spec-id');
+          const value = btn.getAttribute('data-value');
+          const isSelected = this.selectedSpecs[specId] === value;
+
+          if (isSelected) {
+            btn.style.borderColor = '#f63';
+            btn.style.color = '#f63';
+            btn.style.backgroundColor = '#fff5f5';
+          } else {
+            btn.style.borderColor = '#ddd';
+            btn.style.color = '#666';
+            btn.style.backgroundColor = 'white';
+          }
+        });
+      },
+
+      updatePriceDisplay() {
+        // 更新弹窗中的价格显示
+        const priceElement = document.querySelector('.current-spec-price');
+        if (priceElement) {
+          priceElement.textContent = `¥${this.formatPrice(this.currentPrice)}`;
+        }
+      },
+
+      validateSpecSelection() {
+        if (!this.currentProduct || !this.currentProduct.specs) return true;
+
+        // 检查必选规格是否都已选择
+        for (let spec of this.currentProduct.specs) {
+          if (spec.required && !this.selectedSpecs[spec.id || spec.name]) {
+            this.$message.warning(`请选择${spec.name}`);
+            return false;
+          }
+        }
+        return true;
+      },
+
+      resetSpecSelection() {
+        this.selectedSpecs = {};
+        this.currentProduct = null;
+        this.currentPrice = 0;
+      },
+
+      selectSpec(product) {
+        // 初始化当前商品和规格选择状态
+        this.currentProduct = product;
+        this.resetSpecSelection();
+        this.currentPrice = product.price;
+
+        // 初始化默认选择（选择每个规格的第一个值）
+        if (product.specs && product.specs.length > 0) {
+          product.specs.forEach(spec => {
+            if (spec.values && spec.values.length > 0) {
+              const specId = spec.id || spec.name;
+              this.selectedSpecs[specId] = spec.values[0];
+            }
+          });
+        }
+
+        // 使用真实规格数据生成规格选择对话框
+        const specsHtml = this.generateSpecsHtml(product.specs);
+
+        this.$alert(`
+          <div style="text-align: left;">
+            <h4>${product.title}</h4>
+            <p style="color: #666; margin: 10px 0;">${product.description}</p>
+            ${specsHtml}
+            <div style="margin: 15px 0;">
+              <strong>价格：</strong> <span class="current-spec-price" style="color: #f63; font-size: 18px;">¥${this.formatPrice(this.currentPrice)}</span>
+            </div>
+            <div style="margin: 10px 0; font-size: 12px; color: #999;">
+              * 标记为必选规格
+            </div>
+          </div>
+        `, '选择规格', {
+          confirmButtonText: '加入购物车',
+          cancelButtonText: '取消',
+          showCancelButton: true,
+          dangerouslyUseHTMLString: true,
+          beforeClose: (action, instance, done) => {
+            if (action === 'confirm') {
+              // 验证规格选择
+              if (this.validateSpecSelection()) {
+                done();
+              }
+            } else {
+              done();
+            }
+          }
+        }).then(() => {
+          // 将选中的规格信息传递给购物车
+          this.addToCartWithSpecs(product);
+        }).catch(() => {
+          // 用户取消，重置状态
+          this.resetSpecSelection();
+        });
+      },
+
+      // 购物车相关方法
+      loadCart() {
+        if (!this.checkLoginStatus()) return;
+
+        axios.get('/cart')
+        .then(({data}) => {
+          this.cartItems = data.items || [];
+          this.cartTotalPrice = data.totalPrice || 0;
+          this.cartTotalQuantity = data.totalQuantity || 0;
+        })
+        .catch(err => {
+          console.error('获取购物车失败', err);
+        });
+      },
+
+      addToCart(product) {
+        if (!this.checkLoginStatus()) {
+          this.$message.error("请先登录");
+          this.goToLogin();
+          return;
+        }
+
+        if (product.stock <= 0) {
+          this.$message.error("商品库存不足");
+          return;
+        }
+
+        const cartData = {
+          productId: product.id,
+          quantity: 1
+        };
+
+        axios.post('/cart/item', cartData)
+        .then(() => {
+          this.$message.success('已添加到购物车');
+          this.loadCart();
+        })
+        .catch(err => {
+          this.$message.error('添加失败：' + (err.response?.data?.msg || '未知错误'));
+        });
+      },
+
+      addToCartWithSpecs(product) {
+        if (!this.checkLoginStatus()) {
+          this.$message.error("请先登录");
+          this.goToLogin();
+          return;
+        }
+
+        if (product.stock <= 0) {
+          this.$message.error("商品库存不足");
+          return;
+        }
+
+        // 构建包含规格信息的购物车数据
+        const cartData = {
+          productId: product.id,
+          quantity: 1,
+          specs: this.selectedSpecs, // 包含选中的规格信息
+          specPrice: this.currentPrice // 包含规格对应的价格
+        };
+
+        axios.post('/cart/item', cartData)
+        .then(() => {
+          this.$message.success('已添加到购物车');
+          this.loadCart();
+          this.resetSpecSelection(); // 重置规格选择状态
+        })
+        .catch(err => {
+          this.$message.error('添加失败：' + (err.response?.data?.msg || '未知错误'));
+        });
+      },
+
+      updateCartItemQuantity(itemId, newQuantity) {
+        if (newQuantity <= 0) {
+          this.removeFromCart(itemId);
+          return;
+        }
+
+        axios.put(`/cart/item/${itemId}`, { quantity: newQuantity })
+        .then(() => {
+          this.loadCart();
+        })
+        .catch(err => {
+          this.$message.error('更新失败：' + (err.response?.data?.msg || '未知错误'));
+        });
+      },
+
+      removeFromCart(itemId) {
+        axios.delete(`/cart/item/${itemId}`)
+        .then(() => {
+          this.$message.success('已从购物车删除');
+          this.loadCart();
+        })
+        .catch(err => {
+          this.$message.error('删除失败：' + (err.response?.data?.msg || '未知错误'));
+        });
+      },
+
+      clearCart() {
+        this.$confirm('确定要清空购物车吗?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          axios.delete('/cart')
+          .then(() => {
+            this.$message.success('购物车已清空');
+            this.loadCart();
+          })
+          .catch(err => {
+            this.$message.error('清空失败：' + (err.response?.data?.msg || '未知错误'));
+          });
+        }).catch(() => {});
+      },
+
+      checkout() {
+        if (this.cartItems.length === 0) {
+          this.$message.warning('购物车为空');
+          return;
+        }
+
+        // 弹出结算确认对话框
+        this.$prompt('请输入配送地址', '确认结算', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          inputPlaceholder: '请输入详细的配送地址',
+          inputValidator: (value) => {
+            if (!value || value.trim() === '') {
+              return '配送地址不能为空';
+            }
+            return true;
+          }
+        }).then(({ value }) => {
+          // 调用结算API
+          const orderData = {
+            address: value.trim(),
+            payType: 1, // 默认余额支付
+            remark: ''
+          };
+
+          axios.post('/order/checkout', orderData)
+          .then(({data}) => {
+            this.$message.success('订单创建成功！');
+            // 清空本地购物车数据
+            this.cartItems = [];
+            this.cartTotalPrice = 0;
+            this.cartTotalQuantity = 0;
+
+            // 可以跳转到订单列表页面
+            this.$confirm('订单创建成功，是否查看订单详情？', '提示', {
+              confirmButtonText: '查看订单',
+              cancelButtonText: '继续购物',
+              type: 'success'
+            }).then(() => {
+              // 跳转到订单列表页面（如果有的话）
+              // window.location.href = '/user-orders.html';
+              this.$message.info('订单列表页面开发中...');
+            }).catch(() => {
+              // 用户选择继续购物，不做任何操作
+            });
+          })
+          .catch(err => {
+            console.error('结算失败', err);
+            const errorMsg = err.response?.data?.errorMsg || '结算失败，请重试';
+            this.$message.error(errorMsg);
+          });
+        }).catch(() => {
+          // 用户取消结算
+        });
+      }
+    }
+  })
+</script>
+</body>
+</html>

@@ -309,6 +309,7 @@
             <el-button class="comment-filter-btn" size="small" :type="filterRating === 'medium' ? 'primary' : ''" @click="filterByRating('medium')">中评</el-button>
             <el-button class="comment-filter-btn" size="small" :type="filterRating === 'bad' ? 'primary' : ''" @click="filterByRating('bad')">差评</el-button>
             <el-button class="comment-filter-btn" size="small" :type="filterReplied === 'unreplied' ? 'primary' : ''" @click="filterByReplied('unreplied')">未回复</el-button>
+            <el-button class="comment-filter-btn" size="small" :type="viewMode === 'reports' ? 'primary' : ''" @click="toggleViewMode">查看举报</el-button>
           </div>
           <div>
             <el-input
@@ -377,6 +378,7 @@
                     {{ comment.reply ? '修改回复' : '回复' }}
                   </el-button>
                   <el-button type="text" size="small" @click="showCommentDetail(comment)">查看详情</el-button>
+                  <el-button type="text" size="small" @click="reportComment(comment.id)" v-if="!comment.isReported">举报</el-button>
                 </div>
               </div>
             </div>
@@ -491,6 +493,54 @@
     </div>
   </el-dialog>
   
+  <!-- 举报列表对话框 -->
+  <el-dialog title="待处理举报" :visible.sync="reportsDialogVisible" width="700px">
+    <div v-if="reports.length > 0">
+      <el-table :data="reports" style="width: 100%">
+        <el-table-column prop="id" label="举报ID" width="80"></el-table-column>
+        <el-table-column label="举报内容" min-width="180">
+          <template slot-scope="scope">
+            <div>
+              <div><strong>举报原因:</strong> {{scope.row.reason}}</div>
+              <div><strong>举报时间:</strong> {{scope.row.createTime}}</div>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="评论内容" min-width="180">
+          <template slot-scope="scope">
+            <div v-if="scope.row.comment">
+              <div><strong>评论者:</strong> {{scope.row.comment.userNickname}}</div>
+              <div><strong>评分:</strong> <el-rate v-model="scope.row.comment.rating" disabled size="small"></el-rate></div>
+              <div><strong>内容:</strong> {{scope.row.comment.content}}</div>
+            </div>
+            <div v-else>评论信息不可用</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="180">
+          <template slot-scope="scope">
+            <el-button size="mini" type="success" @click="handleReport(scope.row.id, true)">批准举报</el-button>
+            <el-button size="mini" type="info" @click="handleReport(scope.row.id, false)">拒绝举报</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      
+      <!-- 分页 -->
+      <div class="pagination-container">
+        <el-pagination
+          @current-change="handleReportPageChange"
+          :current-page="reportPage"
+          :page-size="reportPageSize"
+          layout="prev, pager, next, jumper"
+          :total="reportTotal">
+        </el-pagination>
+      </div>
+    </div>
+    <div v-else class="empty-data">
+      <i class="el-icon-warning-outline"></i>
+      <p>暂无待处理的举报</p>
+    </div>
+  </el-dialog>
+  
   <!-- 图片预览对话框 -->
   <el-dialog :visible.sync="imagePreviewVisible" append-to-body class="image-preview-dialog" :show-close="false">
     <img :src="previewImageUrl" alt="预览图片">
@@ -529,6 +579,7 @@
       replyDialogVisible: false,
       detailDialogVisible: false,
       imagePreviewVisible: false,
+      reportsDialogVisible: false,
       // 图片预览
       previewImageUrl: '',
       // 当前操作的评价
@@ -544,7 +595,15 @@
           { required: true, message: '请输入回复内容', trigger: 'blur' },
           { min: 2, max: 200, message: '长度在 2 到 200 个字符', trigger: 'blur' }
         ]
-      }
+      },
+      // 查看模式：comments 或 reports
+      viewMode: 'comments',
+      // 举报相关
+      reports: [],
+      reportPage: 1,
+      reportPageSize: 5,
+      reportTotal: 0,
+      loadingReports: false
     },
     methods: {
       // 导航到其他页面
@@ -586,19 +645,19 @@
       loadComments() {
         this.loading = true;
         // 使用merchantAxios发送请求
-        merchantAxios.get("/merchant/comments", {
+        merchantAxios.get("/shop-comment/merchant", {
           params: {
-            page: this.currentPage,
-            size: this.pageSize,
-            status: this.activeTab
+            current: this.currentPage,
+            size: this.pageSize
           }
         })
         .then(response => {
-          if (response.code === 200) {
-            this.comments = response.data.records;
-            this.total = response.data.total;
+          if (response.data.success) {
+            this.comments = response.data.data.records;
+            this.total = response.data.data.total;
+            this.filterComments(); // 应用筛选
           } else {
-            this.$message.error(response.msg || "获取评论列表失败");
+            this.$message.error(response.data.errorMsg || "获取评论列表失败");
           }
           this.loading = false;
         })
@@ -735,44 +794,31 @@
       submitReply() {
         this.$refs.replyForm.validate((valid) => {
           if (valid) {
-            // 模拟提交回复
-            const index = this.comments.findIndex(item => item.id === this.replyForm.commentId);
-            if (index !== -1) {
-              this.comments[index].reply = this.replyForm.content;
-              
-              this.filterComments();
-              this.replyDialogVisible = false;
-              
-              this.$message({
-                type: 'success',
-                message: '回复成功'
-              });
-            }
-            
-            // 实际项目中的API调用
-            /*
-            axios.post("/api/merchant/comment/reply", this.replyForm, {
-              headers: {
-                Authorization: sessionStorage.getItem("merchantToken")
-              }
-            })
-            .then(({data}) => {
-              if(data.code === 200){
-                this.fetchComments();
+            // 提交回复到API
+            merchantAxios.post("/merchant/comment/reply", this.replyForm)
+            .then(response => {
+              if(response.data.success){
+                // 更新本地评论数据
+                const index = this.comments.findIndex(item => item.id === this.replyForm.commentId);
+                if (index !== -1) {
+                  this.comments[index].reply = this.replyForm.content;
+                }
+                
+                this.filterComments();
                 this.replyDialogVisible = false;
+                
                 this.$message({
                   type: 'success',
                   message: '回复成功'
                 });
               } else {
-                this.$message.error(data.msg || "回复失败");
+                this.$message.error(response.data.errorMsg || "回复失败");
               }
             })
             .catch(err => {
               console.error(err);
-              this.$message.error("回复失败");
+              this.$message.error("回复失败: " + err);
             });
-            */
           } else {
             return false;
           }
@@ -783,46 +829,32 @@
       submitReplyFromDetail() {
         this.$refs.detailReplyForm.validate((valid) => {
           if (valid) {
-            // 模拟提交回复
-            const index = this.comments.findIndex(item => item.id === this.replyForm.commentId);
-            if (index !== -1) {
-              this.comments[index].reply = this.replyForm.content;
-              // 同步更新当前查看的评价数据
-              this.currentComment.reply = this.replyForm.content;
-              
-              this.filterComments();
-              
-              this.$message({
-                type: 'success',
-                message: '回复成功'
-              });
-            }
-            
-            // 实际项目中的API调用
-            /*
-            axios.post("/api/merchant/comment/reply", this.replyForm, {
-              headers: {
-                Authorization: sessionStorage.getItem("merchantToken")
-              }
-            })
-            .then(({data}) => {
-              if(data.code === 200){
-                this.fetchComments();
-                // 更新当前查看的评价数据
-                this.currentComment.reply = this.replyForm.content;
+            // 提交回复到API
+            merchantAxios.post("/merchant/comment/reply", this.replyForm)
+            .then(response => {
+              if(response.data.success){
+                // 更新本地评论数据
+                const index = this.comments.findIndex(item => item.id === this.replyForm.commentId);
+                if (index !== -1) {
+                  this.comments[index].reply = this.replyForm.content;
+                  // 同步更新当前查看的评价数据
+                  this.currentComment.reply = this.replyForm.content;
+                }
+                
+                this.filterComments();
+                
                 this.$message({
                   type: 'success',
                   message: '回复成功'
                 });
               } else {
-                this.$message.error(data.msg || "回复失败");
+                this.$message.error(response.data.errorMsg || "回复失败");
               }
             })
             .catch(err => {
               console.error(err);
-              this.$message.error("回复失败");
+              this.$message.error("回复失败: " + err);
             });
-            */
           } else {
             return false;
           }
@@ -836,6 +868,113 @@
         sessionStorage.removeItem("merchantInfo");
         // 跳转到登录页
         location.href = "/merchant-login.html";
+      },
+      
+      // 切换查看模式（评论/举报）
+      toggleViewMode() {
+        if (this.viewMode === 'comments') {
+          this.viewMode = 'reports';
+          this.loadReports();
+          this.reportsDialogVisible = true;
+        } else {
+          this.viewMode = 'comments';
+          this.reportsDialogVisible = false;
+        }
+      },
+      
+      // 加载举报列表
+      loadReports() {
+        this.loadingReports = true;
+        merchantAxios.get('/comment-report/admin/pending', {
+          params: {
+            current: this.reportPage
+          }
+        })
+        .then(response => {
+          if (response.data.success) {
+            this.reports = response.data.data.records || [];
+            this.reportTotal = response.data.data.total || 0;
+          } else {
+            this.$message.error(response.data.errorMsg || '获取举报列表失败');
+          }
+          this.loadingReports = false;
+        })
+        .catch(error => {
+          console.error('获取举报列表失败:', error);
+          this.$message.error('获取举报列表失败，请重试');
+          this.loadingReports = false;
+        });
+      },
+      
+      // 处理举报分页变化
+      handleReportPageChange(page) {
+        this.reportPage = page;
+        this.loadReports();
+      },
+      
+      // 处理举报（批准或拒绝）
+      handleReport(reportId, approveReport) {
+        const action = approveReport ? '批准' : '拒绝';
+        this.$confirm(`确定要${action}这条举报吗?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: approveReport ? 'warning' : 'info'
+        }).then(() => {
+          merchantAxios.put(`/comment-report/admin/${reportId}`, null, {
+            params: { approveReport }
+          })
+          .then(response => {
+            if (response.data.success) {
+              this.$message.success(`已${action}举报`);
+              // 重新加载举报列表
+              this.loadReports();
+              // 如果批准了举报，可能需要刷新评论列表
+              if (approveReport) {
+                this.loadComments();
+              }
+            } else {
+              this.$message.error(response.data.errorMsg || `${action}举报失败`);
+            }
+          })
+          .catch(error => {
+            console.error(`${action}举报失败:`, error);
+            this.$message.error(`${action}举报失败，请重试`);
+          });
+        }).catch(() => {});
+      },
+      
+      // 举报评论
+      reportComment(commentId) {
+        this.$prompt('请输入举报原因', '举报评论', {
+          confirmButtonText: '提交',
+          cancelButtonText: '取消',
+          inputPlaceholder: '例如：内容不实、广告信息等'
+        }).then(({ value }) => {
+          if (!value) {
+            this.$message.warning('请输入举报原因');
+            return;
+          }
+          
+          merchantAxios.post('/comment-report', {
+            commentId: commentId,
+            reason: value
+          })
+          .then(response => {
+            if(response.data.success) {
+              this.$message.success('举报已提交，感谢您的反馈');
+              // 标记该评论已被举报
+              const index = this.comments.findIndex(item => item.id === commentId);
+              if (index !== -1) {
+                this.$set(this.comments[index], 'isReported', true);
+              }
+            } else {
+              this.$message.error(response.data.errorMsg || '举报失败');
+            }
+          })
+          .catch(err => {
+            this.$message.error('举报失败: ' + err);
+          });
+        }).catch(() => {});
       }
     },
     computed: {

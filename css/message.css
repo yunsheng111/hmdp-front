@@ -1,0 +1,350 @@
+/* 消息页面专用样式 */
+
+/* 页面头部样式 */
+.page-header {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 15px;
+  border-bottom: 2px solid #ff6633;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  z-index: 10;
+}
+
+.page-header .back-btn {
+  width: 10%;
+  color: #ff6633;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.page-header .title {
+  width: 80%;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* 未读统计区域样式 */
+.unread-stats {
+  margin-top: 50px;
+  padding: 15px;
+  background: linear-gradient(135deg, #ff6633, #ff8c66);
+  color: white;
+  text-align: center;
+}
+
+.unread-stats .stats-title {
+  font-size: 14px;
+  margin-bottom: 5px;
+  opacity: 0.9;
+}
+
+.unread-stats .stats-count {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* 筛选区域样式 */
+.filter-section {
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.filter-section .filter-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.filter-section .filter-left {
+  flex: 1;
+}
+
+.filter-section .filter-right {
+  flex-shrink: 0;
+}
+
+.filter-section .filter-label {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.filter-section .el-select {
+  width: 100%;
+}
+
+.filter-section .el-select .el-input__inner {
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.filter-section .el-button {
+  border-radius: 20px;
+  font-size: 12px;
+  padding: 8px 16px;
+}
+
+.filter-section .el-button--primary {
+  background-color: #ff6633;
+  border-color: #ff6633;
+}
+
+.filter-section .el-button--primary:hover {
+  background-color: #e95b2b;
+  border-color: #e95b2b;
+}
+
+/* 博客列表容器样式 */
+.message-list-container {
+  padding: 10px;
+  height: calc(100vh - 200px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 自定义滚动条样式 */
+.message-list-container::-webkit-scrollbar {
+  width: 5px;
+}
+
+.message-list-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 5px;
+}
+
+.message-list-container::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 5px;
+}
+
+.message-list-container::-webkit-scrollbar-thumb:hover {
+  background: #ccc;
+}
+
+/* 博客项样式 */
+.message-blog-item {
+  display: flex;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 15px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.message-blog-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.message-blog-item.unread {
+  border-left: 4px solid #ff6633;
+}
+
+.message-blog-item .blog-img {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+}
+
+.message-blog-item .blog-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.message-blog-item .blog-info {
+  flex: 1;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.message-blog-item .blog-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.message-blog-item .blog-meta {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 8px;
+}
+
+.message-blog-item .blog-meta .meta-item {
+  display: flex;
+  align-items: center;
+  margin-right: 15px;
+}
+
+.message-blog-item .blog-meta .meta-item i {
+  margin-right: 3px;
+  font-size: 14px;
+}
+
+.message-blog-item .blog-author {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #666;
+}
+
+.message-blog-item .blog-author .author-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.message-blog-item .blog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.message-blog-item .blog-stats {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #999;
+}
+
+.message-blog-item .blog-stats .stat-item {
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+}
+
+.message-blog-item .blog-stats .stat-item i {
+  margin-right: 3px;
+  font-size: 14px;
+}
+
+.message-blog-item .read-btn {
+  padding: 4px 12px;
+  background-color: #ff6633;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.message-blog-item .read-btn:hover {
+  background-color: #e95b2b;
+}
+
+.message-blog-item .read-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* 加载和提示样式 */
+.loading-tip, .empty-tip, .bottom-tip {
+  padding: 20px 0;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+}
+
+.loading-tip .el-icon-loading {
+  margin-right: 5px;
+  font-size: 16px;
+}
+
+.empty-tip {
+  padding: 40px 20px;
+}
+
+.empty-tip i {
+  font-size: 48px;
+  color: #ddd;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.bottom-tip {
+  position: relative;
+}
+
+.bottom-tip span {
+  position: relative;
+  padding: 0 15px;
+  background-color: #f8f9fa;
+}
+
+.bottom-tip span:before, .bottom-tip span:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 40px;
+  height: 1px;
+  background: #ddd;
+}
+
+.bottom-tip span:before {
+  left: -40px;
+}
+
+.bottom-tip span:after {
+  right: -40px;
+}
+
+/* 响应式设计 */
+@media screen and (max-width: 375px) {
+  .message-list-container {
+    padding: 5px;
+  }
+
+  .message-blog-item {
+    margin-bottom: 10px;
+  }
+
+  .message-blog-item .blog-img {
+    width: 70px;
+    height: 70px;
+  }
+
+  .message-blog-item .blog-info {
+    padding: 8px 10px;
+  }
+
+  .message-blog-item .blog-title {
+    font-size: 15px;
+  }
+}
+
+/* v-cloak指令，防止页面闪烁 */
+[v-cloak] {
+  display: none;
+}
+
+/* 优化滚动体验 */
+.message-list-container {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(153, 153, 153, 0.5) rgba(241, 241, 241, 0.5);
+}

@@ -450,24 +450,21 @@
         merchantAxios.post("/merchant/login", this.accountForm)
         .then((response) => {
           loading.close();
-          console.log("登录成功，响应数据:", response.data);
-          if(response.data.success){
-            // 保存商家信息和token到session
-            sessionStorage.setItem("merchantToken", response.data.data.token);
-            sessionStorage.setItem("merchantInfo", JSON.stringify(response.data.data.merchantInfo));
-            // 显示成功消息
-            this.$message({
-              message: "登录成功，正在跳转...",
-              type: "success",
-              duration: 1500,
-              onClose: () => {
-                // 跳转到商家中心
-                location.href = "/merchant-center.html"
-              }
-            });
-          } else {
-            this.$message.error(response.data.errorMsg || "登录失败");
-          }
+          console.log("登录成功，响应数据:", response);
+          // 响应拦截器已经处理了data部分，这里直接使用response
+          // 保存商家信息和token到session
+          sessionStorage.setItem("merchantToken", response.token);
+          sessionStorage.setItem("merchantInfo", JSON.stringify(response.merchantInfo));
+          // 显示成功消息
+          this.$message({
+            message: "登录成功，正在跳转...",
+            type: "success",
+            duration: 1500,
+            onClose: () => {
+              // 跳转到商家中心
+              location.href = "/merchant-center.html"
+            }
+          });
         })
         .catch(err => {
           loading.close();
@@ -517,23 +514,20 @@
         merchantAxios.post("/merchant/login", this.phoneForm)
         .then((response) => {
           loading.close();
-          if(response.data.success){
-            // 保存商家信息和token到session
-            sessionStorage.setItem("merchantToken", response.data.data.token);
-            sessionStorage.setItem("merchantInfo", JSON.stringify(response.data.data.merchantInfo));
-            // 显示成功消息
-            this.$message({
-              message: "登录成功，正在跳转...",
-              type: "success",
-              duration: 1500,
-              onClose: () => {
-                // 跳转到商家中心
-                location.href = "/merchant-center.html"
-              }
-            });
-          } else {
-            this.$message.error(response.data.errorMsg || "登录失败");
-          }
+          // 响应拦截器已经处理了data部分，这里直接使用response
+          // 保存商家信息和token到session
+          sessionStorage.setItem("merchantToken", response.token);
+          sessionStorage.setItem("merchantInfo", JSON.stringify(response.merchantInfo));
+          // 显示成功消息
+          this.$message({
+            message: "登录成功，正在跳转...",
+            type: "success",
+            duration: 1500,
+            onClose: () => {
+              // 跳转到商家中心
+              location.href = "/merchant-center.html"
+            }
+          });
         })
         .catch(err => {
           loading.close();
@@ -566,15 +560,12 @@
         merchantAxios.post("/merchant/code?phone="+this.phoneForm.phone)
           .then((response) => {
             loading.close();
-            if(response.data.success){
-              this.$message({
-                message: "验证码发送成功，请注意查收",
-                type: "success",
-                duration: 2000
-              });
-            } else {
-              this.$message.error(response.data.errorMsg || "验证码发送失败");
-            }
+            // 响应拦截器已经处理了response.data部分，这里直接使用response
+            this.$message({
+              message: "验证码发送成功，请注意查收",
+              type: "success",
+              duration: 2000
+            });
           })
           .catch(err => {
             loading.close();

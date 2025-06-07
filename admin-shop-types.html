@@ -206,7 +206,7 @@
             width="100"
             align="center">
             <template slot-scope="scope">
-              <img :src="scope.row.icon || './imgs/default-type.png'" class="shop-type-icon-table" alt="分类图标">
+              <img :src="getIconPath(scope.row.icon)" class="shop-type-icon-table" alt="分类图标">
             </template>
           </el-table-column>
           <el-table-column
@@ -332,22 +332,60 @@
       navigateTo(path) {
         location.href = path;
       },
+      getIconPath(icon) {
+        // 处理图标路径转换，确保显示真正的分类图标
+        if (!icon) {
+          return ''; // 不使用默认图标，返回空字符串
+        }
+
+        // 如果图标路径以 /types/ 开头，添加 ./imgs 前缀
+        if (icon.startsWith('/types/')) {
+          return './imgs' + icon;
+        }
+
+        // 如果已经是完整的相对路径，直接返回
+        if (icon.startsWith('./imgs/')) {
+          return icon;
+        }
+
+        // 其他情况，假设是完整路径，直接返回
+        return icon;
+      },
       fetchShopTypes() {
         this.tableLoading = true;
-        axios.get("/api/admin/shop-types", { params: this.pageParams })
-          .then(({data}) => {
-            if(data.success){
-                this.shopTypeList = data.data.list || [];
-                this.total = data.data.total || 0;
+        console.log("🔍 [DEBUG] 开始获取商户分类列表，请求参数：", this.pageParams);
+
+        axios.get("/admin/shop-types", { params: this.pageParams })
+          .then((response) => {
+            console.log("🔍 [DEBUG] API响应完整对象：", response);
+            console.log("🔍 [DEBUG] API响应数据：", response.data);
+
+            const { data } = response;
+            console.log("🔍 [DEBUG] 解构后的data：", data);
+
+            // 修复：直接使用response.data，因为后端返回的就是{total, list}格式
+            if(data && data.list){
+                console.log("🔍 [DEBUG] 成功分支 - data.list：", data.list);
+                console.log("🔍 [DEBUG] 成功分支 - data.total：", data.total);
+
+                this.shopTypeList = data.list || [];
+                this.total = data.total || 0;
+
+                console.log("🔍 [DEBUG] 赋值后 - this.shopTypeList：", this.shopTypeList);
+                console.log("🔍 [DEBUG] 赋值后 - this.total：", this.total);
+                console.log("🔍 [DEBUG] 赋值后 - shopTypeList长度：", this.shopTypeList.length);
             } else {
-                this.$message.error(data.msg || "获取商户分类列表失败");
+                console.log("🔍 [DEBUG] 失败分支 - 数据格式不正确");
+                this.$message.error("获取商户分类列表失败：数据格式不正确");
             }
           })
           .catch(err => {
+            console.error("🔍 [DEBUG] 请求异常：", err);
             console.error("获取商户分类列表失败", err);
             this.$message.error("获取商户分类列表失败，请重试");
           })
           .finally(() => {
+            console.log("🔍 [DEBUG] 请求完成，设置loading为false");
             this.tableLoading = false;
           });
       },
@@ -382,7 +420,7 @@
             if (this.dialogStatus === 'create') {
               // 新增逻辑
               const { name, icon, sort } = this.shopTypeForm;
-              axios.post("/api/admin/shop-types", { name, icon, sort })
+              axios.post("/admin/shop-types", { name, icon, sort })
                 .then(({data}) => {
                   if(data.success){
                     this.$message.success("新增分类成功");
@@ -399,7 +437,7 @@
             } else {
               // 更新逻辑
               const { id, name, icon, sort } = this.shopTypeForm;
-              axios.put(`/api/admin/shop-types/${id}`, { name, icon, sort })
+              axios.put(`/admin/shop-types/${id}`, { name, icon, sort })
                 .then(({data}) => {
                   if(data.success){
                     this.$message.success("更新分类成功");
@@ -426,7 +464,7 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          axios.delete(`/api/admin/shop-types/${row.id}`)
+          axios.delete(`/admin/shop-types/${row.id}`)
             .then(({data}) => {
               if(data.success){
                 this.$message.success("删除分类成功");
@@ -444,7 +482,7 @@
         });
       },
       logout() {
-        axios.post("/api/admin/logout")
+        axios.post("/admin/logout")
           .then(() => {
             sessionStorage.removeItem("adminToken");
             sessionStorage.removeItem("adminInfo");

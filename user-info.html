@@ -14,6 +14,38 @@
   <link href="./css/info.css" rel="stylesheet">
   <link href="./css/user-info.css" rel="stylesheet">
 
+  <style>
+    /* 关注列表项样式 */
+    .follow-item {
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+    }
+    
+    .follow-item:hover {
+      background-color: #f8f8f8;
+      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* 添加点击反馈效果 */
+    .follow-item:active {
+      transform: translateY(0);
+      background-color: #f0f0f0;
+    }
+    
+    /* 关注提示信息样式 */
+    .follow-tip {
+      padding: 8px 10px;
+      background-color: #f9f9f9;
+      border-left: 3px solid #ff6633;
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 15px;
+      border-radius: 0 4px 4px 0;
+    }
+  </style>
+
 </head>
 
 <body>
@@ -50,51 +82,8 @@
   <div class="content">
     <el-tabs v-model="activeName" @tab-click="handleClick">
       <el-tab-pane label="笔记" name="1">
-        <!-- 添加子标签 -->
-        <div class="blog-tabs" v-if="blogs.length > 0 || activeSubTab === 'follow'">
-          <div class="blog-tab-group">
-            <div class="blog-tab" :class="{ active: activeSubTab === 'my' }" @click="switchSubTab('my')">我的</div>
-            <div class="blog-tab" :class="{ active: activeSubTab === 'follow' }" @click="switchSubTab('follow')">关注</div>
-            
-            <!-- 调整博主选择框结构 -->
-            <div class="blogger-select-container" v-if="activeSubTab === 'follow'">
-              <span class="blogger-select-label">关注的博主：</span>
-              <el-select 
-                v-model="selectedBloggerId" 
-                placeholder="选择博主" 
-                class="blogger-select" 
-                size="small"
-                filterable
-                @change="handleBloggerChange">
-                <el-option
-                  v-for="user in followUsers"
-                  :key="user.id"
-                  :label="user.nickName"
-                  :value="user.id">
-                  <div class="blogger-option">
-                    <img class="blogger-avatar" :src="user.icon || '/imgs/icons/default-icon.png'" alt="">
-                    <span>{{user.nickName}}</span>
-                  </div>
-                </el-option>
-              </el-select>
-            </div>
-            
-            <!-- 移动已读/未读切换按钮到这里，单独作为一个元素 -->
-            <el-select 
-              v-model="readFilterValue" 
-              placeholder="筛选笔记" 
-              class="read-filter-select" 
-              size="small"
-              @change="handleReadFilterChange"
-              v-if="activeSubTab === 'follow'">
-              <el-option :value="false" label="查看全部"></el-option>
-              <el-option :value="true" label="只看未读"></el-option>
-            </el-select>
-          </div>
-        </div>
-        
-        <!-- 笔记为空时的提示 - 仅保留我的笔记为空的情况 -->
-        <div v-if="blogs.length === 0 && activeSubTab === 'my'" class="empty-blog-tip">
+        <!-- 笔记为空时的提示 -->
+        <div v-if="blogs.length === 0" class="empty-blog-tip">
           <img src="/imgs/empty-notes.png" alt="暂无笔记" onerror="this.src='/imgs/icons/default-icon.png'">
           <div class="title">还没有发布过笔记哦</div>
           <div class="desc">分享你的精彩时刻，记录美好生活<br>快来发布你的第一篇笔记吧！</div>
@@ -104,7 +93,7 @@
         </div>
         
         <!-- 我的笔记列表 -->
-        <div v-if="activeSubTab === 'my' && blogs.length > 0" class="blog-container">
+        <div v-if="blogs.length > 0" class="blog-container">
           <div v-for="b in blogs.slice(0, 4)" :key="b.id" class="blog-item" @click="toBlogDetail(b)">
             <div class="blog-img"><img :src="b.images.split(',')[0]" alt=""></div>
             <div class="blog-info">
@@ -124,97 +113,124 @@
             查看更多笔记 <span class="blog-count">(共{{blogs.length}}篇)</span> <i class="el-icon-arrow-right"></i>
           </div>
         </div>
-        
-        <!-- 关注的人的笔记列表 - 重新布局 -->
-        <div v-if="activeSubTab === 'follow'" class="blog-list" @scroll="onScroll">
-          <!-- 当未选择博主时显示提示 -->
-          <div class="no-blogger-selected" v-if="!selectedBloggerId">
-            <img src="/imgs/empty-notes.png" alt="请选择博主" onerror="this.src='/imgs/icons/default-icon.png'">
-            <div class="title">请先选择一位关注的博主</div>
-            <div class="desc">从上方下拉列表中选择一位您关注的博主<br>查看他们的最新动态</div>
-          </div>
-          
-          <!-- 选择了博主但没有笔记时显示提示 -->
-          <div class="empty-blogger-notes" v-else-if="blogs2.length === 0">
-            <img src="/imgs/empty-notes.png" alt="暂无笔记" onerror="this.src='/imgs/icons/default-icon.png'">
-            <div class="title">没有找到该博主的{{ showUnreadOnly ? '未读' : '' }}笔记</div>
-            <div class="desc">
-              该博主{{ showUnreadOnly ? '暂无未读笔记' : '还没有发布笔记' }}
-              <br>{{ showUnreadOnly ? '可以切换到"查看全部"模式浏览' : '可以关注更多好友，发现精彩内容' }}
-            </div>
-          </div>
-          
-          <!-- 博客列表 -->
-          <div class="blog-box" v-for="b in blogs2" :key="b.id" @click="toBlogDetail(b)" v-else>
-            <!-- 添加未读标记，只有未读博客显示 -->
-            <div class="unread-badge" v-if="!b.isRead"></div>
-            <!-- 图片部分 -->
-            <div class="blog-img2"><img :src="b.img" alt=""></div>
-            <!-- 内容部分 -->
-            <div class="blog-info">
-              <!-- 博主信息移到顶部 -->
-              <div class="blog-author">
-                <div class="blog-user-icon"><img :src="b.icon || '/imgs/icons/default-icon.png'" alt=""></div>
-                <div class="blog-user-name">{{b.name}}</div>
-              </div>
-              
-              <!-- 笔记标题 -->
-              <div class="blog-title">{{b.title}}</div>
-              
-              <!-- 点赞评论 -->
-              <div class="blog-actions">
-                <div class="blog-liked" @click.stop="addLike(b)">
-                  <img src="/imgs/thumbup.png" alt=""> {{b.liked}}
-                </div>
-                <div class="blog-comments" @click.stop><i class="el-icon-chat-dot-round"></i> {{b.comments || 0}}</div>
-              </div>
-              
-              <!-- 发布时间和浏览量 -->
-              <div class="blog-meta">
-                <div class="blog-date"><i class="el-icon-time"></i> {{b.createTime ? new Date(b.createTime).toLocaleDateString() : '最近'}}</div>
-                <div class="blog-views"><i class="el-icon-view"></i> {{b.views || Math.floor(Math.random() * 100) + 10}}</div>
-              </div>
-            </div>
-            
-            <div class="blog-badge" v-if="b.liked > 3">热门</div>
-          </div>
-          
-          <!-- 加载状态提示 -->
-          <div class="loading-status" v-if="selectedBloggerId && blogs2.length > 0">
-            <div class="loading-indicator" v-if="isLoadingMore">
-              <i class="el-icon-loading"></i> 加载中...
-            </div>
-            <div class="no-more-data" v-else-if="noMoreData">
-              没有更多笔记了
-            </div>
-            <!-- 添加查看更多笔记按钮 -->
-            <div class="view-more-btn" v-if="!isLoadingMore && blogs2.length > 0" @click="viewAllBloggerBlogs">
-              查看更多笔记 <i class="el-icon-arrow-right"></i>
-            </div>
-          </div>
-        </div>
       </el-tab-pane>
       <el-tab-pane label="评价" name="2">评价</el-tab-pane>
-      <el-tab-pane label="粉丝(0)" name="3">粉丝(0)</el-tab-pane>
-      <el-tab-pane :label="'关注(' + followCount + ')'" name="4">
-        <!-- 关注的博主列表 -->
-        <div class="follow-list">
-          <div class="follow-item" v-for="user in followUsers" :key="user.id">
-            <div class="follow-user-icon">
+      <el-tab-pane :label="'粉丝(' + followerCount + ')'" name="3">
+        <!-- 添加提示信息 -->
+        <div class="follow-tip" v-if="followerData.list.length > 0">
+          点击粉丝可查看其全部博客，可以快速关注/取消关注
+        </div>
+
+        <!-- 加载状态 -->
+        <div v-if="followerData.loading" class="follow-loading">
+          <i class="el-icon-loading"></i> 加载中...
+        </div>
+
+        <!-- 粉丝列表 -->
+        <div v-else class="follow-list">
+          <div class="follow-item" v-for="user in followerData.list" :key="user.id">
+            <div class="follow-user-icon" @click="toOtherUserInfo(user)">
               <img :src="user.icon || '/imgs/icons/default-icon.png'" alt="">
             </div>
-            <div class="follow-user-info">
-              <div class="follow-user-name">{{user.nickName}}</div>
+            <div class="follow-user-info" @click="toOtherUserInfo(user)">
+              <div class="follow-user-name">
+                {{user.nickName}}
+                <span v-if="user.isMutualFollow" class="mutual-follow-badge">互关</span>
+              </div>
               <div class="follow-user-intro">{{user.introduce || '这个人很懒，还没有写简介'}}</div>
             </div>
+            <div class="follow-actions">
+              <el-button
+                v-if="!user.isFollowed"
+                @click="handleQuickFollow(user)"
+                type="primary"
+                size="mini"
+                :loading="user.following">
+                关注
+              </el-button>
+              <el-button
+                v-else
+                @click="handleQuickUnfollow(user)"
+                type="default"
+                size="mini"
+                :loading="user.unfollowing">
+                已关注
+              </el-button>
+            </div>
           </div>
+
+          <!-- 无粉丝时显示 -->
+          <div class="empty-follow-tip" v-if="followerData.list.length === 0 && !followerData.loading">
+            <img src="/imgs/empty-follow.png" alt="暂无粉丝" onerror="this.src='/imgs/icons/default-icon.png'">
+            <div class="title">还没有人关注你</div>
+            <div class="desc">多发布优质内容，吸引更多粉丝<br>让更多人看到你的精彩！</div>
+          </div>
+        </div>
+
+        <!-- 粉丝列表分页 -->
+        <el-pagination
+          v-if="followerData.total > followerData.pageSize"
+          @current-change="handleFollowerPageChange"
+          :current-page="followerData.currentPage"
+          :page-size="followerData.pageSize"
+          :total="followerData.total"
+          layout="prev, pager, next, total"
+          class="follow-pagination">
+        </el-pagination>
+      </el-tab-pane>
+      <el-tab-pane :label="'关注(' + followCount + ')'" name="4">
+        <!-- 添加提示信息 -->
+        <div class="follow-tip" v-if="followData.list.length > 0">
+          点击关注的用户可查看其全部博客
+        </div>
+
+        <!-- 加载状态 -->
+        <div v-if="followData.loading" class="follow-loading">
+          <i class="el-icon-loading"></i> 加载中...
+        </div>
+
+        <!-- 关注的博主列表 -->
+        <div v-else class="follow-list">
+          <div class="follow-item" v-for="user in followData.list" :key="user.id">
+            <div class="follow-user-icon" @click="toOtherUserInfo(user)">
+              <img :src="user.icon || '/imgs/icons/default-icon.png'" alt="">
+            </div>
+            <div class="follow-user-info" @click="toOtherUserInfo(user)">
+              <div class="follow-user-name">
+                {{user.nickName}}
+                <span v-if="user.isMutualFollow" class="mutual-follow-badge">互关</span>
+              </div>
+              <div class="follow-user-intro">{{user.introduce || '这个人很懒，还没有写简介'}}</div>
+            </div>
+            <div class="follow-actions">
+              <el-button
+                @click="handleQuickUnfollow(user)"
+                type="default"
+                size="mini"
+                :loading="user.unfollowing">
+                已关注
+              </el-button>
+            </div>
+          </div>
+
           <!-- 无关注用户时显示 -->
-          <div class="empty-follow-tip" v-if="followUsers.length === 0">
+          <div class="empty-follow-tip" v-if="followData.list.length === 0 && !followData.loading">
             <img src="/imgs/empty-follow.png" alt="暂无关注" onerror="this.src='/imgs/icons/default-icon.png'">
             <div class="title">还没有关注任何人</div>
             <div class="desc">去关注更多好友，发现精彩内容<br>探索更多有趣的人和故事！</div>
           </div>
         </div>
+
+        <!-- 关注列表分页 -->
+        <el-pagination
+          v-if="followData.total > followData.pageSize"
+          @current-change="handleFollowPageChange"
+          :current-page="followData.currentPage"
+          :page-size="followData.pageSize"
+          :total="followData.total"
+          layout="prev, pager, next, total"
+          class="follow-pagination">
+        </el-pagination>
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -229,108 +245,85 @@
 <script>
   const app = new Vue({
     el: "#app",
-    data: {
-      user: "",
-      activeName: "1",
-      activeSubTab: "my", // 添加子标签激活状态
-      info: {},
-      blogs: [],
-      blogs2: [], // 关注的人的播客
-      params: {
-        minTime: 0, // 上一次拉取到的时间戳
-        offset: 0, // 偏移量
-      },
-      count: 5,
-      isReachBottom: false,
-      isLoadingMore: false, // 添加加载更多状态标识
-      noMoreData: false, // 添加无更多数据标识
-      currentBloggerPage: 1, // 添加当前博主博客页码
-      resizeObserver: null, // 用于监测DOM变化
-      lastHoveredElement: null, // 记录最后悬停的元素
-      mouseMoveRAF: null, // 用于存储requestAnimationFrame的ID
-      unreadCount: 0, // 未读笔记数量
-      lastUnreadCount: 0, // 上一次的未读数量，用于比较变化
-      showUnreadOnly: true, // 添加是否只显示未读的状态
-      readFilterValue: true, // 添加readFilterValue，默认与showUnreadOnly保持一致
-      allBlogs2: [], // 存储所有的关注博客
-      followCount: 0, // 关注人数
-      followUsers: [], // 关注的人列表
-      selectedBloggerId: null, // 添加选择的博主ID
-      originalAllBlogs2: [], // 存储原始博客列表，用于筛选
+    data() {
+      return {
+        user: "",
+        activeName: "1",
+        info: {},
+        blogs: [],
+        count: 5,
+        isReachBottom: false,
+        resizeObserver: null,
+        lastHoveredElement: null,
+        mouseMoveRAF: null,
+
+        // 扩展关注数据结构
+        followData: {
+          list: [],
+          total: 0,
+          currentPage: 1,
+          pageSize: 15,
+          loading: false
+        },
+
+        // 扩展粉丝数据结构
+        followerData: {
+          list: [],
+          total: 0,
+          currentPage: 1,
+          pageSize: 15,
+          loading: false
+        },
+
+        // 保持兼容性
+        followCount: 0,
+        followUsers: [],
+        followerCount: 0,
+        followers: [],
+      }
     },
     computed: {
-      // 移除unreadLabel计算属性，直接在模板中使用
-    },
-    watch: {
-      unreadCount(newVal, oldVal) {
-        this.lastUnreadCount = oldVal;
-        
-        // 如果未读数量增加，可以添加一些提示效果
-        if (newVal > oldVal && oldVal !== 0) {
-          this.$message({
-            message: `您有 ${newVal} 条未读笔记`,
-            type: 'info',
-            duration: 3000
-          });
-        }
-      }
     },
     created() {
       this.queryUser();
-      // 初始化readFilterValue与showUnreadOnly保持一致
-      this.readFilterValue = this.showUnreadOnly;
     },
     mounted() {
-      // 监听页面滚动
       this.initScrollListener();
       this.ensureFooterVisible();
-      // 初始化博客项悬停效果
       this.initBlogHoverEffects();
       
-      // 设置DOM监测
       this.setupResizeObserver();
       
-      // 监听窗口大小变化和标签页切换
       window.addEventListener('resize', this.reinitializeHoverEffects);
-      window.addEventListener('visibilitychange', this.handleVisibilityChange);
       
-      // 初始化时确保所有hovered类被清除
       this.clearAllHoveredClasses();
     },
     beforeDestroy() {
-      // 清理事件监听器
       document.removeEventListener('mousemove', this.handleMouseMove);
       document.removeEventListener('mouseleave', this.handleMouseLeave);
       window.removeEventListener('resize', this.reinitializeHoverEffects);
-      window.removeEventListener('visibilitychange', this.handleVisibilityChange);
       
-      // 取消任何正在进行的动画帧请求
       if (this.mouseMoveRAF) {
         cancelAnimationFrame(this.mouseMoveRAF);
         this.mouseMoveRAF = null;
       }
       
-      // 断开DOM观察器
       if (this.resizeObserver) {
         this.resizeObserver.disconnect();
       }
     },
     methods: {
-      // 设置DOM监测，当博客列表发生变化时重新初始化
       setupResizeObserver() {
         if (window.ResizeObserver) {
           this.resizeObserver = new ResizeObserver(entries => {
-            // 优化性能，使用防抖
             clearTimeout(this.resizeTimer);
             this.resizeTimer = setTimeout(() => {
               this.reinitializeHoverEffects();
             }, 200);
           });
           
-          // 监测博客容器的变化
           const containers = [
-            document.querySelector('.blog-container'),
-            document.querySelector('.blog-list')
+            document.querySelector('.blog-container')
           ].filter(container => container);
           
           containers.forEach(container => {
@@ -339,7 +332,6 @@
         }
       },
       
-      // 监听页面滚动
       initScrollListener() {
         const tabsHeader = document.querySelector('.el-tabs__header');
         if (tabsHeader) {
@@ -350,27 +342,11 @@
               tabsHeader.classList.remove('is-scrolling');
             }
             
-            // 滚动时也重新检查悬停效果
             this.reinitializeHoverEffects();
-          });
-        }
-        
-        // 添加博客标签栏滚动监听
-        const blogTabs = document.querySelectorAll('.blog-tabs');
-        if (blogTabs.length) {
-          document.addEventListener('scroll', () => {
-            blogTabs.forEach(tabBar => {
-              if (window.scrollY > 150) {
-                tabBar.classList.add('is-scrolling');
-              } else {
-                tabBar.classList.remove('is-scrolling');
-              }
-            });
           });
         }
       },
       
-      // 重新初始化悬停效果（防抖处理）
       reinitializeHoverEffects() {
         clearTimeout(this.reinitTimer);
         this.reinitTimer = setTimeout(() => {
@@ -379,58 +355,42 @@
         }, 150);
       },
       
-      // 清除所有悬停类
       clearAllHoveredClasses() {
         document.querySelectorAll('.blog-item, .blog-box').forEach(item => {
           item.classList.remove('hovered');
         });
-        // 重置最后悬停的元素记录
         this.lastHoveredElement = null;
       },
       
-      // 初始化博客项悬停效果
       initBlogHoverEffects() {
-        // 确保DOM更新后执行
         this.$nextTick(() => {
-          // 1. 清除所有元素上可能存在的hovered类
           this.clearAllHoveredClasses();
           
-          // 2. 重置所有事件处理
           this.resetEventHandlers();
           
-          // 3. 为移动端设备做特殊处理
           if ('ontouchstart' in window) {
             this.setupTouchEvents();
-            return; // 如果是移动设备，使用touch事件并退出
+            return;
           }
           
-          // 4. 用mousemove代替mouseover以提高精确性
           document.addEventListener('mousemove', this.handleMouseMove);
           
-          // 5. 添加鼠标离开文档的处理
           document.addEventListener('mouseleave', this.handleMouseLeave);
         });
       },
       
-      // 重置所有事件处理程序
       resetEventHandlers() {
-        // 移除全局事件
         document.removeEventListener('mousemove', this.handleMouseMove);
         
-        // 取消任何正在进行的动画帧请求
         if (this.mouseMoveRAF) {
           cancelAnimationFrame(this.mouseMoveRAF);
           this.mouseMoveRAF = null;
         }
         
-        // 获取需要处理的容器
         const containers = [
-          document.querySelector('.blog-container'), // 笔记列表
-          document.querySelector('.blog-list'),      // 关注的博客列表
-          document.querySelector('.user-blog-list')  // 用户博客列表（如果存在）
-        ].filter(container => container); // 过滤掉不存在的容器
+          document.querySelector('.blog-container')
+        ].filter(container => container);
         
-        // 标记所有容器，添加自定义属性
         containers.forEach(container => {
           if (container) {
             container.setAttribute('data-hover-container', 'true');
@@ -438,66 +398,48 @@
         });
       },
       
-      // 处理鼠标移动事件
       handleMouseMove(e) {
-        // 使用requestAnimationFrame优化性能
         if (this.mouseMoveRAF) {
           cancelAnimationFrame(this.mouseMoveRAF);
         }
         
         this.mouseMoveRAF = requestAnimationFrame(() => {
-          // 1. 直接获取当前鼠标下的元素
           const target = document.elementFromPoint(e.clientX, e.clientY);
           if (!target) return;
           
-          // 2. 查找最近的容器和博客项（合并两步操作）
           let blogItem = null;
           
-          // 直接尝试查找博客项元素，提高效率
           blogItem = this.findClosestElement(target, '.blog-item, .blog-box');
           
-          // 4. 如果找到博客项，应用悬停效果
           if (blogItem) {
-            // 如果已经是同一元素悬停，不做处理
             if (this.lastHoveredElement === blogItem) return;
             
-            // 如果有上一个悬停元素，移除它的悬停状态
             if (this.lastHoveredElement) {
               this.lastHoveredElement.classList.remove('hovered');
             }
             
-            // 为当前元素添加hovered类
             blogItem.classList.add('hovered');
             
-            // 记录当前悬停元素
             this.lastHoveredElement = blogItem;
           }
         });
       },
       
-      // 为移动设备设置触摸事件
       setupTouchEvents() {
-        // 获取所有博客项
         const blogItems = document.querySelectorAll('.blog-item, .blog-box');
         
-        // 为每个博客项添加触摸事件
         blogItems.forEach(item => {
-          // 触摸开始时添加激活效果
           item.addEventListener('touchstart', () => {
-            // 先移除所有其他项的hovered类
             blogItems.forEach(otherItem => {
               if (otherItem !== item) {
                 otherItem.classList.remove('hovered');
               }
             });
             
-            // 添加hovered类到当前项
             item.classList.add('hovered');
           });
           
-          // 触摸结束时移除激活效果
           item.addEventListener('touchend', () => {
-            // 延迟移除，以便用户看到效果
             setTimeout(() => {
               item.classList.remove('hovered');
             }, 300);
@@ -505,12 +447,10 @@
         });
       },
       
-      // 查找最近的博客项元素 - 更精确的实现
       findClosestBlogItem(element, selector) {
         return this.findClosestElement(element, selector);
       },
       
-      // 查找最接近的指定元素
       findClosestElement(element, selector) {
         while (element && element !== document.body) {
           if (element.matches && element.matches(selector)) {
@@ -527,7 +467,6 @@
         axios.get("/blog/of/me")
           .then(({data}) => {
             this.blogs = data;
-            // 数据更新后重新初始化悬停效果
             this.$nextTick(() => {
               this.initBlogHoverEffects();
             });
@@ -540,79 +479,34 @@
       toPublishBlog() {
         location.href = "user-blog-edit.html";
       },
-      queryBlogsOfFollow(clear) {
-        if (clear) {
-          this.params.offset = 0;
-          this.params.minTime = new Date().getTime() + 1;
-        }
-        let {minTime, offset: os} = this.params;
-        axios.get("/blog/of/follow", {
-            params: {offset: os, lastId: minTime || new Date().getTime() + 1}
-          })
-          .then(({data}) => {
-            if (!data) {
-              return;
-            }
-            let {list, ...params} = data;
-            // 设置图片和其他属性
-            list.forEach(b => {
-              b.img = b.images.split(",")[0];
-              // 添加评论数属性，如果不存在则默认为0
-              b.comments = b.comments || 0;
-              // 添加浏览数属性，如果不存在则随机生成
-              b.views = b.views || Math.floor(Math.random() * 100) + 10;
-            });
-            
-            // 存储所有博客
-            this.allBlogs2 = clear ? list : this.allBlogs2.concat(list);
-            // 保存原始数据用于筛选
-            this.originalAllBlogs2 = [...this.allBlogs2];
-            
-            // 使用统一的方法更新显示
-            this.updateBlogDisplay();
-            
-            this.params = params;
-            
-            // 如果是首次加载，查询关注的用户列表
-            if (clear && this.followUsers.length === 0) {
-              this.queryFollowUsers();
-            }
-            
-            // 数据更新后重新初始化悬停效果
-            this.$nextTick(() => {
-              this.initBlogHoverEffects();
-            });
-          })
-          .catch(e => console.log(e))
-      },
       queryUser() {
-        // 查询用户信息
         axios.get("/user/me")
           .then(({data}) => {
-            // 保存用户
             this.user = data;
-            // 查询用户详情
             this.queryUserInfo();
-            // 查询用户笔记
             this.queryBlogs();
-            // 初始化关注数量
             this.initFollowCount();
+            this.initFollowerCount();
           })
           .catch(err => {
             location.href = "user-login.html"
           })
       },
-      // 初始化关注数量
       initFollowCount() {
         axios.get("/follow/count/" + this.user.id)
           .then(({data}) => {
             if (data) {
               this.followCount = data.followee || 0;
+              this.followerCount = data.follower || 0;
             }
           })
           .catch(err => {
             console.error("获取关注数量失败", err);
           });
+      },
+      initFollowerCount() {
+        // 已在initFollowCount中获取了粉丝数量，此方法可以为空
+        // 或者可以单独再次获取以确保数据一致性
       },
       goBack() {
         history.back();
@@ -623,9 +517,7 @@
             if (!data) {
               return
             }
-            // 保存用户详情
             this.info = data;
-            // 保存到本地
             sessionStorage.setItem("userInfo", JSON.stringify(data))
           })
           .catch(err => {
@@ -638,49 +530,29 @@
       logout() {
         axios.post("/user/logout")
           .then(() => {
-            // 清理session
             sessionStorage.removeItem("token")
-            // 跳转
             location.href = "/"
           })
           .catch(this.$message.error)
       },
       handleClick(r) {
-        // 更新当前激活的标签
         this.activeName = r.name;
-        
+
         if (r.name === '4') {
-          // 查询关注的用户列表
-          this.queryFollowUsers();
+          this.queryFollowUsersPaged(1);
+        } else if (r.name === '3') {
+          this.queryFollowersPaged(1);
         } else if (r.name === '1') {
-          // 笔记标签页默认显示"我的"子标签
-          this.activeSubTab = 'my';
           this.queryBlogs();
         }
-        // 标签切换后重新初始化悬停效果
         this.$nextTick(() => {
-          // 先清除所有悬停类
           this.clearAllHoveredClasses();
-          
-          // 延迟初始化，确保DOM已更新
+
           setTimeout(() => {
             this.initBlogHoverEffects();
-            
-            // 重新初始化标签栏滚动监听
-            const blogTabs = document.querySelectorAll('.blog-tabs');
-            if (blogTabs.length) {
-              blogTabs.forEach(tabBar => {
-                if (window.scrollY > 150) {
-                  tabBar.classList.add('is-scrolling');
-                } else {
-                  tabBar.classList.remove('is-scrolling');
-                }
-              });
-            }
           }, 200);
         });
       },
-      // 查询关注的用户列表
       queryFollowUsers() {
         axios.get("/follow/followees/" + this.user.id)
           .then(({data}) => {
@@ -689,17 +561,12 @@
               this.followCount = 0;
               return;
             }
-            // 保存关注的用户列表
             this.followUsers = data || [];
-            // 更新关注数量
             this.followCount = this.followUsers.length;
             
-            // 如果正在"关注"标签下，确保下拉选择框数据已更新
-            if (this.activeSubTab === 'follow') {
-              this.$nextTick(() => {
-                this.initBlogHoverEffects();
-              });
-            }
+            this.$nextTick(() => {
+              this.initBlogHoverEffects();
+            });
           })
           .catch(err => {
             console.error("获取关注列表失败", err);
@@ -708,8 +575,29 @@
             this.followCount = 0;
           });
       },
+      queryFollowers() {
+        axios.get("/follow/followers/" + this.user.id)
+          .then(({data}) => {
+            if (!data) {
+              this.followers = [];
+              this.followerCount = 0;
+              return;
+            }
+            this.followers = data || [];
+            this.followerCount = this.followers.length;
+            
+            this.$nextTick(() => {
+              this.initBlogHoverEffects();
+            });
+          })
+          .catch(err => {
+            console.error("获取粉丝列表失败", err);
+            this.$message.error("获取粉丝列表失败");
+            this.followers = [];
+            this.followerCount = 0;
+          });
+      },
       addLike(b) {
-        // 阻止事件冒泡，防止点击喜欢按钮时跳转到详情页
         event && event.stopPropagation();
         
         axios.put("/blog/like/" + b.id)
@@ -726,356 +614,172 @@
             b.liked = data.liked;
             b.isLike = data.isLike;
             
-            // 检查是否需要添加热门标记
             if (b.liked > 3) {
-              // 通过Vue的响应式更新
               this.$set(b, 'isHot', true);
             }
           })
           .catch(() => {
             this.$message.error('获取博客信息失败');
-            // 临时增加点赞数，提升用户体验
             b.liked++;
           })
       },
-      onScroll(e) {
-        let scrollTop = e.target.scrollTop;
-        let offsetHeight = e.target.offsetHeight;
-        let scrollHeight = e.target.scrollHeight;
-        if (scrollTop === 0) {
-          // 到顶部了，查询一次
-          if (!this.selectedBloggerId) {
-            // 只有在未选择博主时才刷新关注时间线
-            this.queryBlogsOfFollow(true);
-          }
-        } else if (scrollTop + offsetHeight + 1 > scrollHeight && !this.isReachBottom) {
-          this.isReachBottom = true;
-          // 根据当前状态决定加载哪种类型的数据
-          if (this.selectedBloggerId) {
-            // 选择了博主，加载该博主的更多博客
-            this.loadMoreBloggerBlogs();
-          } else {
-            // 未选择博主，加载关注时间线的更多博客
-            this.queryBlogsOfFollow();
-          }
-        } else {
-          this.isReachBottom = false;
-        }
-      },
       toBlogDetail(b) {
-        // 如果是在关注子标签或关注标签页点击博客，则将该博客标记为已读
-        if (this.activeSubTab === 'follow' || this.activeName === '4') {
-          // 通知服务器该博客已读
-          axios.post("/blog/read/" + b.id)
-            .then(response => {
-              // 更新未读数量
-              if (response.data && response.data.success) {
-                this.unreadCount = response.data.data;
-                
-                // 在本地列表中将该博客标记为已读
-                const blogInList = this.allBlogs2.find(item => item.id === b.id);
-                if (blogInList) {
-                  blogInList.isRead = true;
-                  
-                  // 如果当前是只看未读模式，需要更新显示列表
-                  if (this.showUnreadOnly) {
-                    this.updateBlogDisplay();
-                  }
-                }
-              }
-            })
-            .catch(err => {
-              console.error("通知服务器博客已读失败", err);
-            });
-        }
-        
-        // 跳转到博客详情页
         location.href = `user-blog-detail.html?id=${b.id}`;
       },
       ensureFooterVisible() {
-        // 确保底部导航栏可见
         const tabPanes = document.querySelectorAll('.el-tab-pane');
         const footer = document.querySelector('.fixed-footer');
         
         if (tabPanes.length && footer) {
-          // 为每个标签页添加滚动监听
           tabPanes.forEach(pane => {
             pane.addEventListener('scroll', () => {
-              // 无论如何都确保底部导航可见
               footer.style.transform = 'translateY(0)';
               footer.style.opacity = '1';
             });
           });
           
-          // 确保初始状态底部导航可见
           footer.style.transform = 'translateY(0)';
           footer.style.opacity = '1';
           
-          // 监听窗口大小变化
           window.addEventListener('resize', () => {
             footer.style.transform = 'translateY(0)';
             footer.style.opacity = '1';
           });
         }
       },
-      // 处理鼠标离开文档
       handleMouseLeave() {
-        // 清除所有悬停状态
         this.clearAllHoveredClasses();
       },
-      // 获取未读笔记数量
-      fetchUnreadCount() {
-        // 初始化时可能还没有加载博客
-        if (this.allBlogs2.length > 0) {
-          this.unreadCount = this.allBlogs2.filter(blog => !blog.isRead).length;
-        } else {
-          this.unreadCount = 0;
-        }
+      formatTime(timestamp) {
+        if (!timestamp) return '最近';
+        const date = new Date(timestamp);
+        return date.toLocaleString();
       },
-      handleVisibilityChange() {
-        // 移除当页面变为可见时获取未读数量的代码
-        // 当页面变为可见时，获取最新的未读数量
-        // if (document.visibilityState === 'visible') {
-        //   this.fetchUnreadCount();
-        // }
+      toOtherUserInfo(user) {
+        location.href = `user-other-info.html?id=${user.id}`;
       },
-      // 切换子标签
-      switchSubTab(tab) {
-        if (this.activeSubTab === tab) return;
-        this.activeSubTab = tab;
-        
-        if (tab === 'follow') {
-          // 重置博主选择
-          this.selectedBloggerId = null;
-          // 查询关注的博客
-          this.queryBlogsOfFollow(true);
-          // 查询关注的用户列表
-          this.queryFollowUsers();
-        } else {
-          this.queryBlogs();
-        }
-        
-        // 子标签切换后重新初始化悬停效果
-        this.$nextTick(() => {
-          this.initBlogHoverEffects();
-          
-          // 确保标签栏固定效果正常
-          const blogTabs = document.querySelectorAll('.blog-tabs');
-          if (blogTabs.length) {
-            blogTabs.forEach(tabBar => {
-              // 确保标签栏始终保持正确的固定状态
-              if (window.scrollY > 150) {
-                tabBar.classList.add('is-scrolling');
-              } else {
-                tabBar.classList.remove('is-scrolling');
-              }
-            });
-          }
-        });
-      },
-      // 切换已读/未读过滤器
-      handleReadFilterChange(value) {
-        // 如果值没有变化，不做处理
-        if (value === this.showUnreadOnly) return;
-        
-        this.showUnreadOnly = value;
-        
-        // 如果选择了博主，无论如何都重新获取该博主的数据
-        if (this.selectedBloggerId) {
-          // 重置状态并重新获取该博主的数据
-          this.currentBloggerPage = 1;
-          this.isLoadingMore = true;
-          this.noMoreData = false;
-          this.filterBlogsByBlogger();
-        } else {
-          // 否则只更新显示
-          this.updateBlogDisplay();
-        }
-      },
-      // 更新博客显示列表
-      updateBlogDisplay() {
-        if (!this.allBlogs2 || this.allBlogs2.length === 0) {
-          this.blogs2 = [];
-          this.unreadCount = 0;
-          return;
-        }
-        
-        // 如果选择了博主但没有筛选结果，返回空列表
-        if (this.activeSubTab === 'follow' && this.selectedBloggerId && 
-            !this.allBlogs2.some(blog => blog.userId === this.selectedBloggerId)) {
-          this.blogs2 = [];
-          return;
-        }
-        
-        if (this.showUnreadOnly) {
-          // 只显示未读博客
-          this.blogs2 = this.allBlogs2.filter(blog => !blog.isRead);
-          
-          // 如果过滤后没有未读博客，显示提示
-          if (this.blogs2.length === 0 && this.allBlogs2.length > 0) {
-            this.$message({
-              message: '没有未读笔记，已切换为显示全部',
-              type: 'info',
-              duration: 2000
-            });
-            this.showUnreadOnly = false;
-            this.blogs2 = [...this.allBlogs2];
-          }
-        } else {
-          // 显示所有博客
-          this.blogs2 = [...this.allBlogs2];
-        }
-        
-        // 更新未读计数
-        this.unreadCount = this.allBlogs2.filter(blog => !blog.isRead).length;
-        
-        // 更新后重新初始化悬停效果
-        this.$nextTick(() => {
-          this.initBlogHoverEffects();
-        });
-      },
-      handleBloggerChange() {
-        // 使用选定的博主ID过滤博客列表
-        this.filterBlogsByBlogger();
-      },
-      // 根据博主ID过滤博客
-      filterBlogsByBlogger() {
-        if (!this.selectedBloggerId) {
-          // 如果没有选择博主，显示空列表
-          this.blogs2 = [];
-          return;
-        }
-        
-        // 重置状态
-        this.isLoadingMore = true;
-        this.noMoreData = false;
-        
-        // 使用新的API端点，支持按照已读状态过滤
-        axios.get("/blog/of/user/status", {
-          params: {
-            id: this.selectedBloggerId,
-            current: this.currentBloggerPage,
-            size: 10, // 确保一次请求足够的数据
-            readStatus: this.showUnreadOnly ? "UNREAD" : "ALL" // 根据读取状态过滤
-          }
-        })
-        .then(({data}) => {
-          this.isLoadingMore = false;
-          
-          if (!data || !data.records || data.records.length === 0) {
-            this.blogs2 = [];
-            this.allBlogs2 = [];
-            return;
-          }
-          
-          // 获取博客列表
-          const records = data.records;
-          
-          // 检查是否还有更多数据
-          this.noMoreData = records.length < 10;
-          
-          // 处理博客列表，添加必要的属性
-          records.forEach(blog => {
-            // 设置图片
-            blog.img = blog.images ? blog.images.split(",")[0] : "";
-            // 添加评论数属性，如果不存在则默认为0
-            blog.comments = blog.comments || 0;
-            // 添加浏览数属性，如果不存在则随机生成
-            blog.views = blog.views || Math.floor(Math.random() * 100) + 10;
-            // 使用服务器返回的已读状态，而不是默认设置为已读
-            // blog.isRead = true;
-          });
-          
-          // 更新博客列表
-          this.allBlogs2 = records;
-          
-          // 更新显示
-          this.blogs2 = [...this.allBlogs2];
-          
-          // 更新未读计数
-          this.unreadCount = this.allBlogs2.filter(blog => !blog.isRead).length;
-          
-          // 重新初始化悬停效果
-          this.$nextTick(() => {
-            this.initBlogHoverEffects();
-          });
-        })
-        .catch(err => {
-          this.isLoadingMore = false;
-          console.error("获取博主博客失败", err);
-          this.$message.error("获取博主博客失败");
-          this.blogs2 = [];
-          this.allBlogs2 = [];
-        });
-      },
-      // 加载更多博主博客
-      loadMoreBloggerBlogs() {
-        if (!this.selectedBloggerId || this.isLoadingMore || this.noMoreData) return;
-        
-        this.isLoadingMore = true;
-        this.currentBloggerPage++;
-        
-        axios.get("/blog/of/user/status", {
-          params: {
-            id: this.selectedBloggerId,
-            current: this.currentBloggerPage,
-            size: 10,
-            readStatus: this.showUnreadOnly ? "UNREAD" : "ALL" // 根据读取状态过滤
-          }
-        })
-        .then(({data}) => {
-          this.isLoadingMore = false;
-          
-          if (!data || !data.records || data.records.length === 0) {
-            this.noMoreData = true;
-            return;
-          }
-          
-          // 检查是否还有更多数据
-          this.noMoreData = data.records.length < 10;
-          
-          // 处理博客列表，添加必要的属性
-          const newBlogs = data.records;
-          newBlogs.forEach(blog => {
-            // 设置图片
-            blog.img = blog.images ? blog.images.split(",")[0] : "";
-            // 添加评论数属性，如果不存在则默认为0
-            blog.comments = blog.comments || 0;
-            // 添加浏览数属性，如果不存在则随机生成
-            blog.views = blog.views || Math.floor(Math.random() * 100) + 10;
-            // 使用服务器返回的已读状态，而不是默认设置为已读
-            // blog.isRead = true;
-          });
-          
-          // 添加到现有列表
-          this.allBlogs2 = [...this.allBlogs2, ...newBlogs];
-          
-          // 直接更新显示，不需要过滤，因为服务器已经根据readStatus进行了过滤
-          this.blogs2 = [...this.allBlogs2];
-          
-          // 更新未读计数
-          this.unreadCount = this.allBlogs2.filter(blog => !blog.isRead).length;
-          
-          // 重新初始化悬停效果
-          this.$nextTick(() => {
-            this.initBlogHoverEffects();
-          });
-        })
-        .catch(err => {
-          this.isLoadingMore = false;
-          console.error("加载更多博主博客失败", err);
-          this.$message.error("加载更多博客失败");
-        });
-      },
-      // 查看博主所有笔记
-      viewAllBloggerBlogs() {
-        if (this.selectedBloggerId) {
-          // 跳转到用户博客页面，传递用户ID
-          location.href = `user-blogs.html?userId=${this.selectedBloggerId}`;
-        }
-      },
-    },
 
+      // 新增分页查询方法
+      queryFollowUsersPaged(page = 1) {
+        this.followData.loading = true;
+        this.followData.currentPage = page;
+
+        axios.get(`/follow/followees/${this.user.id}/paged?page=${page}&size=${this.followData.pageSize}`)
+          .then(({data}) => {
+            if (!data) {
+              this.followData.list = [];
+              this.followData.total = 0;
+              this.followCount = 0;
+              return;
+            }
+
+            this.followData.list = data.list || [];
+            this.followData.total = data.total || 0;
+            this.followCount = data.total || 0;
+
+            this.$nextTick(() => {
+              this.initBlogHoverEffects();
+            });
+          })
+          .catch(err => {
+            console.error("获取关注列表失败", err);
+            this.$message.error("获取关注列表失败");
+            this.followData.list = [];
+            this.followData.total = 0;
+            this.followCount = 0;
+          })
+          .finally(() => {
+            this.followData.loading = false;
+          });
+      },
+
+      queryFollowersPaged(page = 1) {
+        this.followerData.loading = true;
+        this.followerData.currentPage = page;
+
+        axios.get(`/follow/followers/${this.user.id}/paged?page=${page}&size=${this.followerData.pageSize}`)
+          .then(({data}) => {
+            if (!data) {
+              this.followerData.list = [];
+              this.followerData.total = 0;
+              this.followerCount = 0;
+              return;
+            }
+
+            this.followerData.list = data.list || [];
+            this.followerData.total = data.total || 0;
+            this.followerCount = data.total || 0;
+
+            this.$nextTick(() => {
+              this.initBlogHoverEffects();
+            });
+          })
+          .catch(err => {
+            console.error("获取粉丝列表失败", err);
+            this.$message.error("获取粉丝列表失败");
+            this.followerData.list = [];
+            this.followerData.total = 0;
+            this.followerCount = 0;
+          })
+          .finally(() => {
+            this.followerData.loading = false;
+          });
+      },
+
+      // 分页切换处理
+      handleFollowPageChange(page) {
+        this.queryFollowUsersPaged(page);
+      },
+
+      handleFollowerPageChange(page) {
+        this.queryFollowersPaged(page);
+      },
+
+      // 快速关注/取消关注处理
+      handleQuickFollow(user) {
+        if (user.following) return;
+
+        this.$set(user, 'following', true);
+
+        axios.put(`/follow/${user.id}/true`)
+          .then(() => {
+            user.isFollowed = true;
+            // 如果用户也关注了当前用户，则为互关
+            if (user.isMutualFollow !== undefined) {
+              // 在粉丝列表中，如果关注了粉丝，则为互关
+              user.isMutualFollow = true;
+            }
+            this.$message.success('关注成功');
+          })
+          .catch(err => {
+            console.error("关注失败", err);
+            this.$message.error("关注失败");
+          })
+          .finally(() => {
+            this.$set(user, 'following', false);
+          });
+      },
+
+      handleQuickUnfollow(user) {
+        if (user.unfollowing) return;
+
+        this.$set(user, 'unfollowing', true);
+
+        axios.put(`/follow/${user.id}/false`)
+          .then(() => {
+            user.isFollowed = false;
+            user.isMutualFollow = false;
+            this.$message.success('取消关注成功');
+          })
+          .catch(err => {
+            console.error("取消关注失败", err);
+            this.$message.error("取消关注失败");
+          })
+          .finally(() => {
+            this.$set(user, 'unfollowing', false);
+          });
+      }
+    }
   })
 </script>
 </body>

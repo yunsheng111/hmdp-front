@@ -4,9 +4,10 @@ let commonURL = "/api";
 axios.defaults.baseURL = commonURL;
 axios.defaults.timeout = 2000;
 // request拦截器，将用户token放入头中
-let token = sessionStorage.getItem("token");
 axios.interceptors.request.use(
   config => {
+    // 每次请求时重新获取token，确保是最新的
+    let token = sessionStorage.getItem("token");
     if(token) config.headers['authorization'] = token
     return config
   },
@@ -24,12 +25,28 @@ axios.interceptors.response.use(function (response) {
 }, function (error) {
   // 一般是服务端异常或者网络异常
   console.log(error)
-  if(error.response.status == 401){
-    // 未登录，跳转
-    setTimeout(() => {
-      location.href = "/user-login.html"
-    }, 200);
-    return Promise.reject("请先登录");
+  if(error.response && error.response.status == 401){
+    // 检查当前页面是否是需要登录的操作
+    const currentPath = window.location.pathname;
+    const isLoginRequired = error.config && (
+      error.config.url.includes('/cart') ||
+      error.config.url.includes('/order') ||
+      error.config.url.includes('/user/') ||
+      error.config.url.includes('/voucher-order')
+    );
+
+    // 只有在执行需要登录的操作时才跳转到登录页
+    if (isLoginRequired) {
+      // 清除无效token
+      sessionStorage.removeItem("token");
+      setTimeout(() => {
+        location.href = "/user-login.html?redirect=" + encodeURIComponent(location.href);
+      }, 200);
+      return Promise.reject("请先登录");
+    } else {
+      // 对于不需要登录的操作，只是返回错误信息，不跳转
+      return Promise.reject("请先登录");
+    }
   }
   return Promise.reject("服务器异常");
 });

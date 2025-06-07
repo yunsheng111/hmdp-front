@@ -139,6 +139,39 @@
       font-weight: bold;
       margin-bottom: 15px;
     }
+    .avatar-uploader .el-upload {
+      border: 1px dashed #d9d9d9;
+      border-radius: 6px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .avatar-uploader .el-upload:hover {
+      border-color: #409EFF;
+    }
+    .avatar-uploader-icon {
+      font-size: 28px;
+      color: #8c939d;
+      width: 120px;
+      height: 120px;
+      line-height: 120px;
+      text-align: center;
+    }
+    .avatar-preview {
+      width: 120px;
+      height: 120px;
+      display: block;
+      object-fit: cover;
+    }
+    .form-actions {
+      margin-top: 20px;
+      text-align: right;
+    }
+    .form-tip {
+      font-size: 12px;
+      color: #909399;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
@@ -260,7 +293,7 @@
               <div style="display: flex; align-items: center;">
                 <img :src="scope.row.icon || './imgs/default-avatar.png'" class="user-avatar">
                 <div style="margin-left: 10px;">
-                  <div>{{scope.row.nickname || '未设置昵称'}}</div>
+                  <div>{{scope.row.nickName || '未设置昵称'}}</div>
                   <div style="font-size: 12px; color: #909399;">{{scope.row.phone}}</div>
                 </div>
               </div>
@@ -284,18 +317,24 @@
           </el-table-column>
           <el-table-column
             label="操作"
-            width="200"
+            width="280"
             align="center">
             <template slot-scope="scope">
-              <el-button
-                size="mini"
-                @click="handleViewUser(scope.row)">查看</el-button>
-              <el-button
-                size="mini"
-                :type="scope.row.status === 0 ? 'danger' : 'success'"
-                @click="handleChangeStatus(scope.row)">
-                {{ scope.row.status === 0 ? '禁用' : '启用' }}
-              </el-button>
+              <div style="display: flex; justify-content: center; gap: 5px;">
+                <el-button
+                  size="mini"
+                  @click="handleViewUser(scope.row)">查看</el-button>
+                <el-button
+                  size="mini"
+                  type="primary"
+                  @click="handleEditUser(scope.row)">编辑</el-button>
+                <el-button
+                  size="mini"
+                  :type="scope.row.status === 0 ? 'danger' : 'success'"
+                  @click="handleChangeStatus(scope.row)">
+                  {{ scope.row.status === 0 ? '禁用' : '启用' }}
+                </el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -323,15 +362,21 @@
             <div class="user-detail-header">
               <img :src="currentUser.icon || './imgs/default-avatar.png'" class="user-detail-avatar">
               <div class="user-detail-info">
-                <h3>{{currentUser.nickname || '未设置昵称'}}</h3>
-                <p>手机号: {{currentUser.phone}}</p>
-                <p>
-                  状态: 
-                  <el-tag :type="currentUser.status === 0 ? 'success' : 'danger'">
-                    {{ currentUser.status === 0 ? '正常' : '禁用' }}
-                  </el-tag>
-                </p>
-                <p>注册时间: {{currentUser.createTime}}</p>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <h3>{{currentUser.nickName || '未设置昵称'}}</h3>
+                </div>
+                
+                <!-- 查看模式 -->
+                <div>
+                  <p>手机号: {{currentUser.phone}}</p>
+                  <p>
+                    状态: 
+                    <el-tag :type="currentUser.status === 0 ? 'success' : 'danger'">
+                      {{ currentUser.status === 0 ? '正常' : '禁用' }}
+                    </el-tag>
+                  </p>
+                  <p>注册时间: {{currentUser.createTime}}</p>
+                </div>
               </div>
             </div>
             
@@ -391,6 +436,61 @@
             </el-tabs>
           </div>
         </el-dialog>
+        
+        <!-- 用户编辑弹窗 -->
+        <el-dialog
+          title="编辑用户"
+          :visible.sync="userEditVisible"
+          width="50%">
+          <div v-if="userForm">
+            <el-form 
+              ref="userForm" 
+              :model="userForm" 
+              :rules="formRules" 
+              label-width="80px">
+              
+              <!-- 头像上传/预览 -->
+              <el-form-item label="头像" prop="icon">
+                <div style="display: flex; align-items: flex-start;">
+                  <div style="margin-right: 20px;">
+                    <img 
+                      v-if="userForm.icon" 
+                      :src="userForm.icon" 
+                      class="avatar-preview"
+                      @error="handleAvatarError">
+                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                  </div>
+                  <div style="flex: 1;">
+                    <el-input v-model="userForm.icon" placeholder="请输入头像URL"></el-input>
+                    <div class="form-tip">输入有效的图片URL，图片将实时预览</div>
+                  </div>
+                </div>
+              </el-form-item>
+              
+              <el-form-item label="昵称" prop="nickName">
+                <el-input v-model="userForm.nickName" placeholder="请输入昵称"></el-input>
+              </el-form-item>
+              
+              <el-form-item label="手机号" prop="phone">
+                <el-input v-model="userForm.phone" placeholder="请输入手机号"></el-input>
+                <div class="form-tip">手机号将用于用户登录，请确保正确</div>
+              </el-form-item>
+              
+              <el-form-item label="状态">
+                <el-select v-model="userForm.status" placeholder="请选择状态">
+                  <el-option :value="0" label="正常"></el-option>
+                  <el-option :value="1" label="禁用"></el-option>
+                </el-select>
+                <div class="form-tip">禁用状态的用户将无法登录系统</div>
+              </el-form-item>
+            </el-form>
+            
+            <div slot="footer" class="dialog-footer">
+              <el-button @click="userEditVisible = false">取消</el-button>
+              <el-button type="primary" :loading="saveLoading" @click="confirmSave">保存</el-button>
+            </div>
+          </div>
+        </el-dialog>
       </div>
     </div>
   </div>
@@ -433,7 +533,23 @@
         signIns: [],
         follows: []
       },
-      activeTab: 'orders'
+      activeTab: 'orders',
+      userEditVisible: false,
+      saveLoading: false,
+      userForm: {},
+      formRules: {
+        nickName: [
+          { required: true, message: '请输入昵称', trigger: 'blur' },
+          { min: 2, max: 20, message: '昵称长度应为2-20个字符', trigger: 'blur' }
+        ],
+        phone: [
+          { required: true, message: '请输入手机号', trigger: 'blur' },
+          { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号格式', trigger: 'blur' }
+        ],
+        icon: [
+          { pattern: /^(https?:\/\/|\/|\.\/|\.\.\/).+\.(jpg|jpeg|png|gif|webp)$/i, message: '请输入有效的图片URL', trigger: 'blur' }
+        ]
+      }
     },
     created() {
       // 页面加载时获取用户列表
@@ -501,11 +617,17 @@
             this.$message.error("获取用户详情失败，请重试");
           });
       },
+      handleEditUser(user) {
+        // 创建用户表单数据的副本，避免直接修改user对象
+        this.userForm = { ...user };
+        // 显示编辑弹窗
+        this.userEditVisible = true;
+      },
       handleChangeStatus(user) {
         const newStatus = user.status === 0 ? 1 : 0;
         const statusText = newStatus === 0 ? '启用' : '禁用';
         
-        this.$confirm(`确定要${statusText}用户 "${user.nickname || user.phone}" 吗?`, '提示', {
+        this.$confirm(`确定要${statusText}用户 "${user.nickName || user.phone}" 吗?`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -560,6 +682,66 @@
             sessionStorage.removeItem("adminInfo");
             location.href = "admin-login.html";
           });
+      },
+      handleAvatarError(e) {
+        e.target.src = './imgs/default-avatar.png';
+        this.$message.warning('头像URL无效，已使用默认头像');
+      },
+      confirmSave() {
+        // 直接保存，不需要比较手机号
+        this.saveUserInfo();
+      },
+      saveUserInfo() {
+        this.$refs.userForm.validate((valid) => {
+          if (valid) {
+            // 设置加载状态
+            this.saveLoading = true;
+            
+            // 调用API保存用户信息
+            axios.put(`/admin/users/${this.userForm.id}`, this.userForm)
+              .then(({data}) => {
+                if (data.success) {
+                  // 保存成功
+                  this.$message.success('用户信息更新成功');
+                  
+                  // 更新本地数据
+                  const index = this.userList.findIndex(item => item.id === this.userForm.id);
+                  if (index !== -1) {
+                    this.userList[index] = { ...this.userForm };
+                  }
+                  
+                  // 关闭编辑弹窗
+                  this.userEditVisible = false;
+                } else {
+                  // 服务器返回错误
+                  this.$message.error(data.message || '保存失败，请重试');
+                }
+              })
+              .catch(err => {
+                console.error('保存用户信息失败', err);
+                this.$message.error('保存失败，请重试');
+                
+                // 添加重试选项
+                this.$confirm('保存失败，是否重试?', '提示', {
+                  confirmButtonText: '重试',
+                  cancelButtonText: '取消',
+                  type: 'warning'
+                }).then(() => {
+                  // 用户选择重试，递归调用
+                  this.saveUserInfo();
+                }).catch(() => {
+                  // 用户取消重试，不做处理
+                });
+              })
+              .finally(() => {
+                // 无论成功失败，都关闭加载状态
+                this.saveLoading = false;
+              });
+          } else {
+            this.$message.error('请正确填写表单信息');
+            return false;
+          }
+        });
       }
     }
   })
