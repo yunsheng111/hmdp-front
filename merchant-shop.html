@@ -415,12 +415,14 @@
                 </el-table-column>
                 <el-table-column label="操作" width="200" fixed="right">
                   <template slot-scope="scope">
-                    <el-button size="mini" @click="editProduct(scope.row)">编辑</el-button>
-                    <el-button size="mini" :type="scope.row.status === 1 ? 'warning' : 'success'"
-                               @click="toggleProductStatus(scope.row)">
-                      {{ scope.row.status === 1 ? '下架' : '上架' }}
-                    </el-button>
-                    <el-button size="mini" type="danger" @click="deleteProduct(scope.row)">删除</el-button>
+                    <div style="display: flex; flex-direction: row; gap: 5px;">
+                      <el-button size="mini" @click="editProduct(scope.row)">编辑</el-button>
+                      <el-button size="mini" :type="scope.row.status === 1 ? 'warning' : 'success'"
+                                @click="toggleProductStatus(scope.row)">
+                        {{ scope.row.status === 1 ? '下架' : '上架' }}
+                      </el-button>
+                      <el-button size="mini" type="danger" @click="deleteProduct(scope.row)">删除</el-button>
+                    </div>
                   </template>
                 </el-table-column>
               </el-table>

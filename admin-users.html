@@ -201,19 +201,23 @@
           <i class="el-icon-s-shop"></i>
           <span slot="title">商户管理</span>
         </el-menu-item>
-        <el-menu-item index="4" @click="navigateTo('admin-shop-types.html')">
-          <i class="el-icon-s-grid"></i>
-          <span slot="title">商户分类管理</span>
+        <el-menu-item index="4" @click="navigateTo('admin-merchant-shops.html')">
+          <i class="el-icon-s-goods"></i>
+          <span slot="title">商户店铺管理</span>
         </el-menu-item>
-        <el-menu-item index="5" @click="navigateTo('admin-content.html')">
+        <el-menu-item index="5" @click="navigateTo('admin-shop-types.html')">
+          <i class="el-icon-s-grid"></i>
+          <span slot="title">店铺分类管理</span>
+        </el-menu-item>
+        <el-menu-item index="6" @click="navigateTo('admin-content.html')">
           <i class="el-icon-document-checked"></i>
           <span slot="title">内容审核</span>
         </el-menu-item>
-        <el-menu-item index="6" @click="navigateTo('admin-statistics.html')">
+        <el-menu-item index="7" @click="navigateTo('admin-statistics.html')">
           <i class="el-icon-data-line"></i>
           <span slot="title">系统监控</span>
         </el-menu-item>
-        <el-menu-item index="7" @click="logout">
+        <el-menu-item index="8" @click="logout">
           <i class="el-icon-switch-button"></i>
           <span slot="title">退出登录</span>
         </el-menu-item>
@@ -700,18 +704,31 @@
             // 调用API保存用户信息
             axios.put(`/admin/users/${this.userForm.id}`, this.userForm)
               .then(({data}) => {
+                // 调试输出
+                console.log('保存用户信息返回数据:', data);
+                console.log('data.data:', data.data);
+                
                 if (data.success) {
                   // 保存成功
                   this.$message.success('用户信息更新成功');
                   
-                  // 更新本地数据
+                  // 更新本地数据，使用后端返回的用户对象
                   const index = this.userList.findIndex(item => item.id === this.userForm.id);
-                  if (index !== -1) {
-                    this.userList[index] = { ...this.userForm };
+                  if (index !== -1 && data.data) {
+                    console.log('更新前的用户数据:', this.userList[index]);
+                    this.userList[index] = { ...data.data };
+                    console.log('更新后的用户数据:', this.userList[index]);
+                  } else {
+                    console.warn('无法更新用户数据，index:', index, 'data.data:', data.data);
                   }
                   
                   // 关闭编辑弹窗
                   this.userEditVisible = false;
+                  
+                  // 延迟刷新列表，确保显示最新数据
+                  setTimeout(() => {
+                    this.fetchUserList();
+                  }, 100);
                 } else {
                   // 服务器返回错误
                   this.$message.error(data.message || '保存失败，请重试');

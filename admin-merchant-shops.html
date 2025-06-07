@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评 - 商户店铺管理</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+      background-color: #f5f7fa;
+    }
+    .admin-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    .admin-sidebar {
+      width: 220px;
+      background-color: #304156;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      transition: width 0.3s;
+      position: fixed;
+      height: 100vh;
+      z-index: 1000;
+    }
+    .admin-logo {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #263445;
+      padding: 0 16px;
+    }
+    .admin-logo img {
+      height: 32px;
+      margin-right: 8px;
+    }
+    .admin-logo h1 {
+      color: #fff;
+      font-size: 18px;
+      margin: 0;
+      white-space: nowrap;
+    }
+    .admin-main {
+      flex: 1;
+      margin-left: 220px;
+      padding: 15px;
+      background-color: #f5f7fa;
+      min-height: 100vh;
+    }
+    .admin-header {
+      height: 60px;
+      background-color: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 15px;
+      margin-bottom: 15px;
+    }
+    .admin-content {
+      background-color: #fff;
+      border-radius: 4px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      min-height: calc(100vh - 90px);
+    }
+    .admin-user-dropdown {
+      display: flex;
+      align-items: center;
+    }
+    .admin-user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .el-menu {
+      border-right: none;
+      background-color: #304156;
+    }
+    .el-menu-item {
+      color: #bfcbd9;
+    }
+    .el-menu-item:hover, .el-menu-item:focus {
+      background-color: #263445;
+    }
+    .el-menu-item.is-active {
+      color: #409EFF;
+      background-color: #263445;
+    }
+    .search-form {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .search-form-item {
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="admin-container">
+    <!-- 侧边栏导航 -->
+    <div class="admin-sidebar">
+      <div class="admin-logo">
+        <img src="./imgs/logo.png" alt="黑马点评">
+        <h1>管理员控制台</h1>
+      </div>
+      <el-menu
+        default-active="4"
+        class="el-menu-vertical"
+        background-color="#304156"
+        text-color="#bfcbd9"
+        active-text-color="#409EFF">
+        <el-menu-item index="1" @click="navigateTo('admin-dashboard.html')">
+          <i class="el-icon-s-home"></i>
+          <span slot="title">控制台</span>
+        </el-menu-item>
+        <el-menu-item index="2" @click="navigateTo('admin-users.html')">
+          <i class="el-icon-user"></i>
+          <span slot="title">用户管理</span>
+        </el-menu-item>
+        <el-menu-item index="3" @click="navigateTo('admin-merchants.html')">
+          <i class="el-icon-s-shop"></i>
+          <span slot="title">商户管理</span>
+        </el-menu-item>
+        <el-menu-item index="4" @click="navigateTo('admin-merchant-shops.html')">
+          <i class="el-icon-s-goods"></i>
+          <span slot="title">商户店铺管理</span>
+        </el-menu-item>
+        <el-menu-item index="5" @click="navigateTo('admin-shop-types.html')">
+          <i class="el-icon-s-grid"></i>
+          <span slot="title">店铺分类管理</span>
+        </el-menu-item>
+        <el-menu-item index="6" @click="navigateTo('admin-content.html')">
+          <i class="el-icon-document-checked"></i>
+          <span slot="title">内容审核</span>
+        </el-menu-item>
+        <el-menu-item index="7" @click="navigateTo('admin-statistics.html')">
+          <i class="el-icon-data-line"></i>
+          <span slot="title">系统监控</span>
+        </el-menu-item>
+        <el-menu-item index="8" @click="logout">
+          <i class="el-icon-switch-button"></i>
+          <span slot="title">退出登录</span>
+        </el-menu-item>
+      </el-menu>
+    </div>
+    
+    <!-- 主要内容区域 -->
+    <div class="admin-main">
+      <!-- 顶部栏 -->
+      <div class="admin-header">
+        <div class="admin-header-left">
+          <i class="el-icon-s-fold" style="font-size: 20px; cursor: pointer;"></i>
+        </div>
+        <div class="admin-user-dropdown">
+          <img :src="adminInfo.avatar || './imgs/default-avatar.png'" class="admin-user-avatar">
+          <el-dropdown trigger="click">
+            <span class="el-dropdown-link">
+              {{adminInfo.username || '管理员'}} <i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item icon="el-icon-user">个人信息</el-dropdown-item>
+              <el-dropdown-item icon="el-icon-setting">系统设置</el-dropdown-item>
+              <el-dropdown-item icon="el-icon-switch-button" @click.native="logout">退出登录</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+      </div>
+      
+      <!-- 内容区域 -->
+      <div class="admin-content">
+        <h2 class="mb-4">商户店铺管理</h2>
+        
+        <!-- 搜索表单 -->
+        <div class="search-form">
+          <div class="search-form-item">
+            <el-input
+              placeholder="搜索店铺名称"
+              v-model="searchForm.keyword"
+              clearable
+              prefix-icon="el-icon-search"
+              @keyup.enter.native="handleSearch">
+            </el-input>
+          </div>
+          <div class="search-form-item">
+            <el-select v-model="searchForm.merchantId" placeholder="选择商户" clearable filterable>
+              <el-option
+                v-for="item in merchants"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              </el-option>
+            </el-select>
+          </div>
+          <div class="search-form-item">
+            <el-select v-model="searchForm.status" placeholder="店铺状态" clearable>
+              <el-option label="休息" :value="0"></el-option>
+              <el-option label="营业" :value="1"></el-option>
+            </el-select>
+          </div>
+          <div class="search-form-item">
+             <el-select v-model="searchForm.typeId" placeholder="店铺分类" clearable>
+              <el-option
+                v-for="item in shopTypes"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              </el-option>
+            </el-select>
+          </div>
+          <div class="search-form-item">
+            <el-button type="primary" @click="handleSearch">搜索</el-button>
+            <el-button @click="resetSearch">重置</el-button>
+          </div>
+        </div>
+        
+        <!-- 店铺列表表格 -->
+        <el-table
+          v-loading="tableLoading"
+          :data="shopList"
+          border
+          style="width: 100%">
+          <el-table-column
+            type="index"
+            width="50"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="id"
+            label="店铺ID"
+            width="80"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="name"
+            label="店铺名称"
+            min-width="150">
+          </el-table-column>
+          <el-table-column
+            prop="merchantName"
+            label="所属商户"
+            min-width="120">
+          </el-table-column>
+          <el-table-column
+            prop="typeName"
+            label="店铺分类"
+            width="120"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="area"
+            label="商圈"
+            width="100"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="address"
+            label="地址"
+            min-width="200">
+          </el-table-column>
+          <el-table-column
+            prop="avgPrice"
+            label="均价"
+            width="80"
+            align="center">
+            <template slot-scope="scope">
+              <span>{{ scope.row.avgPrice ? '¥' + scope.row.avgPrice : '-' }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="状态"
+            width="80"
+            align="center">
+            <template slot-scope="scope">
+              <el-tag :type="scope.row.status === 1 ? 'success' : 'info'">
+                {{ scope.row.status === 1 ? '营业' : '休息' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="操作"
+            width="280"
+            align="center">
+            <template slot-scope="scope">
+              <el-button
+                size="mini"
+                @click="handleViewShop(scope.row)">查看</el-button>
+              <el-button
+                size="mini"
+                type="primary"
+                @click="handleEditShop(scope.row)">编辑</el-button>
+              <el-button
+                size="mini"
+                :type="scope.row.status === 1 ? 'warning' : 'success'"
+                @click="handleChangeShopStatus(scope.row)">
+                {{ scope.row.status === 1 ? '设为休息' : '设为营业' }}
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        
+        <!-- 分页 -->
+        <div class="pagination-container" style="text-align: right; margin-top: 20px;">
+          <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="pageParams.page"
+            :page-sizes="[10, 20, 50, 100]"
+            :page-size="pageParams.size"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="total">
+          </el-pagination>
+        </div>
+
+        <!-- 店铺详情弹窗 -->
+        <el-dialog
+          title="店铺详情"
+          :visible.sync="shopDetailVisible"
+          width="60%"
+          :close-on-click-modal="false">
+          <div v-if="currentShop">
+            <el-row :gutter="20">
+              <!-- 左侧：基本信息 -->
+              <el-col :span="12">
+                <el-card shadow="hover" style="height: 100%;">
+                  <div slot="header">
+                    <span style="font-weight: bold; color: #303133; font-size: 16px;">基本信息</span>
+                  </div>
+                  <div style="padding: 10px 0;">
+                    <div style="margin-bottom: 15px;">
+                      <el-tag type="primary" size="medium" style="min-width: 80px; margin-right: 10px;">店铺名称</el-tag>
+                      <span style="font-size: 14px; color: #606266; font-weight: 500;">{{ currentShop.name }}</span>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                      <el-tag type="info" size="medium" style="min-width: 80px; margin-right: 10px;">所属商户</el-tag>
+                      <span style="font-size: 14px; color: #606266; font-weight: 500;">{{ currentShop.merchantName }}</span>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                      <el-tag style="min-width: 80px; margin-right: 10px; background-color: #E6A23C; border-color: #E6A23C; color: white;" size="medium">店铺分类</el-tag>
+                      <span style="font-size: 14px; color: #606266; font-weight: 500;">{{ currentShop.typeName }}</span>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                      <el-tag style="min-width: 80px; margin-right: 10px; background-color: #67C23A; border-color: #67C23A; color: white;" size="medium">商圈</el-tag>
+                      <span style="font-size: 14px; color: #606266; font-weight: 500;">{{ currentShop.area || '暂无' }}</span>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                      <el-tag style="min-width: 80px; margin-right: 10px; background-color: #F56C6C; border-color: #F56C6C; color: white;" size="medium">地址</el-tag>
+                      <span style="font-size: 14px; color: #606266; font-weight: 500;">{{ currentShop.address || '暂无' }}</span>
+                    </div>
+                  </div>
+                </el-card>
+              </el-col>
+
+              <!-- 右侧：营业信息 -->
+              <el-col :span="12">
+                <el-card shadow="hover" style="height: 100%;">
+                  <div slot="header">
+                    <span style="font-weight: bold; color: #303133; font-size: 16px;">营业信息</span>
+                  </div>
+                  <div style="padding: 10px 0;">
+                    <div style="margin-bottom: 15px;">
+                      <el-tag type="primary" size="medium" style="min-width: 80px; margin-right: 10px;">营业时间</el-tag>
+                      <span style="font-size: 14px; color: #606266; font-weight: 500;">{{ currentShop.openHours || '暂无' }}</span>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                      <el-tag type="info" size="medium" style="min-width: 80px; margin-right: 10px;">均价</el-tag>
+                      <span style="font-size: 14px; color: #606266; font-weight: 500;">{{ currentShop.avgPrice ? '¥' + currentShop.avgPrice : '暂无' }}</span>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                      <el-tag style="min-width: 80px; margin-right: 10px; background-color: #E6A23C; border-color: #E6A23C; color: white;" size="medium">评分</el-tag>
+                      <span style="font-size: 14px; color: #606266; font-weight: 500;">{{ currentShop.score ? (currentShop.score / 10).toFixed(1) + '分' : '暂无' }}</span>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                      <el-tag style="min-width: 80px; margin-right: 10px; background-color: #67C23A; border-color: #67C23A; color: white;" size="medium">销量</el-tag>
+                      <span style="font-size: 14px; color: #606266; font-weight: 500;">{{ currentShop.sold || 0 }}</span>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                      <el-tag style="min-width: 80px; margin-right: 10px; background-color: #F56C6C; border-color: #F56C6C; color: white;" size="medium">状态</el-tag>
+                      <el-tag :type="currentShop.status === 1 ? 'success' : 'info'">{{ currentShop.status === 1 ? '营业' : '休息' }}</el-tag>
+                    </div>
+                  </div>
+                </el-card>
+              </el-col>
+            </el-row>
+          </div>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="shopDetailVisible = false">关 闭</el-button>
+          </span>
+        </el-dialog>
+
+        <!-- 编辑店铺弹窗 -->
+        <el-dialog
+          title="编辑店铺信息"
+          :visible.sync="shopEditVisible"
+          width="50%"
+          :close-on-click-modal="false">
+          <el-form :model="editForm" ref="editFormRef" label-width="100px" :rules="editFormRules">
+            <el-form-item label="店铺名称" prop="name">
+              <el-input v-model="editForm.name" placeholder="请输入店铺名称"></el-input>
+            </el-form-item>
+            <el-form-item label="店铺分类" prop="typeId">
+              <el-select v-model="editForm.typeId" placeholder="请选择店铺分类" clearable style="width: 100%">
+                <el-option
+                  v-for="item in shopTypes"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="商圈" prop="area">
+              <el-input v-model="editForm.area" placeholder="请输入商圈"></el-input>
+            </el-form-item>
+            <el-form-item label="地址" prop="address">
+              <el-input v-model="editForm.address" placeholder="请输入地址"></el-input>
+            </el-form-item>
+            <el-form-item label="均价" prop="avgPrice">
+              <el-input-number v-model="editForm.avgPrice" :min="0" placeholder="请输入均价" style="width: 100%"></el-input-number>
+            </el-form-item>
+            <el-form-item label="营业时间" prop="openHours">
+              <el-input v-model="editForm.openHours" placeholder="例如：10:00-22:00"></el-input>
+            </el-form-item>
+            <el-form-item label="店铺图片" prop="images">
+              <el-input type="textarea" v-model="editForm.images" placeholder="请输入图片URL，多个图片用逗号分隔" :rows="3"></el-input>
+            </el-form-item>
+          </el-form>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="shopEditVisible = false">取 消</el-button>
+            <el-button type="primary" @click="submitEdit">确 定</el-button>
+          </span>
+        </el-dialog>
+
+        <!-- 修改店铺状态弹窗 -->
+        <el-dialog
+          :title="'确认操作 - ' + statusChangeForm.actionText + '店铺'"
+          :visible.sync="statusChangeDialogVisible"
+          width="40%"
+          :close-on-click-modal="false">
+          <div v-if="currentShop">
+            <p>您正在对店铺 <strong>{{ statusChangeForm.shopName }}</strong> 执行 <strong>{{ statusChangeForm.actionText }}</strong> 操作。</p>
+            <el-form :model="statusChangeForm" ref="statusChangeFormRef" label-width="80px" style="margin-top: 20px;">
+              <el-form-item label="操作原因" prop="reason">
+                <el-input
+                  type="textarea"
+                  v-model="statusChangeForm.reason"
+                  placeholder="请输入操作原因（可选）"></el-input>
+              </el-form-item>
+            </el-form>
+          </div>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="statusChangeDialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="submitStatusChange">确 定</el-button>
+          </span>
+        </el-dialog>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/admin-common.js"></script>
+<script>
+  // 检查管理员登录状态
+  const adminToken = sessionStorage.getItem("adminToken");
+  const adminInfoStr = sessionStorage.getItem("adminInfo");
+
+  if (!adminToken) {
+    location.href = "admin-login.html";
+  }
+
+  const app = new Vue({
+    el: "#app",
+    data: {
+      adminInfo: adminInfoStr ? JSON.parse(adminInfoStr) : {},
+      searchForm: {
+        keyword: '',
+        merchantId: '',
+        status: '',
+        typeId: ''
+      },
+      merchants: [], // 商户列表
+      shopTypes: [], // 店铺分类列表
+      tableLoading: false,
+      shopList: [],
+      pageParams: {
+        page: 1,
+        size: 10
+      },
+      total: 0,
+      shopDetailVisible: false, // 店铺详情弹窗可见性
+      shopEditVisible: false, // 编辑店铺弹窗可见性
+      currentShop: null, // 当前操作的店铺对象
+      editForm: { // 编辑表单
+        name: '',
+        typeId: null,
+        area: '',
+        address: '',
+        avgPrice: null,
+        openHours: '',
+        images: ''
+      },
+      editFormRules: { // 编辑表单验证规则
+        name: [
+          { required: true, message: '请输入店铺名称', trigger: 'blur' },
+          { min: 2, max: 50, message: '店铺名称长度在 2 到 50 个字符', trigger: 'blur' }
+        ],
+        typeId: [
+          { required: true, message: '请选择店铺分类', trigger: 'change' }
+        ],
+        address: [
+          { required: true, message: '请输入地址', trigger: 'blur' }
+        ]
+      },
+      statusChangeDialogVisible: false, // 修改状态弹窗可见性
+      statusChangeForm: { // 修改状态表单
+        newStatus: null,
+        reason: '',
+        actionText: '', // 操作文本，如 '设为休息', '设为营业'
+        shopName: '' // 当前操作的店铺名称
+      }
+    },
+    created() {
+      this.fetchMerchants();
+      this.fetchShopTypes();
+      this.fetchShopList();
+    },
+    methods: {
+      navigateTo(path) {
+        location.href = path;
+      },
+      fetchMerchants() {
+        adminAxios.get("/admin/merchants", { params: { page: 1, size: 1000 } })
+          .then(data => {
+            if(data.success){
+                this.merchants = data.data.list || [];
+            }else{
+                this.$message.error(data.msg || "获取商户列表失败");
+            }
+          })
+          .catch(err => {
+            console.error("获取商户列表失败", err);
+            this.$message.error("获取商户列表失败，请重试");
+          });
+      },
+      fetchShopTypes(){
+        adminAxios.get("/admin/shop-types")
+          .then(data => {
+            if(data.success){
+                this.shopTypes = data.data.list || [];
+            }else{
+                this.$message.error(data.msg || "获取店铺分类失败");
+            }
+          })
+          .catch(err => {
+            console.error("获取店铺分类失败", err);
+            this.$message.error("获取店铺分类失败，请重试");
+          });
+      },
+      fetchShopList() {
+        this.tableLoading = true;
+        const params = {
+          ...this.pageParams,
+          ...this.searchForm
+        };
+
+        adminAxios.get("/admin/merchant-shops", { params })
+          .then(data => {
+            if(data.success){
+                this.shopList = data.data.list || [];
+                this.total = data.data.total || 0;
+            } else {
+                this.$message.error(data.msg || "获取店铺列表失败");
+            }
+          })
+          .catch(err => {
+            console.error("获取店铺列表失败", err);
+            this.$message.error("获取店铺列表失败，请重试");
+          })
+          .finally(() => {
+            this.tableLoading = false;
+          });
+      },
+      handleSearch() {
+        this.pageParams.page = 1;
+        this.fetchShopList();
+      },
+      resetSearch() {
+        this.searchForm = {
+          keyword: '',
+          merchantId: '',
+          status: '',
+          typeId: ''
+        };
+        this.handleSearch();
+      },
+      handleSizeChange(size) {
+        this.pageParams.size = size;
+        this.fetchShopList();
+      },
+      handleCurrentChange(page) {
+        this.pageParams.page = page;
+        this.fetchShopList();
+      },
+      async handleViewShop(shop) {
+        this.currentShop = shop;
+        this.shopDetailVisible = true;
+        try {
+          // 获取店铺详细信息
+          const data = await adminAxios.get(`/admin/merchant-shops/${shop.id}`);
+          if (data.success) {
+            this.currentShop = data.data;
+          } else {
+            this.$message.error(data.msg || '获取店铺详情失败');
+          }
+        } catch (error) {
+          console.error("获取店铺详情失败", error);
+          this.$message.error('获取店铺详情失败，请重试');
+        }
+      },
+      async handleEditShop(shop) {
+        try {
+          // 获取店铺详细信息
+          const data = await adminAxios.get(`/admin/merchant-shops/${shop.id}`);
+          if (data.success) {
+            this.currentShop = data.data;
+            // 填充编辑表单
+            this.editForm = {
+              name: data.data.name || '',
+              typeId: data.data.typeId || null,
+              area: data.data.area || '',
+              address: data.data.address || '',
+              avgPrice: data.data.avgPrice || null,
+              openHours: data.data.openHours || '',
+              images: data.data.images || ''
+            };
+            this.shopEditVisible = true;
+          } else {
+            this.$message.error(data.msg || '获取店铺信息失败');
+          }
+        } catch (error) {
+          console.error("获取店铺信息失败", error);
+          this.$message.error('获取店铺信息失败，请重试');
+        }
+      },
+      submitEdit() {
+        this.$refs.editFormRef.validate((valid) => {
+          if (valid) {
+            const shopId = this.currentShop.id;
+            adminAxios.put(`/admin/merchant-shops/${shopId}`, this.editForm)
+              .then(data => {
+                if(data.success){
+                  this.$message.success("更新店铺信息成功");
+                  this.shopEditVisible = false;
+                  this.fetchShopList(); // 刷新列表
+                } else {
+                  this.$message.error(data.msg || "更新店铺信息失败");
+                }
+              })
+              .catch(err => {
+                console.error("更新店铺信息失败", err);
+                this.$message.error("更新店铺信息失败，请重试");
+              });
+          } else {
+            console.log('编辑表单校验失败');
+            return false;
+          }
+        });
+      },
+      handleChangeShopStatus(shop) {
+        let newStatus;
+        let actionText;
+        let shopName = shop.name;
+
+        if (shop.status === 1) { // 当前是营业状态，则操作是设为休息
+            newStatus = 0;
+            actionText = '设为休息';
+        } else { // 当前是休息状态，则操作是设为营业
+            newStatus = 1;
+            actionText = '设为营业';
+        }
+
+        this.currentShop = shop;
+        this.statusChangeForm.newStatus = newStatus;
+        this.statusChangeForm.reason = ''; // 重置原因
+        this.statusChangeForm.actionText = actionText;
+        this.statusChangeForm.shopName = shopName;
+        this.statusChangeDialogVisible = true;
+      },
+      submitStatusChange() {
+        const { newStatus, reason, actionText } = this.statusChangeForm;
+        const shopId = this.currentShop.id;
+        const shopName = this.currentShop.name;
+
+        this.$confirm(`确定要${actionText}店铺 "${shopName}" 吗?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          adminAxios.put(`/admin/merchant-shops/${shopId}/status`, { status: newStatus, reason: reason })
+            .then(data => {
+                if(data.success){
+                    this.$message.success(`${actionText}店铺成功`);
+                    this.statusChangeDialogVisible = false;
+                    this.fetchShopList(); // 重新获取列表刷新状态
+                }else{
+                    this.$message.error(data.msg || `${actionText}店铺失败`);
+                }
+            })
+            .catch(err => {
+              console.error(`${actionText}店铺失败`, err);
+              this.$message.error(`${actionText}店铺失败，请重试`);
+            });
+        }).catch(() => {
+          // 取消操作
+        });
+      },
+      logout() {
+        adminAxios.post("/admin/logout")
+          .then(() => {
+            sessionStorage.removeItem("adminToken");
+            sessionStorage.removeItem("adminInfo");
+            location.href = "admin-login.html";
+          })
+          .catch(err => {
+            console.error("退出失败", err);
+            sessionStorage.removeItem("adminToken");
+            sessionStorage.removeItem("adminInfo");
+            location.href = "admin-login.html";
+          });
+      }
+    }
+  })
+</script>
+</body>
+</html>

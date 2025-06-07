@@ -102,11 +102,6 @@
     .search-form-item {
       margin-right: 10px;
     }
-    .shop-type-icon{
-        width: 20px;
-        height: 20px;
-        margin-right: 5px;
-    }
   </style>
 </head>
 <body>
@@ -136,19 +131,23 @@
           <i class="el-icon-s-shop"></i>
           <span slot="title">商户管理</span>
         </el-menu-item>
-        <el-menu-item index="4" @click="navigateTo('admin-shop-types.html')">
-          <i class="el-icon-s-grid"></i>
-          <span slot="title">商户分类管理</span>
+        <el-menu-item index="4" @click="navigateTo('admin-merchant-shops.html')">
+          <i class="el-icon-s-goods"></i>
+          <span slot="title">商户店铺管理</span>
         </el-menu-item>
-        <el-menu-item index="5" @click="navigateTo('admin-content.html')">
+        <el-menu-item index="5" @click="navigateTo('admin-shop-types.html')">
+          <i class="el-icon-s-grid"></i>
+          <span slot="title">店铺分类管理</span>
+        </el-menu-item>
+        <el-menu-item index="6" @click="navigateTo('admin-content.html')">
           <i class="el-icon-document-checked"></i>
           <span slot="title">内容审核</span>
         </el-menu-item>
-        <el-menu-item index="6" @click="navigateTo('admin-statistics.html')">
+        <el-menu-item index="7" @click="navigateTo('admin-statistics.html')">
           <i class="el-icon-data-line"></i>
           <span slot="title">系统监控</span>
         </el-menu-item>
-        <el-menu-item index="7" @click="logout">
+        <el-menu-item index="8" @click="logout">
           <i class="el-icon-switch-button"></i>
           <span slot="title">退出登录</span>
         </el-menu-item>
@@ -243,8 +242,7 @@
             width="150"
             align="center">
             <template slot-scope="scope">
-                <img :src="scope.row.shopTypeIcon || './imgs/default-type.png'" class="shop-type-icon">
-                <span>{{ scope.row.shopType || '未分类' }}</span>
+                <span>{{ scope.row.typeName || '未分类' }}</span>
             </template>
           </el-table-column>
           <el-table-column
@@ -271,7 +269,7 @@
           </el-table-column>
           <el-table-column
             label="操作"
-            width="220"
+            width="280"
             align="center">
             <template slot-scope="scope">
               <el-button
@@ -279,13 +277,17 @@
                 @click="handleViewMerchant(scope.row)">查看</el-button>
               <el-button
                 size="mini"
+                type="primary"
+                @click="handleEditMerchant(scope.row)">编辑</el-button>
+              <el-button
+                size="mini"
                 type="warning"
-                v-if="scope.row.status === 0" 
+                v-if="scope.row.status === 0"
                 @click="handleAuditMerchant(scope.row)">审核</el-button>
               <el-button
                 size="mini"
                 :type="scope.row.status === 1 ? 'danger' : 'success'"
-                v-if="scope.row.status !== 0" 
+                v-if="scope.row.status !== 0"
                 @click="handleChangeMerchantStatus(scope.row)">
                 {{ scope.row.status === 1 ? '禁用' : (scope.row.status === 2 ? '启用' : '标记正常') }}
               </el-button>
@@ -313,39 +315,67 @@
           width="60%"
           :close-on-click-modal="false">
           <div v-if="currentMerchant">
-            <h4>基本信息</h4>
-            <el-descriptions :column="2" border>
-              <el-descriptions-item label="商户名称">{{ currentMerchant.name }}</el-descriptions-item>
-              <el-descriptions-item label="商户分类">{{ currentMerchant.shopType }}</el-descriptions-item>
-              <el-descriptions-item label="联系电话">{{ currentMerchant.phone || '暂无' }}</el-descriptions-item>
-              <el-descriptions-item label="营业时间">{{ currentMerchant.openHours || '暂无' }}</el-descriptions-item>
-              <el-descriptions-item label="平均消费">{{ currentMerchant.avgPrice ? '¥' + currentMerchant.avgPrice : '暂无' }}</el-descriptions-item>
-              <el-descriptions-item label="评分">{{ currentMerchant.score || '暂无' }}</el-descriptions-item>
-              <el-descriptions-item label="地址" :span="2">{{ currentMerchant.address || '暂无' }}</el-descriptions-item>
-            </el-descriptions>
-            
-            <h4 style="margin-top: 20px;">资质信息</h4>
-            <div v-if="merchantQualifications.length > 0">
-              <el-row :gutter="20">
-                <el-col :span="8" v-for="(qual, index) in merchantQualifications" :key="index" style="margin-bottom: 10px;">
-                  <el-card :body-style="{ padding: '0px' }">
-                    <img :src="qual.imageUrl || './imgs/default-image.png'" class="image" style="width: 100%; display: block;">
-                    <div style="padding: 14px;">
-                      <span>{{ qual.qualificationType }}</span>
-                      <div class="bottom clearfix">
-                        <el-tag size="mini">{{ qual.status || '未知状态' }}</el-tag>
-                         <el-tooltip class="item" effect="dark" :content="'编号: ' + (qual.number || '无')" placement="top">
-                            <i class="el-icon-info" style="float: right; padding: 3px 0"></i>
-                        </el-tooltip>
-                      </div>
+            <el-row :gutter="20">
+              <!-- 左侧：基本信息 -->
+              <el-col :span="12">
+                <el-card shadow="hover" style="height: 100%;">
+                  <div slot="header">
+                    <span style="font-weight: bold; color: #303133; font-size: 16px;">基本信息</span>
+                  </div>
+                  <div style="padding: 10px 0;">
+                    <div style="margin-bottom: 15px;">
+                      <el-tag type="primary" size="medium" style="min-width: 80px; margin-right: 10px;">商户名称</el-tag>
+                      <span style="font-size: 14px; color: #606266; font-weight: 500;">{{ currentMerchant.name }}</span>
                     </div>
-                  </el-card>
-                </el-col>
-              </el-row>
-            </div>
-            <div v-else>
-              <el-empty description="暂无资质信息"></el-empty>
-            </div>
+                    <div style="margin-bottom: 15px;">
+                      <el-tag type="info" size="medium" style="min-width: 80px; margin-right: 10px;">联系电话</el-tag>
+                      <span style="font-size: 14px; color: #606266; font-weight: 500;">{{ currentMerchant.phone || '暂无' }}</span>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                      <el-tag style="min-width: 80px; margin-right: 10px; background-color: #E6A23C; border-color: #E6A23C; color: white;" size="medium">头像</el-tag>
+                      <span v-if="currentMerchant.avatar" style="font-size: 14px; color: #606266; font-weight: 500;">
+                        <img :src="currentMerchant.avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; vertical-align: middle; margin-left: 5px;" />
+                      </span>
+                      <span v-else style="font-size: 14px; color: #606266; font-weight: 500;">暂无</span>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                      <el-tag style="min-width: 80px; margin-right: 10px; background-color: #67C23A; border-color: #67C23A; color: white;" size="medium">商户描述</el-tag>
+                      <span style="font-size: 14px; color: #606266; font-weight: 500; line-height: 1.5;">{{ currentMerchant.description || '暂无' }}</span>
+                    </div>
+                  </div>
+                </el-card>
+              </el-col>
+
+              <!-- 右侧：资质信息 -->
+              <el-col :span="12">
+                <el-card shadow="hover" style="height: 100%;">
+                  <div slot="header">
+                    <span style="font-weight: bold; color: #303133; font-size: 16px;">资质信息</span>
+                  </div>
+                  <div v-if="merchantQualifications.length > 0" style="padding: 10px 0;">
+                    <el-row :gutter="15">
+                      <el-col :span="12" v-for="(qual, index) in merchantQualifications" :key="index" style="margin-bottom: 15px;">
+                        <el-card :body-style="{ padding: '0px' }" shadow="hover">
+                          <img :src="qual.imageUrl || './imgs/default-image.png'" class="image" style="width: 100%; height: 120px; object-fit: cover; display: block;">
+                          <div style="padding: 12px;">
+                            <div style="font-size: 14px; font-weight: 500; margin-bottom: 8px; color: #303133;">{{ qual.qualificationType }}</div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                              <el-tag size="mini" :type="qual.status === '已审核' ? 'success' : 'warning'">{{ qual.status || '未知状态' }}</el-tag>
+                              <el-tooltip class="item" effect="dark" :content="'编号: ' + (qual.number || '无')" placement="top">
+                                <i class="el-icon-info" style="color: #909399; cursor: pointer;"></i>
+                              </el-tooltip>
+                            </div>
+                          </div>
+                        </el-card>
+                      </el-col>
+                    </el-row>
+                  </div>
+                  <div v-else style="padding: 20px 0;">
+                    <el-empty description="暂无资质信息" :image-size="80"></el-empty>
+                  </div>
+                </el-card>
+              </el-col>
+            </el-row>
           </div>
           <span slot="footer" class="dialog-footer">
             <el-button @click="merchantDetailVisible = false">关 闭</el-button>
@@ -405,6 +435,42 @@
           </span>
         </el-dialog>
 
+        <!-- 编辑商户弹窗 -->
+        <el-dialog
+          title="编辑商户信息"
+          :visible.sync="merchantEditVisible"
+          width="50%"
+          :close-on-click-modal="false">
+          <el-form :model="editForm" ref="editFormRef" label-width="100px" :rules="editFormRules">
+            <el-form-item label="商户名称" prop="name">
+              <el-input v-model="editForm.name" placeholder="请输入商户名称"></el-input>
+            </el-form-item>
+            <el-form-item label="联系电话" prop="phone">
+              <el-input v-model="editForm.phone" placeholder="请输入联系电话"></el-input>
+            </el-form-item>
+            <el-form-item label="商户分类" prop="typeId">
+              <el-select v-model="editForm.typeId" placeholder="请选择商户分类" clearable style="width: 100%">
+                <el-option
+                  v-for="item in shopTypes"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="头像" prop="avatar">
+              <el-input v-model="editForm.avatar" placeholder="请输入头像URL"></el-input>
+            </el-form-item>
+            <el-form-item label="商户描述" prop="description">
+              <el-input type="textarea" v-model="editForm.description" placeholder="请输入商户描述" :rows="3"></el-input>
+            </el-form-item>
+          </el-form>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="merchantEditVisible = false">取 消</el-button>
+            <el-button type="primary" @click="submitEdit">确 定</el-button>
+          </span>
+        </el-dialog>
+
       </div>
     </div>
   </div>
@@ -456,6 +522,24 @@
         reason: '',
         actionText: '', // 操作文本，如 '禁用', '启用'
         merchantName: '' // 当前操作的商户名称
+      },
+      merchantEditVisible: false, // 编辑商户弹窗可见性
+      editForm: { // 编辑表单
+        name: '',
+        phone: '',
+        typeId: null,
+        avatar: '',
+        description: ''
+      },
+      editFormRules: { // 编辑表单验证规则
+        name: [
+          { required: true, message: '请输入商户名称', trigger: 'blur' },
+          { min: 2, max: 50, message: '商户名称长度在 2 到 50 个字符', trigger: 'blur' }
+        ],
+        phone: [
+          { required: true, message: '请输入联系电话', trigger: 'blur' },
+          { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
+        ]
       }
     },
     created() {
@@ -650,6 +734,53 @@
             });
         }).catch(() => {
           // 取消操作
+        });
+      },
+      async handleEditMerchant(merchant) {
+        try {
+          // 获取商户详细信息
+          const data = await adminAxios.get(`/admin/merchants/${merchant.id}`);
+          if (data.success) {
+            this.currentMerchant = data.data;
+            // 填充编辑表单
+            this.editForm = {
+              name: data.data.name || '',
+              phone: data.data.phone || '',
+              typeId: data.data.typeId || null,
+              avatar: data.data.avatar || '',
+              description: data.data.description || ''
+            };
+            this.merchantEditVisible = true;
+          } else {
+            this.$message.error(data.msg || '获取商户信息失败');
+          }
+        } catch (error) {
+          console.error("获取商户信息失败", error);
+          this.$message.error('获取商户信息失败，请重试');
+        }
+      },
+      submitEdit() {
+        this.$refs.editFormRef.validate((valid) => {
+          if (valid) {
+            const merchantId = this.currentMerchant.id;
+            adminAxios.put(`/admin/merchants/${merchantId}`, this.editForm)
+              .then(data => {
+                if(data.success){
+                  this.$message.success("更新商户信息成功");
+                  this.merchantEditVisible = false;
+                  this.fetchMerchantList(); // 刷新列表
+                } else {
+                  this.$message.error(data.msg || "更新商户信息失败");
+                }
+              })
+              .catch(err => {
+                console.error("更新商户信息失败", err);
+                this.$message.error("更新商户信息失败，请重试");
+              });
+          } else {
+            console.log('编辑表单校验失败');
+            return false;
+          }
         });
       },
       logout() {

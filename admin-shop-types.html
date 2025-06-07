@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-  <title>黑马点评 - 商户分类管理</title>
+  <title>黑马点评 - 店铺分类管理</title>
   <!-- 引入样式 -->
   <link rel="stylesheet" href="./css/element.css">
   <link href="./css/main.css" rel="stylesheet">
@@ -99,6 +99,12 @@
         height: 30px;
         vertical-align: middle;
     }
+
+    /* 确保分类图标URL标签不换行 */
+    .icon-url-form-item .el-form-item__label {
+        white-space: nowrap !important;
+        min-width: 100px;
+    }
   </style>
 </head>
 <body>
@@ -128,19 +134,23 @@
           <i class="el-icon-s-shop"></i>
           <span slot="title">商户管理</span>
         </el-menu-item>
-        <el-menu-item index="4" @click="navigateTo('admin-shop-types.html')">
-          <i class="el-icon-s-grid"></i>
-          <span slot="title">商户分类管理</span>
+        <el-menu-item index="4" @click="navigateTo('admin-merchant-shops.html')">
+          <i class="el-icon-s-goods"></i>
+          <span slot="title">商户店铺管理</span>
         </el-menu-item>
-        <el-menu-item index="5" @click="navigateTo('admin-content.html')">
+        <el-menu-item index="5" @click="navigateTo('admin-shop-types.html')">
+          <i class="el-icon-s-grid"></i>
+          <span slot="title">店铺分类管理</span>
+        </el-menu-item>
+        <el-menu-item index="6" @click="navigateTo('admin-content.html')">
           <i class="el-icon-document-checked"></i>
           <span slot="title">内容审核</span>
         </el-menu-item>
-        <el-menu-item index="6" @click="navigateTo('admin-statistics.html')">
+        <el-menu-item index="7" @click="navigateTo('admin-statistics.html')">
           <i class="el-icon-data-line"></i>
           <span slot="title">系统监控</span>
         </el-menu-item>
-        <el-menu-item index="7" @click="logout">
+        <el-menu-item index="8" @click="logout">
           <i class="el-icon-switch-button"></i>
           <span slot="title">退出登录</span>
         </el-menu-item>
@@ -171,14 +181,14 @@
       
       <!-- 内容区域 -->
       <div class="admin-content">
-        <h2 class="mb-3">商户分类管理</h2>
+        <h2 class="mb-3">店铺分类管理</h2>
         
         <!-- 操作按钮 -->
         <div style="margin-bottom: 20px;">
           <el-button type="primary" icon="el-icon-plus" @click="handleAdd">新增分类</el-button>
         </div>
         
-        <!-- 商户分类列表表格 -->
+        <!-- 店铺分类列表表格 -->
         <el-table
           v-loading="tableLoading"
           :data="shopTypeList"
@@ -244,7 +254,7 @@
           </el-pagination>
         </div>
 
-        <!-- 新增/编辑商户分类弹窗 -->
+        <!-- 新增/编辑店铺分类弹窗 -->
         <el-dialog
           :title="dialogTitle"
           :visible.sync="dialogVisible"
@@ -255,7 +265,7 @@
             <el-form-item label="分类名称" prop="name">
               <el-input v-model="shopTypeForm.name" placeholder="请输入分类名称"></el-input>
             </el-form-item>
-            <el-form-item label="分类图标URL" prop="icon">
+            <el-form-item label="分类图标URL" prop="icon" class="icon-url-form-item">
               <el-input v-model="shopTypeForm.icon" placeholder="请输入图标URL或上传"></el-input>
               <!-- TODO: 可增加图片上传功能 -->
             </el-form-item>
@@ -321,7 +331,7 @@
     },
     computed: {
         dialogTitle() {
-            return this.dialogStatus === 'create' ? '新增商户分类' : '编辑商户分类';
+            return this.dialogStatus === 'create' ? '新增店铺分类' : '编辑店铺分类';
         }
     },
     created() {
@@ -353,7 +363,7 @@
       },
       fetchShopTypes() {
         this.tableLoading = true;
-        console.log("🔍 [DEBUG] 开始获取商户分类列表，请求参数：", this.pageParams);
+        console.log("🔍 [DEBUG] 开始获取店铺分类列表，请求参数：", this.pageParams);
 
         axios.get("/admin/shop-types", { params: this.pageParams })
           .then((response) => {
@@ -376,13 +386,13 @@
                 console.log("🔍 [DEBUG] 赋值后 - shopTypeList长度：", this.shopTypeList.length);
             } else {
                 console.log("🔍 [DEBUG] 失败分支 - 数据格式不正确");
-                this.$message.error("获取商户分类列表失败：数据格式不正确");
+                this.$message.error("获取店铺分类列表失败：数据格式不正确");
             }
           })
           .catch(err => {
             console.error("🔍 [DEBUG] 请求异常：", err);
-            console.error("获取商户分类列表失败", err);
-            this.$message.error("获取商户分类列表失败，请重试");
+            console.error("获取店铺分类列表失败", err);
+            this.$message.error("获取店铺分类列表失败，请重试");
           })
           .finally(() => {
             console.log("🔍 [DEBUG] 请求完成，设置loading为false");
@@ -421,14 +431,11 @@
               // 新增逻辑
               const { name, icon, sort } = this.shopTypeForm;
               axios.post("/admin/shop-types", { name, icon, sort })
-                .then(({data}) => {
-                  if(data.success){
-                    this.$message.success("新增分类成功");
-                    this.dialogVisible = false;
-                    this.fetchShopTypes(); // 刷新列表
-                  } else {
-                    this.$message.error(data.msg || "新增分类失败");
-                  }
+                .then((response) => {
+                  // axios响应拦截器已经处理了success判断，能到这里说明成功了
+                  this.$message.success("新增分类成功");
+                  this.dialogVisible = false;
+                  this.fetchShopTypes(); // 刷新列表
                 })
                 .catch(err => {
                   console.error("新增分类失败", err);
@@ -438,14 +445,11 @@
               // 更新逻辑
               const { id, name, icon, sort } = this.shopTypeForm;
               axios.put(`/admin/shop-types/${id}`, { name, icon, sort })
-                .then(({data}) => {
-                  if(data.success){
-                    this.$message.success("更新分类成功");
-                    this.dialogVisible = false;
-                    this.fetchShopTypes(); // 刷新列表
-                  } else {
-                    this.$message.error(data.msg || "更新分类失败");
-                  }
+                .then((response) => {
+                  // axios响应拦截器已经处理了success判断，能到这里说明成功了
+                  this.$message.success("更新分类成功");
+                  this.dialogVisible = false;
+                  this.fetchShopTypes(); // 刷新列表
                 })
                 .catch(err => {
                   console.error("更新分类失败", err);
@@ -459,19 +463,16 @@
         });
       },
       handleDelete(row) {
-        this.$confirm(`确定要删除商户分类 "${row.name}" 吗? 删除后可能影响关联商户的显示。`, '警告', {
+        this.$confirm(`确定要删除店铺分类 "${row.name}" 吗? 删除后可能影响关联商户的显示。`, '警告', {
           confirmButtonText: '确定删除',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
           axios.delete(`/admin/shop-types/${row.id}`)
-            .then(({data}) => {
-              if(data.success){
-                this.$message.success("删除分类成功");
-                this.fetchShopTypes(); // 刷新列表
-              } else {
-                this.$message.error(data.msg || "删除分类失败");
-              }
+            .then((response) => {
+              // axios响应拦截器已经处理了success判断，能到这里说明成功了
+              this.$message.success("删除分类成功");
+              this.fetchShopTypes(); // 刷新列表
             })
             .catch(err => {
               console.error("删除分类失败", err);
