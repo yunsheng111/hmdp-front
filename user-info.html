@@ -46,6 +46,56 @@
     }
     
     /* 旧的评论样式已移至外部CSS文件 */
+    
+    /* 调整笔记列表样式 */
+    .blog-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 15px;
+      padding: 12px;
+      border-radius: 8px;
+      background-color: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .blog-img {
+      width: 80px;
+      height: 80px;
+      margin-right: 12px;
+      border-radius: 4px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    
+    .blog-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    
+    .blog-info {
+      flex: 1;
+      position: relative;
+      padding-top: 24px; /* 为标题留出空间 */
+      min-width: 0; /* 确保文本可以正常换行和省略 */
+    }
+    
+    .blog-title {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      font-weight: bold;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-bottom: 6px;
+      color: #333;
+      font-size: 15px;
+      line-height: 1.3;
+    }
   </style>
 
 </head>
@@ -636,6 +686,12 @@
       queryBlogs() {
         axios.get("/blog/of/me")
           .then(({data}) => {
+            console.log("博客列表数据:", data);
+            // 调试：输出每个博客的评论数量
+            data.forEach((blog, index) => {
+              console.log(`博客${index + 1} [${blog.title}] 评论数量:`, blog.comments);
+            });
+
             this.blogs = data;
             this.filteredBlogs = [...data]; // 初始化过滤列表
             this.sortBlogs(); // 应用默认排序
@@ -1025,22 +1081,70 @@
       queryBlogComments(blogId, page = 1) {
         this.commentsData.loading = true;
         this.commentsData.currentPage = page;
-        
+
+        console.log("开始获取博客评论，blogId:", blogId, "page:", page);
+
         // 调用API获取博客评论
         axios.get(`/blog-comments/blog/${blogId}?page=${page}&size=${this.commentsData.pageSize}`)
-          .then(({data}) => {
-            if (!data || !data.data) {
-              this.commentsData.list = [];
-              this.commentsData.total = 0;
-              return;
-            }
+          .then((response) => {
+            console.log("API响应数据:", response);
+
+            // 检查响应格式并处理不同类型的响应
+            let responseData = response;
             
-            this.commentsData.list = data.data.records || [];
-            this.commentsData.total = data.data.total || 0;
+            // 如果响应中有data字段（标准Result<T>格式）
+            if (responseData.data) {
+              console.log("标准格式响应，使用data字段");
+              
+              // 设置评论数据
+              this.commentsData.list = responseData.data.records || [];
+              this.commentsData.total = responseData.data.total || 0;
+            } 
+            // 如果响应本身就是分页数据（没有data包装，但有records字段）
+            else if (responseData.records) {
+              console.log("直接响应分页数据格式");
+              
+              this.commentsData.list = responseData.records || [];
+              this.commentsData.total = responseData.total || 0;
+            }
+            // 其他未知格式，尝试智能处理
+            else {
+              console.warn("未知响应格式:", responseData);
+              
+              // 尝试查找可能的数据字段
+              let possibleListField = null;
+              let possibleTotalField = null;
+              
+              for (const key in responseData) {
+                if (Array.isArray(responseData[key])) {
+                  possibleListField = key;
+                } else if (typeof responseData[key] === 'number' && key.toLowerCase().includes('total')) {
+                  possibleTotalField = key;
+                }
+              }
+              
+              if (possibleListField) {
+                this.commentsData.list = responseData[possibleListField] || [];
+                console.log("智能发现评论列表字段:", possibleListField);
+              } else {
+                this.commentsData.list = [];
+                console.warn("未能找到评论列表数据");
+              }
+              
+              if (possibleTotalField) {
+                this.commentsData.total = responseData[possibleTotalField] || 0;
+                console.log("智能发现评论总数字段:", possibleTotalField);
+              } else {
+                this.commentsData.total = this.commentsData.list.length;
+                console.warn("未能找到评论总数数据，使用列表长度");
+              }
+            }
+
+            console.log("评论数据设置完成，评论数量:", this.commentsData.list.length);
           })
           .catch(err => {
             console.error("获取评论失败", err);
-            this.$message.error("获取评论失败");
+            this.$message.error("获取评论失败，请重试");
             this.commentsData.list = [];
             this.commentsData.total = 0;
           })

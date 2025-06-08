@@ -10,66 +10,148 @@
   <link href="./css/blog-detail.css" rel="stylesheet">
   <link href="./css/main.css" rel="stylesheet">
 
-  <style type="text/css">
-    .header{
-        position: relative;
-    }
-    .foot-view span{
-        font-size: 12px;
-    }
-    .liked{
 
-    }
-  </style>
+
 </head>
 <body>
+<script>
+  console.log("=== 页面body开始加载 ===");
+  console.log("当前URL:", window.location.href);
+  console.log("当前时间:", new Date().toISOString());
+
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log("=== DOM内容已加载完成 ===");
+    console.log("document.readyState:", document.readyState);
+    console.log("#app元素是否存在:", !!document.getElementById('app'));
+  });
+
+  window.addEventListener('load', function() {
+    console.log("=== 页面完全加载完成 ===");
+  });
+
+  window.addEventListener('error', function(e) {
+    console.error("=== 页面错误 ===", e.error, e.message, e.filename, e.lineno);
+  });
+</script>
 <div id="app">
   <div class="header">
     <div class="header-back-btn" @click="goBack"><i class="el-icon-arrow-left"></i></div>
     <div class="header-title"></div>
     <div class="header-share">...</div>
   </div>
-  <div style="height: 85%; overflow-y: scroll; overflow-x: hidden">
-    <div class="blog-info-box" ref="swiper"
-         @touchstart="moveStart"
-         @touchmove="moving"
-         @touchend="moveEnd">
-      <div class="swiper-item" v-for="(img, i) in blog.images" :key="i">
-        <img :src="img" alt="" style="width: 100%" height="100%">
+  <div class="main-content">
+    <!-- 博客标题 -->
+    <div v-if="pageLoading.blog" class="blog-title-loading-enhanced">
+      <div style="height: 20px; background: #f0f0f0; border-radius: 4px; width: 70%;"></div>
+    </div>
+    <div v-else-if="blog && blog.title" class="blog-title-enhanced">
+      <i class="el-icon-star-on"></i>
+      {{blog.title}}
+    </div>
+    
+    <!-- 博客图片加载状态 -->
+    <div v-if="pageLoading.blog" class="image-placeholder">
+      <div style="text-align: center;">
+        <i class="el-icon-loading" style="font-size: 24px; color: #409EFF;"></i>
+        <div style="margin-top: 10px; color: #666;">加载中...</div>
       </div>
     </div>
-    <div class="basic">
+
+    <!-- 博客图片轮播 -->
+    <div v-if="!pageLoading.blog && blog.images && blog.images.length > 0" class="blog-info-box" ref="swiper"
+         @touchstart="moveStart"
+         @touchmove="moving"
+         @touchend="moveEnd"
+         style="display: flex; align-items: center; justify-content: center;">
+      <div class="swiper-item" v-for="(img, i) in blog.images" :key="i">
+        <img :src="img" alt="" class="blog-image-adaptive"
+             @load="img.complete && updateContainerHeight($event.target)"
+             @click="showImageModal(img)"
+             :title="'点击查看大图'">
+      </div>
+    </div>
+
+    <!-- 无图片状态 -->
+    <div v-else-if="!pageLoading.blog && (!blog.images || blog.images.length === 0)" class="image-placeholder">
+      <i class="el-icon-picture" style="font-size: 48px; color: #999;"></i>
+    </div>
+    <!-- 博客基本信息 -->
+    <div v-if="pageLoading.blog" class="basic" style="padding: 15px;">
+      <div style="display: flex; align-items: center;">
+        <div style="width: 40px; height: 40px; background: #f0f0f0; border-radius: 50%; margin-right: 10px;"></div>
+        <div style="flex: 1;">
+          <div style="height: 16px; background: #f0f0f0; border-radius: 4px; margin-bottom: 8px; width: 60%;"></div>
+          <div style="height: 12px; background: #f0f0f0; border-radius: 4px; width: 40%;"></div>
+        </div>
+        <div style="width: 60px; height: 30px; background: #f0f0f0; border-radius: 4px;"></div>
+      </div>
+    </div>
+
+    <div v-else class="basic">
       <div class="basic-icon" @click="toOtherInfo">
         <img :src="blog.icon || '/imgs/icons/default-icon.png'" alt="">
       </div>
       <div class="basic-info">
-        <div class="name">{{blog.name}}</div>
-        <span class="time">{{formatTime(new Date(blog.createTime))}}</span>
+        <div class="name">{{blog.name || '未知用户'}}</div>
+        <span class="time">{{blog.createTime ? formatTime(new Date(blog.createTime)) : ''}}</span>
       </div>
       <div style="width: 20%">
-        <div class="logout-btn" @click="follow" v-show="!user || user.id !== blog.userId ">
+        <div class="logout-btn" @click="follow" v-show="!pageLoading.user && user && user.id !== blog.userId">
           {{followed ? '取消关注' : '关注'}}
         </div>
       </div>
+    </div>
+    <!-- 博客内容 -->
+    <div v-if="pageLoading.blog" style="padding: 15px;">
+      <div style="height: 16px; background: #f0f0f0; border-radius: 4px; margin-bottom: 10px;"></div>
+      <div style="height: 16px; background: #f0f0f0; border-radius: 4px; margin-bottom: 10px; width: 80%;"></div>
+      <div style="height: 16px; background: #f0f0f0; border-radius: 4px; margin-bottom: 10px; width: 90%;"></div>
+      <div style="height: 16px; background: #f0f0f0; border-radius: 4px; width: 70%;"></div>
+    </div>
 
+    <div v-else class="blog-text" v-html="blog.content || '暂无内容'">
     </div>
-    <div class="blog-text" v-html="blog.content">
+    <!-- 商店信息 -->
+    <div v-if="pageLoading.shop" class="shop-basic">
+      <div style="width: 60px; height: 60px; background: #f0f0f0; border-radius: 8px; margin-right: 15px;"></div>
+      <div style="width: 80%">
+        <div style="height: 18px; background: #f0f0f0; border-radius: 4px; margin-bottom: 8px; width: 60%;"></div>
+        <div style="height: 16px; background: #f0f0f0; border-radius: 4px; margin-bottom: 8px; width: 40%;"></div>
+        <div style="height: 14px; background: #f0f0f0; border-radius: 4px; width: 50%;"></div>
+      </div>
     </div>
-    <div class="shop-basic">
+
+    <div v-else-if="shop && shop.id" class="shop-basic">
       <div class="shop-icon">
-        <img :src="shop.image" alt="">
+        <img :src="shop.image || '/imgs/icons/default-shop.png'" alt="">
       </div>
       <div style="width: 80%">
-        <div class="name">{{shop.name}}</div>
+        <div class="name">{{shop.name || '未知商店'}}</div>
         <div>
           <el-rate
-              v-model="shop.score/10">
+              v-model="shopScore"
+              disabled>
           </el-rate>
         </div>
-          <div class="shop-avg">￥{{shop.avgPrice}}/人</div>
+          <div class="shop-avg">￥{{shop.avgPrice || 0}}/人</div>
       </div>
     </div>
-    <div class="zan-box">
+    <!-- 点赞区域 -->
+    <div v-if="pageLoading.likes || pageLoading.blog" class="zan-box">
+      <div>
+        <svg t="1646634642977" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2187" width="20" height="20">
+          <path d="M160 944c0 8.8-7.2 16-16 16h-32c-26.5 0-48-21.5-48-48V528c0-26.5 21.5-48 48-48h32c8.8 0 16 7.2 16 16v448zM96 416c-53 0-96 43-96 96v416c0 53 43 96 96 96h96c17.7 0 32-14.3 32-32V448c0-17.7-14.3-32-32-32H96zM505.6 64c16.2 0 26.4 8.7 31 13.9 4.6 5.2 12.1 16.3 10.3 32.4l-23.5 203.4c-4.9 42.2 8.6 84.6 36.8 116.4 28.3 31.7 68.9 49.9 111.4 49.9h271.2c6.6 0 10.8 3.3 13.2 6.1s5 7.5 4 14l-48 303.4c-6.9 43.6-29.1 83.4-62.7 112C815.8 944.2 773 960 728.9 960h-317c-33.1 0-59.9-26.8-59.9-59.9v-455c0-6.1 1.7-12 5-17.1 69.5-109 106.4-234.2 107-364h41.6z m0-64h-44.9C427.2 0 400 27.2 400 60.7c0 127.1-39.1 251.2-112 355.3v484.1c0 68.4 55.5 123.9 123.9 123.9h317c122.7 0 227.2-89.3 246.3-210.5l47.9-303.4c7.8-49.4-30.4-94.1-80.4-94.1H671.6c-50.9 0-90.5-44.4-84.6-95l23.5-203.4C617.7 55 568.7 0 505.6 0z" fill="#ccc"></path>
+        </svg>
+      </div>
+      <div class="zan-list">
+        <div style="display: flex; align-items: center;">
+          <div style="width: 24px; height: 24px; background: #f0f0f0; border-radius: 50%; margin-right: 5px;" v-for="i in 3" :key="i"></div>
+          <div style="margin-left:10px; height: 16px; background: #f0f0f0; border-radius: 4px; width: 60px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div v-else class="zan-box">
       <div>
         <svg t="1646634642977" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2187" width="20" height="20">
           <path d="M160 944c0 8.8-7.2 16-16 16h-32c-26.5 0-48-21.5-48-48V528c0-26.5 21.5-48 48-48h32c8.8 0 16 7.2 16 16v448zM96 416c-53 0-96 43-96 96v416c0 53 43 96 96 96h96c17.7 0 32-14.3 32-32V448c0-17.7-14.3-32-32-32H96zM505.6 64c16.2 0 26.4 8.7 31 13.9 4.6 5.2 12.1 16.3 10.3 32.4l-23.5 203.4c-4.9 42.2 8.6 84.6 36.8 116.4 28.3 31.7 68.9 49.9 111.4 49.9h271.2c6.6 0 10.8 3.3 13.2 6.1s5 7.5 4 14l-48 303.4c-6.9 43.6-29.1 83.4-62.7 112C815.8 944.2 773 960 728.9 960h-317c-33.1 0-59.9-26.8-59.9-59.9v-455c0-6.1 1.7-12 5-17.1 69.5-109 106.4-234.2 107-364h41.6z m0-64h-44.9C427.2 0 400 27.2 400 60.7c0 127.1-39.1 251.2-112 355.3v484.1c0 68.4 55.5 123.9 123.9 123.9h317c122.7 0 227.2-89.3 246.3-210.5l47.9-303.4c7.8-49.4-30.4-94.1-80.4-94.1H671.6c-50.9 0-90.5-44.4-84.6-95l23.5-203.4C617.7 55 568.7 0 505.6 0z" p-id="2188" :fill="blog.isLike ? '#ff6633' : '#82848a'"></path>
@@ -79,54 +161,89 @@
         <div class="user-icon-mini" v-for="u in likes" :key="u.id">
           <img :src="u.icon || '/imgs/icons/default-icon.png'" alt="">
         </div>
-        <div style="margin-left:10px;text-align: center;line-height: 24px;">{{blog.liked}}人点赞</div>
+        <div style="margin-left:10px;text-align: center;line-height: 24px;">{{blog.liked || 0}}人点赞</div>
       </div>
     </div>
     <div class="blog-divider"></div>
     <div class="blog-comments">
       <div class="comments-head">
-        <div>网友评价 <span>（119）</span></div>
+        <div>网友评价 <span>（{{commentsTotal || blog.comments || comments.list.length || 0}}）</span></div>
         <div><i class="el-icon-arrow-right"></i></div>
       </div>
-      <div class="comment-list">
-        <div class="comment-box" v-for="i in 3" :key="i">
-          <div class="comment-icon">
-            <img
-                src="https://p0.meituan.net/userheadpicbackend/57e44d6eba01aad0d8d711788f30a126549507.jpg%4048w_48h_1e_1c_1l%7Cwatermark%3D0"
-                alt="">
-          </div>
-          <div class="comment-info">
-            <div class="comment-user">叶小乙 <span>Lv5</span></div>
-            <div style="display: flex;">
-              打分
-              <el-rate disabled v-model="4.5"></el-rate>
-            </div>
-            <div style="padding: 5px 0; font-size: 14px">
-              某平台上买的券，价格可以当工作餐吃，虽然价格便宜，但是这家店一点都没有...
-            </div>
-            <div class="comment-images">
-              <img
-                  src="https://qcloud.dpfile.com/pc/6T7MfXzx7USPIkSy7jzm40qZSmlHUF2jd-FZUL6WpjE9byagjLlrseWxnl1LcbuSGybIjx5eX6WNgCPvcASYAw.jpg"
-                  alt="">
-              <img
-                  src="https://qcloud.dpfile.com/pc/sZ5q-zgglv4VXEWU71xCFjnLM_jUHq-ylq0GKivtrz3JksWQ1f7oBWZsxm1DWgcaGybIjx5eX6WNgCPvcASYAw.jpg"
-                  alt="">
-              <img
-                  src="https://qcloud.dpfile.com/pc/xZy6W4NwuRFchlOi43DVLPFsx7KWWvPqifE1JTe_jreqdsBYA9CFkeSm2ZlF0OVmGybIjx5eX6WNgCPvcASYAw.jpg"
-                  alt="">
-              <img
-                  src="https://qcloud.dpfile.com/pc/xZy6W4NwuRFchlOi43DVLPFsx7KWWvPqifE1JTe_jreqdsBYA9CFkeSm2ZlF0OVmGybIjx5eX6WNgCPvcASYAw.jpg"
-                  alt="">
-            </div>
-            <div>
-              浏览641 &nbsp;&nbsp;&nbsp;&nbsp;评论5
-            </div>
-          </div>
+
+      <!-- 评论加载状态 -->
+      <div v-if="comments.loading" style="text-align: center; padding: 20px;">
+        <i class="el-icon-loading" style="font-size: 20px; color: #409EFF;"></i>
+        <div style="margin-top: 10px; color: #666;">加载评论中...</div>
+      </div>
+
+      <!-- 评论错误状态 -->
+      <div v-else-if="comments.error" style="text-align: center; padding: 20px;">
+        <i class="el-icon-warning" style="font-size: 20px; color: #F56C6C;"></i>
+        <div style="margin-top: 10px; color: #666;">{{comments.errorMsg}}</div>
+        <el-button size="mini" @click="loadComments" style="margin-top: 10px;">重试</el-button>
+      </div>
+
+      <!-- 评论列表 -->
+      <div v-else class="comment-list">
+        <!-- 无评论状态 -->
+        <div v-if="comments.list.length === 0" style="text-align: center; padding: 20px; color: #999;">
+          <i class="el-icon-chat-dot-round" style="font-size: 24px;"></i>
+          <div style="margin-top: 10px;">暂无评论，快来抢沙发吧~</div>
         </div>
-        <div
-            style="display: flex; justify-content: space-between;padding: 15px 0; border-top: 1px solid #f1f1f1; margin-top: 10px;">
-          <div>查看全部119条评价</div>
-          <div><i class="el-icon-arrow-right"></i></div>
+
+        <!-- 评论项 -->
+        <div v-else>
+          <div class="comment-box" v-for="comment in comments.list" :key="comment.id">
+            <div class="comment-icon">
+              <img :src="comment.userIcon || '/imgs/icons/default-icon.png'" alt="">
+            </div>
+            <div class="comment-info">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="comment-user">{{comment.userNickName || '匿名用户'}}</div>
+                <div v-if="user && user.id === comment.userId" style="color: #999; font-size: 12px; cursor: pointer;" @click="deleteComment(comment)">
+                  <i class="el-icon-delete"></i>
+                </div>
+              </div>
+              <div style="padding: 5px 0; font-size: 14px">
+                {{comment.content}}
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                <div style="color: #999; font-size: 12px;">
+                  {{formatCommentTime(comment.createTime)}}
+                </div>
+                <div style="display: flex; align-items: center;">
+                  <span style="color: #999; font-size: 12px; margin-right: 15px; cursor: pointer;" @click="showCommentInput(comment)">
+                    <i class="el-icon-chat-dot-round"></i> 回复 {{comment.replies ? comment.replies.length : 0}}
+                  </span>
+                  <span style="color: #999; font-size: 12px; cursor: pointer;" @click="likeComment(comment)">
+                    <i :class="comment.isLiked ? 'el-icon-star-on' : 'el-icon-star-off'"
+                       :style="{color: comment.isLiked ? '#ff6633' : '#999'}"></i>
+                    {{comment.liked || 0}}
+                  </span>
+                </div>
+              </div>
+
+              <!-- 回复列表 -->
+              <div v-if="comment.replies && comment.replies.length > 0" style="margin-top: 10px; padding-left: 20px; border-left: 2px solid #f0f0f0;">
+                <div v-for="reply in comment.replies" :key="reply.id" style="margin-bottom: 10px; padding: 8px; background: #f9f9f9; border-radius: 4px;">
+                  <div style="font-size: 12px; color: #666; margin-bottom: 5px;">
+                    <strong>{{reply.userNickName || '匿名用户'}}</strong>
+                    <span style="margin-left: 10px;">{{formatCommentTime(reply.createTime)}}</span>
+                  </div>
+                  <div style="font-size: 13px;">{{reply.content}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 查看更多评论 -->
+          <div v-if="(commentsTotal || blog.comments || comments.total || 0) > comments.list.length"
+              style="display: flex; justify-content: space-between;padding: 15px 0; border-top: 1px solid #f1f1f1; margin-top: 10px; cursor: pointer;"
+              @click="loadMoreComments">
+            <div>查看全部{{commentsTotal || blog.comments || comments.total || comments.list.length || 0}}条评价</div>
+            <div><i class="el-icon-arrow-right"></i></div>
+          </div>
         </div>
       </div>
     </div>
@@ -144,8 +261,48 @@
     <div style="width: 40%">
     </div>
     <div class="foot-box">
-      <div class="foot-view"><i class="el-icon-chat-square"></i></div>
+      <div class="foot-view" @click="showCommentInput"><i class="el-icon-chat-square"></i></div>
     </div>
+  </div>
+
+  <!-- 评论输入框 -->
+  <div v-if="commentInput.show" class="comment-input-overlay" @click="hideCommentInput">
+    <div class="comment-input-container" @click.stop>
+      <div class="comment-input-header">
+        <span v-if="commentInput.parentId === 0">发表评论</span>
+        <span v-else>回复 {{commentInput.parentComment?.userNickName || '用户'}}</span>
+        <i class="el-icon-close" @click="hideCommentInput"></i>
+      </div>
+      <div class="comment-input-body">
+        <el-input
+          type="textarea"
+          v-model="commentInput.content"
+          :placeholder="commentInput.placeholder"
+          :rows="4"
+          maxlength="500"
+          show-word-limit
+          resize="none">
+        </el-input>
+      </div>
+      <div class="comment-input-footer">
+        <el-button @click="hideCommentInput">取消</el-button>
+        <el-button
+          type="primary"
+          @click="submitComment"
+          :loading="commentInput.submitting"
+          :disabled="!commentInput.content.trim()">
+          发布
+        </el-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 图片放大查看模态框 -->
+  <div v-if="imageModal.show" class="image-modal-overlay" @click="hideImageModal">
+    <div class="image-modal-close" @click="hideImageModal">
+      <i class="el-icon-close"></i>
+    </div>
+    <img :src="imageModal.src" alt="" class="image-modal-content" @click.stop>
   </div>
 </div>
 <script src="./js/vue.js"></script>
@@ -154,20 +311,77 @@
 <script src="./js/element.js"></script>
 <script src="./js/common.js"></script>
 <script>
+  console.log("=== 页面脚本开始执行 ===");
+  console.log("Vue是否存在:", typeof Vue);
+  console.log("axios是否存在:", typeof axios);
+  console.log("util是否存在:", typeof util);
+  console.log("ELEMENT是否存在:", typeof ELEMENT);
+  console.log("当前document.readyState:", document.readyState);
   let each = function (ary, callback) {
     for (let i = 0, l = ary.length; i < l; i++) {
       if (callback(ary[i], i) === false) break
     }
   }
-  const app = new Vue({
+  console.log("=== 开始创建Vue实例 ===");
+  console.log("Vue是否可用:", typeof Vue !== 'undefined');
+  console.log("axios是否可用:", typeof axios !== 'undefined');
+  console.log("util是否可用:", typeof util !== 'undefined');
+
+  try {
+    console.log("=== 进入try块 ===");
+    console.log("准备创建Vue实例...");
+    const app = new Vue({
     el: "#app",
     data: {
       util,
-      blog: {},
+      blog: {
+        title: '',
+        content: '',
+        images: [],
+        liked: 0,
+        isLike: false,
+        userId: null,
+        shopId: null,
+        icon: '',
+        name: '',
+        createTime: null,
+        comments: 0  // 添加评论总数字段（与后端字段名一致）
+      },
       shop: {},
       likes: [],
       user: {}, // 登录用户
       followed: false, // 是否关注了
+      // 评论相关状态
+      comments: {
+        list: [],
+        total: 0,
+        loading: false,
+        error: false,
+        errorMsg: '',
+        page: 1,
+        size: 5
+      },
+      // 评论输入相关状态
+      commentInput: {
+        show: false,
+        content: '',
+        parentId: 0,
+        parentComment: null,
+        placeholder: '写下你的评论...',
+        submitting: false
+      },
+      // 图片模态框相关状态
+      imageModal: {
+        show: false,
+        src: ''
+      },
+      // 页面加载状态
+      pageLoading: {
+        blog: false,
+        shop: false,
+        likes: false,
+        user: false
+      },
       _width: 0,
       duration: 300,
       container: null,
@@ -184,20 +398,146 @@
       sensitivity: 60,
       resistance: 0.3
     },
+    computed: {
+      shopScore: {
+        get() {
+          return this.shop.score ? this.shop.score/10 : 0;
+        },
+        set(val) {
+          if(this.shop.score) {
+            this.shop.score = val * 10;
+          }
+        }
+      },
+      // 计算评论总数，确保显示正确
+      commentsTotal() {
+        // 获取各种可能的数据源
+        const apiTotal = this.comments.total;
+        const listLength = this.comments.list ? this.comments.list.length : 0;
+        const blogCommentsCount = this.blog.comments;  // 使用正确的字段名
+
+        console.log("计算评论总数 - API total:", apiTotal, "列表长度:", listLength, "博客评论数:", blogCommentsCount);
+
+        // 方案1：优先使用博客数据中的评论总数（后端提供的准确数据）
+        if (typeof blogCommentsCount === 'number' && blogCommentsCount >= 0) {
+          console.log("使用博客数据中的评论总数:", blogCommentsCount);
+          return blogCommentsCount;
+        }
+
+        // 方案2：使用API返回的total（如果是有效数字）
+        if (typeof apiTotal === 'number' && apiTotal >= 0) {
+          console.log("使用API返回的total:", apiTotal);
+          return apiTotal;
+        }
+
+        // 方案3：使用当前加载的评论列表长度作为备用
+        console.log("使用评论列表长度作为备用:", listLength);
+        return listLength;
+      }
+    },
     created() {
+      console.log("=== Vue实例created钩子执行 ===");
+      console.log("this对象:", this);
+      console.log("util对象:", util);
       let id = util.getUrlParam("id");
-      this.queryBlogById(id);
+      console.log("获取到的博客ID:", id);
+      if (id) {
+        console.log("=== 开始调用queryBlogById ===");
+        this.queryBlogById(id);
+        console.log("=== 开始调用loadComments ===");
+        this.loadComments(id);
+      } else {
+        console.error("缺少博客ID参数");
+        this.$message.error("缺少博客ID参数");
+      }
+    },
+    mounted() {
+      console.log("=== Vue实例mounted钩子执行 ===");
+      console.log("DOM已挂载，blog数据:", this.blog);
+      console.log("pageLoading状态:", this.pageLoading);
     },
     methods: {
       init() {
         // 获得父容器节点
         this.container = this.$refs.swiper
+        // 检查容器是否存在
+        if (!this.container) {
+          console.warn('轮播图容器不存在，跳过初始化');
+          return;
+        }
         // 获得所有的子节点
         this.items = this.container.querySelectorAll('.swiper-item')
+        
+        // 添加图片加载完成的事件处理
+        if (this.items && this.items.length > 0) {
+          this.items.forEach(item => {
+            const img = item.querySelector('img');
+            if (img) {
+              // 如果图片已经加载完成
+              if (img.complete) {
+                console.log('图片已加载完成，调整容器高度');
+                this.updateContainerHeight(img);
+              }
+              // 图片加载完成时更新
+              img.onload = () => {
+                console.log('图片加载完成，调整容器高度');
+                this.updateContainerHeight(img);
+                this.updateItemWidth();
+                this.setTransform();
+              }
+            }
+          });
+        }
+        
         this.updateItemWidth()
         this.setTransform()
         this.setTransition('none')
       },
+
+      // 动态高度轮播初始化
+      initDynamicSwiper() {
+        this.container = this.$refs.swiper;
+        if (!this.container) return;
+
+        this.items = this.container.querySelectorAll('.swiper-item');
+        if (this.items.length <= 1) return;
+
+        // 显示第一张图片，隐藏其他图片
+        this.items.forEach((item, index) => {
+          if (index === 0) {
+            item.style.display = 'block';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+
+        this.active = 0;
+      },
+      
+      // 更新容器高度适应图片
+      updateContainerHeight(img) {
+        if (!this.container || !img) return;
+
+        // 获取图片的原始尺寸
+        const imgWidth = img.naturalWidth;
+        const imgHeight = img.naturalHeight;
+
+        if (imgWidth && imgHeight) {
+          // 计算宽高比
+          const ratio = imgHeight / imgWidth;
+
+          // 获取容器宽度
+          const containerWidth = this.container.offsetWidth;
+
+          // 计算合适的高度，移除最大高度限制，让图片完整显示
+          let newHeight = containerWidth * ratio;
+          newHeight = Math.max(newHeight, 500); // 增加最小高度保证 200px * 2.5 = 500px
+
+          console.log('调整容器高度:', newHeight, '图片尺寸:', imgWidth, 'x', imgHeight);
+          this.container.style.height = newHeight + 'px';
+        }
+      },
+
       goBack() {
         history.back();
       },
@@ -209,57 +549,202 @@
         }
       },
       queryBlogById(id) {
+        if (!id) {
+          this.$message.error("博客ID不能为空");
+          return;
+        }
+
+        console.log("开始查询博客详情，ID:", id);
+        this.pageLoading.blog = true;
         axios.get("/blog/" + id)
-          .then(({data}) => {
-            data.images = data.images.split(",")
-            this.blog = data;
-            this.$nextTick(this.init);
-            this.queryShopById(data.shopId)
+          .then((data) => {
+            console.log("博客数据获取成功:", data);
+            const blogData = data.data;
+            console.log("博客数据详情:", blogData);
+            console.log("博客评论数量字段:", blogData.comments);
+            
+            // 处理博客数据
+            if (blogData) {
+              // 处理图片
+              if (blogData.images) {
+                blogData.images = blogData.images.split(",");
+                
+                // 预加载图片
+                if (blogData.images.length > 0) {
+                  const preloadImages = [];
+                  blogData.images.forEach(imgSrc => {
+                    const img = new Image();
+                    img.src = imgSrc;
+                    img.onload = () => {
+                      console.log('图片预加载完成:', imgSrc);
+                    };
+                    preloadImages.push(img);
+                  });
+                }
+              } else {
+                blogData.images = [];
+              }
+              
+              // 处理标题和内容
+              if (blogData.content) {
+                // 检查是否已有标题
+                if (!blogData.title) {
+                  // 特殊处理: 检查是否包含"杭州周末好去处｜💰50就可以骑马啦🐎"格式的内容
+                  const specialFormatMatch = blogData.content.match(/杭州周末好去处｜💰[\d]+就可以骑马啦🐎/);
+                  if (specialFormatMatch) {
+                    blogData.title = specialFormatMatch[0].trim();
+                    blogData.content = blogData.content.replace(specialFormatMatch[0], '').trim();
+                  } else {
+                    // 尝试从内容中提取标题
+                    // 方法1: 检查第一个div标签内容
+                    let contentMatch = blogData.content.match(/<div[^>]*>(.*?)<\/div>/);
+                    if (contentMatch && contentMatch[1]) {
+                      blogData.title = contentMatch[1].trim();
+                      // 从内容中移除标题部分
+                      blogData.content = blogData.content.replace(contentMatch[0], '').trim();
+                    } else {
+                      // 方法2: 检查第一行文本
+                      contentMatch = blogData.content.match(/^([^<>\n]+)/);
+                      if (contentMatch && contentMatch[1]) {
+                        blogData.title = contentMatch[1].trim();
+                        // 从内容中移除标题部分
+                        blogData.content = blogData.content.replace(contentMatch[1], '').trim();
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            this.blog = blogData;
+            console.log("博客数据已赋值:", this.blog);
+            console.log("博客评论数量:", this.blog.comments);
+            
+            // 只有当博客有图片时才初始化轮播图
+            if (this.blog.images && this.blog.images.length > 0) {
+              this.$nextTick(() => {
+                // 确保DOM已经更新并且swiper容器存在
+                if (this.$refs.swiper) {
+                  if (this.$refs.swiper.classList.contains('dynamic-height')) {
+                    this.initDynamicSwiper();
+                  } else {
+                    this.init();
+                  }
+                } else {
+                  console.warn('轮播图容器未找到，可能是DOM尚未更新');
+                }
+              });
+            }
+
+            // 加载相关数据
+            if (data.shopId) {
+              this.queryShopById(data.shopId);
+            }
             this.queryLikeList(id);
             this.queryLoginUser();
           })
-          .catch(this.$message.error)
+          .catch(err => {
+            console.error("获取博客详情失败:", err);
+            this.$message.error("获取博客详情失败，请稍后重试");
+          })
+          .finally(() => {
+            this.pageLoading.blog = false;
+          })
       },
       queryShopById(shopId) {
+        if (!shopId) {
+          console.warn("商店ID为空，跳过商店信息查询");
+          return;
+        }
+
+        this.pageLoading.shop = true;
         axios.get("/shop/" + shopId)
-          .then(({data}) => {
-            data.image = data.images.split(",")[0]
-            this.shop = data
-          })
-          .catch(this.$message.error)
-      },
-      queryLikeList(id){
-        axios.get("/blog/likes/" + id)
-          .then(({data}) => this.likes = data)
-          .catch(this.$message.error)
-      },
-      addLike(){
-        axios.put("/blog/like/" +this.blog.id)
-          .then(({data}) => {
-            axios.get("/blog/" + this.blog.id)
-              .then(({data}) => {
-                data.images = data.images.split(",")
-                this.blog = data;
-                this.queryLikeList(this.blog.id);
-              })
-              .catch(this.$message.error)
+          .then((data) => {
+            const shopData = data.data;
+            if (shopData && shopData.images) {
+              shopData.image = shopData.images.split(",")[0];
+            } else {
+              shopData.image = "";
+            }
+            this.shop = shopData;
           })
           .catch(err => {
-            this.$message.error(err)
+            console.error("获取商店信息失败:", err);
+            this.$message.error("获取商店信息失败");
+          })
+          .finally(() => {
+            this.pageLoading.shop = false;
+          })
+      },
+      queryLikeList(id){
+        if (!id) {
+          console.warn("博客ID为空，跳过点赞列表查询");
+          return;
+        }
+
+        this.pageLoading.likes = true;
+        axios.get("/blog/likes/" + id)
+          .then((data) => {
+            this.likes = data.data || [];
+          })
+          .catch(err => {
+            console.error("获取点赞列表失败:", err);
+            this.likes = [];
+          })
+          .finally(() => {
+            this.pageLoading.likes = false;
+          })
+      },
+      addLike(){
+        if (!this.blog.id) {
+          this.$message.error("博客信息异常，无法点赞");
+          return;
+        }
+
+        axios.put("/blog/like/" + this.blog.id)
+          .then((data) => {
+            // 重新获取博客信息和点赞列表
+            axios.get("/blog/" + this.blog.id)
+              .then((blogData) => {
+                const updatedBlogData = blogData.data;
+                if (updatedBlogData && updatedBlogData.images) {
+                  updatedBlogData.images = updatedBlogData.images.split(",");
+                } else {
+                  updatedBlogData.images = [];
+                }
+                this.blog = updatedBlogData;
+                this.queryLikeList(this.blog.id);
+                this.$message.success(updatedBlogData.isLike ? "点赞成功" : "取消点赞成功");
+              })
+              .catch(err => {
+                console.error("获取更新后的博客信息失败:", err);
+                this.$message.error("点赞状态更新失败");
+              })
+          })
+          .catch(err => {
+            console.error("点赞操作失败:", err);
+            this.$message.error("点赞操作失败，请稍后重试");
           })
       },
       isFollowed(){
         axios.get("/follow/or/not/" + this.blog.userId)
-          .then(({data}) => this.followed = data)
-          .catch(this.$message.error)
+          .then((data) => {
+            this.followed = data.data;
+          })
+          .catch(err => {
+            console.error("获取关注状态失败:", err);
+          })
       },
       follow(){
         axios.put("/follow/" + this.blog.userId + "/" + !this.followed)
-          .then(() => {
+          .then((data) => {
             this.$message.success(this.followed ? "已取消关注" : "已关注")
             this.followed = !this.followed
           })
-          .catch(this.$message.error)
+          .catch(err => {
+            console.error("关注操作失败:", err);
+            this.$message.error("关注操作失败，请稍后重试");
+          })
       },
       formatTime(b) {
         return b.getFullYear() + "年" + (b.getMonth() + 1) + "月" + b.getDate() + "日 ";
@@ -269,24 +754,512 @@
         return m;
       },
       queryLoginUser(){
+        this.pageLoading.user = true;
         // 查询用户信息
         axios.get("/user/me")
-          .then(({ data }) => {
+          .then((data) => {
             // 保存用户
-            this.user = data;
-            if(this.user.id !== this.blog.userId){
+            this.user = data.data || {};
+            if(this.user.id && this.blog.userId && this.user.id !== this.blog.userId){
               this.isFollowed();
             }
           })
-          .catch(console.log)
+          .catch(err => {
+            console.log("获取用户信息失败:", err);
+            this.user = {};
+          })
+          .finally(() => {
+            this.pageLoading.user = false;
+          })
       },
+
+      // ========== 图片模态框相关方法 ==========
+
+      /**
+       * 显示图片放大查看
+       */
+      showImageModal(imageSrc) {
+        this.imageModal.show = true;
+        this.imageModal.src = imageSrc;
+        // 阻止页面滚动
+        document.body.style.overflow = 'hidden';
+      },
+
+      /**
+       * 隐藏图片放大查看
+       */
+      hideImageModal() {
+        this.imageModal.show = false;
+        this.imageModal.src = '';
+        // 恢复页面滚动
+        document.body.style.overflow = 'auto';
+      },
+
+      // ========== 评论相关方法 ==========
+
+      /**
+       * 加载评论列表
+       */
+      loadComments(blogId) {
+        const id = blogId || util.getUrlParam("id");
+        if (!id) {
+          console.warn("博客ID为空，无法加载评论");
+          return;
+        }
+
+        console.log("=== 开始加载评论 ===");
+        console.log("博客ID:", id);
+        console.log("当前页码:", this.comments.page);
+        console.log("每页大小:", this.comments.size);
+
+        this.comments.loading = true;
+        this.comments.error = false;
+        this.comments.errorMsg = '';
+
+        const apiUrl = `/blog-comments/blog/${id}?page=${this.comments.page}&size=${this.comments.size}`;
+        console.log("API请求URL:", apiUrl);
+
+        axios.get(apiUrl)
+          .then((response) => {
+            console.log("=== API响应成功 ===");
+            console.log("完整响应对象:", response);
+            
+            // 检查响应格式并处理不同类型的响应
+            let responseData = response;
+            let records = null;
+            let total = null;
+            
+            // 首先尝试找到评论数据
+            // 情况1: 标准Result<T>格式 {success: true, data: {records: [...], total: 10}}
+            if (responseData.success === true && responseData.data && responseData.data.records) {
+              console.log("标准Result<T>格式响应");
+              records = responseData.data.records;
+              total = responseData.data.total;
+            }
+            // 情况2: 响应中有data字段，但没有success字段 {data: {records: [...], total: 10}}
+            else if (responseData.data && responseData.data.records) {
+              console.log("包含data字段的响应");
+              records = responseData.data.records;
+              total = responseData.data.total;
+            }
+            // 情况3: 响应本身就是分页数据（没有data包装，但有records字段）{records: [...], total: 10}
+            else if (responseData.records) {
+              console.log("直接分页数据格式");
+              records = responseData.records;
+              total = responseData.total;
+            }
+            // 情况4: 响应是数组 [...]
+            else if (Array.isArray(responseData)) {
+              console.log("响应直接是数组");
+              records = responseData;
+              total = responseData.length;
+            }
+            // 情况5: 其他未知格式，尝试智能处理
+            else {
+              console.warn("未知响应格式，尝试智能解析:", responseData);
+              
+              // 尝试查找可能的数组字段
+              for (const key in responseData) {
+                if (Array.isArray(responseData[key])) {
+                  console.log("找到可能的评论数组字段:", key);
+                  records = responseData[key];
+                  break;
+                }
+              }
+              
+              // 尝试查找可能的总数字段
+              for (const key in responseData) {
+                if (typeof responseData[key] === 'number' && 
+                   (key.toLowerCase().includes('total') || key.toLowerCase().includes('count'))) {
+                  console.log("找到可能的总数字段:", key);
+                  total = responseData[key];
+                  break;
+                }
+              }
+              
+              // 如果没有找到总数，使用数组长度
+              if (records && total === null) {
+                total = records.length;
+                console.log("使用数组长度作为总数:", total);
+              }
+            }
+            
+            // 如果无法找到评论数据
+            if (!records) {
+              console.warn("无法从响应中提取评论数据");
+              this.comments.list = [];
+              this.comments.total = 0;
+              this.comments.error = true;
+              this.comments.errorMsg = "无法解析评论数据";
+              return;
+            }
+            
+            // 设置评论数据
+            this.comments.list = records;
+            this.comments.total = total !== null ? total : records.length;
+            
+            // 数据类型验证
+            if (typeof this.comments.total !== 'number' || this.comments.total < 0) {
+              console.warn("评论总数无效，使用记录数量作为备用");
+              this.comments.total = this.comments.list.length;
+            }
+
+            // 同步更新博客数据中的评论总数
+            if (this.blog) {
+              this.blog.comments = this.comments.total;
+            }
+
+            // 清除错误状态
+            this.comments.error = false;
+            this.comments.errorMsg = '';
+
+            console.log("=== 最终设置的评论数据 ===");
+            console.log("评论列表:", this.comments.list);
+            console.log("评论总数:", this.comments.total);
+
+            // 强制触发Vue响应式更新
+            this.$forceUpdate();
+
+            // 确保DOM更新后再次验证和强制更新
+            this.$nextTick(() => {
+              console.log("DOM更新后的评论总数:", this.comments.total);
+              console.log("DOM更新后的博客评论数:", this.blog.comments);
+              console.log("DOM更新后的计算属性值:", this.commentsTotal);
+
+              const commentsHeadElement = document.querySelector('.comments-head span');
+              if (commentsHeadElement) {
+                console.log("DOM中显示的评论数量:", commentsHeadElement.textContent);
+              }
+
+              // 再次强制更新以确保显示正确
+              this.$forceUpdate();
+            });
+          })
+          .catch(err => {
+            console.error("=== 获取评论失败 ===");
+            console.error("错误对象:", err);
+            console.error("错误响应:", err.response);
+            console.error("错误状态码:", err.response?.status);
+            console.error("错误数据:", err.response?.data);
+
+            this.comments.error = true;
+            this.comments.errorMsg = "获取评论失败，请稍后重试";
+            this.comments.list = [];
+            this.comments.total = 0;
+            
+            // 显示错误提示
+            this.$message.error("获取评论失败，请稍后重试");
+          })
+          .finally(() => {
+            this.comments.loading = false;
+            console.log("=== 评论加载完成 ===");
+            console.log("最终评论状态:", {
+              list: this.comments.list,
+              total: this.comments.total,
+              loading: this.comments.loading,
+              error: this.comments.error
+            });
+          })
+      },
+
+      /**
+       * 加载更多评论
+       */
+      loadMoreComments() {
+        this.comments.page++;
+        this.loadComments();
+      },
+
+      /**
+       * 格式化评论时间
+       */
+      formatCommentTime(timeStr) {
+        if (!timeStr) return '';
+
+        try {
+          const time = new Date(timeStr);
+          const now = new Date();
+          const diff = now - time;
+
+          // 小于1分钟
+          if (diff < 60000) {
+            return '刚刚';
+          }
+          // 小于1小时
+          if (diff < 3600000) {
+            return Math.floor(diff / 60000) + '分钟前';
+          }
+          // 小于1天
+          if (diff < 86400000) {
+            return Math.floor(diff / 3600000) + '小时前';
+          }
+          // 小于7天
+          if (diff < 604800000) {
+            return Math.floor(diff / 86400000) + '天前';
+          }
+          // 超过7天显示具体日期
+          return time.getFullYear() + '年' + (time.getMonth() + 1) + '月' + time.getDate() + '日';
+        } catch (e) {
+          console.error("时间格式化失败:", e);
+          return timeStr;
+        }
+      },
+
+      /**
+       * 点赞评论
+       */
+      likeComment(comment) {
+        if (!comment || !comment.id) {
+          this.$message.error("评论信息异常");
+          return;
+        }
+
+        // 防止重复点击
+        if (comment.liking) {
+          return;
+        }
+        comment.liking = true;
+
+        axios.put(`/blog-comments/like/${comment.id}`)
+          .then((response) => {
+            console.log("点赞响应:", response);
+            
+            // 无论响应格式如何，只要没有明确的失败信息，就视为成功
+            if (response && response.success === false) {
+              console.warn("点赞失败:", response.errorMsg);
+              this.$message.error(response.errorMsg || "点赞失败");
+              return;
+            }
+
+            // 临时更新UI状态，提供即时反馈
+            comment.isLiked = !comment.isLiked;
+            if (comment.isLiked) {
+              comment.liked = (comment.liked || 0) + 1;
+            } else {
+              comment.liked = Math.max(0, (comment.liked || 1) - 1);
+            }
+            
+            // 显示成功消息
+            this.$message.success(comment.isLiked ? "点赞成功" : "取消点赞成功");
+            
+            // 为确保数据一致性，延迟重新加载评论
+            setTimeout(() => {
+              this.loadComments();
+            }, 300);
+          })
+          .catch(err => {
+            console.error("评论点赞失败:", err);
+            this.$message.error("点赞失败，请稍后重试");
+          })
+          .finally(() => {
+            comment.liking = false;
+          })
+      },
+
+      /**
+       * 显示评论输入框
+       */
+      showCommentInput(parentComment = null) {
+        // 检查用户是否登录
+        if (!this.user || !this.user.id) {
+          this.$message.warning("请先登录后再评论");
+          return;
+        }
+
+        this.commentInput.show = true;
+        this.commentInput.content = '';
+
+        if (parentComment) {
+          // 回复评论
+          this.commentInput.parentId = parentComment.id;
+          this.commentInput.parentComment = parentComment;
+          this.commentInput.placeholder = `回复 ${parentComment.userNickName || '用户'}...`;
+        } else {
+          // 发表新评论
+          this.commentInput.parentId = 0;
+          this.commentInput.parentComment = null;
+          this.commentInput.placeholder = '写下你的评论...';
+        }
+      },
+
+      /**
+       * 隐藏评论输入框
+       */
+      hideCommentInput() {
+        this.commentInput.show = false;
+        this.commentInput.content = '';
+        this.commentInput.parentId = 0;
+        this.commentInput.parentComment = null;
+        this.commentInput.submitting = false;
+      },
+
+      /**
+       * 提交评论
+       */
+      submitComment() {
+        if (!this.commentInput.content.trim()) {
+          this.$message.warning("请输入评论内容");
+          return;
+        }
+
+        if (!this.user || !this.user.id) {
+          this.$message.warning("请先登录后再评论");
+          return;
+        }
+
+        const blogId = util.getUrlParam("id");
+        if (!blogId) {
+          this.$message.error("博客ID异常");
+          return;
+        }
+
+        this.commentInput.submitting = true;
+
+        const commentData = {
+          blogId: parseInt(blogId),
+          content: this.commentInput.content.trim(),
+          parentId: this.commentInput.parentId
+        };
+
+        console.log("准备提交评论:", commentData);
+
+        axios.post('/blog-comments', commentData)
+          .then((response) => {
+            console.log("评论提交响应:", response);
+            
+            // 检查是否有明确的失败信息
+            if (response && response.success === false) {
+              console.warn("评论发布失败:", response.errorMsg);
+              this.$message.error(response.errorMsg || "评论发布失败");
+              return;
+            }
+            
+            this.$message.success("评论发布成功");
+            this.hideCommentInput();
+
+            // 重新加载评论列表
+            this.comments.page = 1; // 重置到第一页
+            this.loadComments();
+
+            // 参考点赞功能，重新获取博客数据以确保评论总数准确
+            if (this.blog && this.blog.id) {
+              axios.get("/blog/" + this.blog.id)
+                .then((blogResponse) => {
+                  console.log("获取更新后的博客数据:", blogResponse);
+                  
+                  // 尝试从不同格式的响应中提取博客数据
+                  let blogData = null;
+                  if (blogResponse.data && blogResponse.success === true) {
+                    blogData = blogResponse.data;
+                  } else if (blogResponse.data) {
+                    blogData = blogResponse.data;
+                  } else {
+                    blogData = blogResponse;
+                  }
+                  
+                  if (blogData) {
+                    // 保持图片数据格式
+                    if (blogData.images) {
+                      if (typeof blogData.images === 'string') {
+                        blogData.images = blogData.images.split(",");
+                      }
+                    } else {
+                      blogData.images = [];
+                    }
+                    // 更新博客数据，包括可能的评论总数
+                    this.blog = Object.assign(this.blog, blogData);
+                  }
+                })
+                .catch(err => {
+                  console.error("获取更新后的博客信息失败:", err);
+                });
+            }
+
+            // 滚动到评论区域
+            this.$nextTick(() => {
+              const commentsElement = document.querySelector('.blog-comments');
+              if (commentsElement) {
+                commentsElement.scrollIntoView({ behavior: 'smooth' });
+              }
+            });
+          })
+          .catch(err => {
+            console.error("评论发布失败:", err);
+            this.$message.error("评论发布失败，请稍后重试");
+          })
+          .finally(() => {
+            this.commentInput.submitting = false;
+          })
+      },
+
+      /**
+       * 删除评论
+       */
+      deleteComment(comment) {
+        if (!comment || !comment.id) {
+          this.$message.error("评论信息异常");
+          return;
+        }
+
+        if (!this.user || this.user.id !== comment.userId) {
+          this.$message.error("只能删除自己的评论");
+          return;
+        }
+
+        this.$confirm('确定要删除这条评论吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          axios.delete(`/blog-comments/${comment.id}`)
+            .then((data) => {
+              this.$message.success("评论删除成功");
+
+              // 重新加载评论列表
+              this.comments.page = 1; // 重置到第一页
+              this.loadComments();
+
+              // 参考点赞功能，重新获取博客数据以确保评论总数准确
+              if (this.blog && this.blog.id) {
+                axios.get("/blog/" + this.blog.id)
+                  .then((blogData) => {
+                    const updatedBlogData = blogData.data;
+                    if (updatedBlogData) {
+                      // 保持图片数据格式
+                      if (updatedBlogData.images) {
+                        updatedBlogData.images = updatedBlogData.images.split(",");
+                      } else {
+                        updatedBlogData.images = [];
+                      }
+                      // 更新博客数据，包括可能的评论总数
+                      this.blog = Object.assign(this.blog, updatedBlogData);
+                    }
+                  })
+                  .catch(err => {
+                    console.error("获取更新后的博客信息失败:", err);
+                  });
+              }
+            })
+            .catch(err => {
+              console.error("删除评论失败:", err);
+              this.$message.error("删除评论失败，请稍后重试");
+            })
+        }).catch(() => {
+          // 用户取消删除
+        });
+      },
+
+      // ========== 原有方法 ==========
+
       // 获取父容器宽度，并且更新所有的子节点宽度，因为我们默认所有子节点的宽高等于父节点的宽高
       updateItemWidth() {
+        if (!this.container) return;
         this._width = this.container.offsetWidth || document.documentElement.offsetWidth
       },
       // 根据当前活动子项的下标计算各个子项的X轴位置
       // 计算公式(子项的下标 - 当前活动下标) * 子项宽度 + 偏移(手指移动距离)；
       setTransform(offset) {
+        if (!this.container || !this.items || this.items.length === 0) return;
         offset = offset || 0
         each(this.items, (item, i) => {
           let distance = (i - this.active) * this._width + offset
@@ -297,6 +1270,7 @@
       },
       // 给每一个子项添加transition过度动画
       setTransition(duration) {
+        if (!this.container || !this.items || this.items.length === 0) return;
         duration = duration || this.duration
         duration = typeof duration === 'number' ? (duration + 'ms') : duration
         each(this.items, (item) => {
@@ -305,12 +1279,18 @@
         })
       },
       moveStart(e) {
+        if (!this.container) return;
         console.log('moveStart')
         this.start.x = e.changedTouches[0].pageX
         this.start.y = e.changedTouches[0].pageY
-        this.setTransition('none')
+
+        // 只有非动态高度模式才设置transition
+        if (!this.container.classList.contains('dynamic-height')) {
+          this.setTransition('none')
+        }
       },
       moving(e) {
+        if (!this.container) return;
         console.log('moving')
         e.preventDefault()
         e.stopPropagation()
@@ -328,23 +1308,22 @@
         }
       },
       moveEnd(e) {
+        if (!this.container || !this.isMoving) return;
         console.log('moveEnd')
-        if (this.isMoving) {
-          e.preventDefault()
-          e.stopPropagation()
-          let distance = this.move.x - this.start.x
-          if (Math.abs(distance) > this.sensitivity) {
-            if (distance < 0) {
-              this.next()
-            } else {
-              this.prev()
-            }
+        e.preventDefault()
+        e.stopPropagation()
+        let distance = this.move.x - this.start.x
+        if (Math.abs(distance) > this.sensitivity) {
+          if (distance < 0) {
+            this.next()
           } else {
-            this.back()
+            this.prev()
           }
-          this.reset()
-          this.isMoving = false
+        } else {
+          this.back()
         }
+        this.reset()
+        this.isMoving = false
       },
       next() {
         let index = this.active + 1
@@ -363,8 +1342,11 @@
         this.move.y = 0
       },
       back() {
-        this.setTransition()
-        this.setTransform()
+        // 只有非动态高度模式才使用transition和transform
+        if (!this.container || !this.container.classList.contains('dynamic-height')) {
+          this.setTransition()
+          this.setTransform()
+        }
       },
       destroy() {
         this.setTransition('none')
@@ -378,11 +1360,30 @@
           this.active = this.items.length - 1
         }
         this.$emit('change', this.active)
-        this.setTransition()
-        this.setTransform()
+
+        // 检查是否为动态高度模式
+        if (this.container && this.container.classList.contains('dynamic-height')) {
+          // 动态高度模式：显示/隐藏图片
+          this.items.forEach((item, i) => {
+            if (i === this.active) {
+              item.style.display = 'block';
+            } else {
+              item.style.display = 'none';
+            }
+          });
+        } else {
+          // 传统模式：使用transform
+          this.setTransition()
+          this.setTransform()
+        }
       }
     }
   })
+  console.log("=== Vue实例创建完成 ===");
+} catch (error) {
+  console.error("=== Vue实例创建失败 ===", error);
+}
 </script>
 </body>
 </html>
+  

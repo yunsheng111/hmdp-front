@@ -109,7 +109,7 @@
         <h1>管理员控制台</h1>
       </div>
       <el-menu
-        default-active="5" 
+        default-active="6" 
         class="el-menu-vertical"
         background-color="#304156"
         text-color="#bfcbd9"
@@ -178,6 +178,33 @@
         <el-tabs v-model="activeTabName" @tab-click="handleTabClick">
           <el-tab-pane label="商品审核" name="productAudit">
             <div class="tab-content-padding">
+              <!-- 筛选区域 -->
+              <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <el-select v-model="productPageParams.merchantId" placeholder="选择商户" clearable @change="handleMerchantChange">
+                  <el-option
+                    v-for="item in merchantList"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id">
+                  </el-option>
+                </el-select>
+                <el-select v-model="productPageParams.shopId" placeholder="选择店铺" clearable @change="fetchPendingProducts">
+                  <el-option
+                    v-for="item in shopList"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id">
+                  </el-option>
+                </el-select>
+                <el-select v-model="productPageParams.statusFilter" placeholder="商品状态" clearable @change="fetchPendingProducts">
+                  <el-option label="所有状态" value=""></el-option>
+                  <el-option label="待审核" :value="2"></el-option>
+                  <el-option label="已通过" :value="1"></el-option>
+                  <el-option label="已拒绝" :value="0"></el-option>
+                </el-select>
+                <el-button type="primary" @click="fetchPendingProducts">查询</el-button>
+                <el-button @click="resetProductFilters">重置</el-button>
+              </div>
               <el-table
                 v-loading="productTableLoading"
                 :data="pendingProductList"
@@ -471,12 +498,13 @@
 <script src="./js/axios.min.js"></script>
 <script src="./js/element.js"></script>
 <script src="./js/common.js"></script>
+<script src="./js/admin-common.js"></script>
 <script>
   const adminToken = sessionStorage.getItem("adminToken");
   const adminInfoStr = sessionStorage.getItem("adminInfo");
   
   if (!adminToken) {
-    // location.href = "admin-login.html"; 
+    location.href = "admin-login.html";
   }
   
   const app = new Vue({
@@ -490,7 +518,10 @@
       pendingProductList: [],
       productPageParams: {
         page: 1,
-        size: 10
+        size: 10,
+        merchantId: null,  // 新增：商户ID筛选
+        shopId: null,      // 新增：店铺ID筛选
+        statusFilter: null // 新增：状态筛选
       },
       productTotal: 0,
       productAuditDialogVisible: false,
@@ -499,6 +530,8 @@
         status: '', // 'APPROVED' 或 'REJECTED'
         reason: ''
       },
+      merchantList: [], // 新增：商户列表
+      shopList: [],     // 新增：店铺列表
       
       // 评论审核相关数据
       commentTableLoading: false,
@@ -541,13 +574,14 @@
       ]
     },
     created() {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${adminToken}`;
+      // 加载商户列表
+      this.fetchMerchants();
       if(this.activeTabName === 'productAudit'){
         this.fetchPendingProducts();
       } else if(this.activeTabName === 'commentAudit'){
         this.fetchPendingComments();
       } else if(this.activeTabName === 'reportProcessing'){
-        this.fetchReports(); 
+        this.fetchReports();
       }
     },
     methods: {
@@ -566,20 +600,86 @@
         }
       },
       // --- 商品审核方法 START ---
+      fetchMerchants() {
+        adminAxios.get("/admin/merchants", { params: { page: 1, size: 1000 } }) // 获取所有商户
+          .then(data => {
+            if(data.success){
+              this.merchantList = data.data.list || [];
+            } else {
+              this.$message.error(data.msg || "获取商户列表失败");
+            }
+          })
+          .catch(err => {
+            console.error("获取商户列表失败", err);
+            this.$message.error("获取商户列表失败，请重试");
+          });
+      },
+      handleMerchantChange() {
+        // 当选择商户时，清空已选择的店铺并获取该商户的店铺列表
+        this.productPageParams.shopId = null;
+        this.shopList = [];
+
+        if (!this.productPageParams.merchantId) {
+          // 如果没有选择商户，则立即筛选商品（显示所有商户的商品）
+          this.fetchPendingProducts();
+          return;
+        }
+
+        // 加载该商户的店铺列表 - 复用商户店铺管理页面的接口逻辑
+        const params = {
+          page: 1,
+          size: 1000, // 获取所有店铺
+          merchantId: this.productPageParams.merchantId
+        };
+
+        adminAxios.get("/admin/merchant-shops", { params })
+          .then(data => {
+            if(data.success){
+              this.shopList = data.data.list || [];
+            } else {
+              this.$message.error(data.msg || "获取店铺列表失败");
+            }
+          })
+          .catch(err => {
+            console.error("获取店铺列表失败", err);
+            this.$message.error("获取店铺列表失败，请重试");
+          });
+
+        // 立即根据商户ID筛选商品（显示该商户下所有店铺的所有状态商品）
+        this.fetchPendingProducts();
+      },
+      resetProductFilters() {
+        this.productPageParams.merchantId = null;
+        this.productPageParams.shopId = null;
+        this.productPageParams.statusFilter = null;
+        this.shopList = [];
+        this.fetchPendingProducts();
+      },
       fetchPendingProducts() {
         this.productTableLoading = true;
-        axios.get("/api/admin/content/products/pending", { params: this.productPageParams })
-          .then(({data}) => {
+
+        // 准备请求参数
+        const params = {...this.productPageParams};
+
+        // 清除空值参数
+        Object.keys(params).forEach(key => {
+          if (params[key] === null || params[key] === '') {
+            delete params[key];
+          }
+        });
+
+        adminAxios.get("/admin/content/products/pending", { params })
+          .then(data => {
             if(data.success){
                 this.pendingProductList = data.data.list || [];
                 this.productTotal = data.data.total || 0;
             } else {
-                this.$message.error(data.msg || "获取待审核商品列表失败");
+                this.$message.error(data.msg || "获取商品列表失败");
             }
           })
           .catch(err => {
-            console.error("获取待审核商品列表失败", err);
-            this.$message.error("获取待审核商品列表失败，请重试");
+            console.error("获取商品列表失败", err);
+            this.$message.error("获取商品列表失败，请重试");
           })
           .finally(() => {
             this.productTableLoading = false;
@@ -609,8 +709,8 @@
                 status: this.productAuditForm.status,
                 reason: this.productAuditForm.reason
             };
-            axios.put(`/api/admin/content/products/${this.currentProduct.productId}/audit`, auditData)
-              .then(({data}) => {
+            adminAxios.put(`/admin/content/products/${this.currentProduct.productId}/audit`, auditData)
+              .then(data => {
                 if(data.success){
                   this.$message.success("商品审核操作成功");
                   this.productAuditDialogVisible = false;
@@ -634,8 +734,8 @@
       // --- 评论审核方法 START ---
       fetchPendingComments() {
         this.commentTableLoading = true;
-        axios.get("/api/admin/content/comments/pending", { params: this.commentPageParams })
-          .then(({data}) => {
+        adminAxios.get("/admin/content/comments/pending", { params: this.commentPageParams })
+          .then(data => {
             if(data.success){
                 this.pendingCommentList = data.data.list || [];
                 this.commentTotal = data.data.total || 0;
@@ -674,8 +774,8 @@
                 status: this.commentAuditForm.status,
                 reason: this.commentAuditForm.reason
             };
-            axios.put(`/api/admin/content/comments/${this.currentComment.commentId}/audit`, auditData)
-              .then(({data}) => {
+            adminAxios.put(`/admin/content/comments/${this.currentComment.commentId}/audit`, auditData)
+              .then(data => {
                 if(data.success){
                   this.$message.success("评论审核操作成功");
                   this.commentAuditDialogVisible = false;
@@ -721,8 +821,8 @@
             delete params.reportType;
         }
 
-        axios.get("/api/admin/content/reports", { params })
-          .then(({data}) => {
+        adminAxios.get("/admin/content/reports", { params })
+          .then(data => {
             if(data.success){
                 this.reportList = data.data.list || [];
                 this.reportTotal = data.data.total || 0;
@@ -765,8 +865,8 @@
                 processData.banDurationDays = this.reportProcessForm.banDurationDays;
             }
 
-            axios.put(`/api/admin/content/reports/${this.currentReport.reportId}/process`, processData)
-              .then(({data}) => {
+            adminAxios.put(`/admin/content/reports/${this.currentReport.reportId}/process`, processData)
+              .then(data => {
                 if(data.success){
                   this.$message.success("举报处理成功");
                   this.reportProcessDialogVisible = false;
@@ -808,7 +908,7 @@
       // --- 举报处理方法 END ---
 
       logout() {
-        axios.post("/api/admin/logout")
+        adminAxios.post("/admin/logout")
           .then(() => {
             sessionStorage.removeItem("adminToken");
             sessionStorage.removeItem("adminInfo");

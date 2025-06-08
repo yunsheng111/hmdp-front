@@ -10,14 +10,17 @@
 
 .header {
     width: 100%;
-    height: 6%;
+    height: 44px; /* 更新为44px以匹配新样式 */
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 2px solid #ff6633;
+    border-bottom: 1px solid #f0f0f0; /* 更新边框样式 */
     position: fixed;
     top: 0;
-    z-index: 500;
+    left: 0;
+    right: 0;
+    z-index: 10; /* 更新z-index */
+    background: white;
 }
 .shop-avg{
     opacity: .4;
@@ -52,8 +55,11 @@
 .blog-info-box{
     position: relative;
     overflow: hidden;
-    height: 85%;
+    height: auto !important; /* 改为自适应高度 */
+    min-height: 500px; /* 增加最小高度 200px * 2.5 = 500px */
+    /* 移除最大高度限制，让图片完整显示 */
     width: 100%;
+    background-color: #f5f5f5;
 }
 .blog-info-box.indicator{
     position: absolute;
@@ -68,12 +74,12 @@
     color: #fff;
     font-size: 14px;
 }
-.swiper-item{
-    position: absolute;
-    left:0;
-    top:0;
-    width: 100%;
-    height: 100%;
+
+
+/* 动态高度模式下的轮播项 */
+.blog-info-box.dynamic-height .swiper-item {
+    position: relative;
+    height: auto;
 }
 .basic{
     display: flex;
@@ -242,4 +248,323 @@
     width: 92px;
     border-radius: 5px;
     margin-right: 5px;
+}
+
+/* ========== 从 user-blog-detail.html 提取的样式 ========== */
+
+/* 基础布局样式 */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+#app {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+
+
+/* 底部视图样式 */
+.foot-view span {
+    font-size: 12px;
+}
+
+/* 主内容区域 */
+.main-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-top: 44px; /* 与header高度相同 */
+    margin-top: 0;
+}
+
+
+
+/* 博客标题样式 */
+.blog-title {
+    padding: 0 15px 5px 15px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* 博客标题加载状态样式 */
+.blog-title-loading {
+    padding: 0 15px 5px 15px;
+    margin: 0;
+}
+
+/* 评论输入框样式 */
+.comment-input-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: flex-end;
+}
+
+.comment-input-container {
+    width: 100%;
+    background: white;
+    border-radius: 12px 12px 0 0;
+    padding: 0;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+.comment-input-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    font-weight: 500;
+}
+
+.comment-input-header i {
+    font-size: 18px;
+    color: #999;
+    cursor: pointer;
+}
+
+.comment-input-body {
+    padding: 15px 20px;
+}
+
+.comment-input-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 15px 20px;
+    border-top: 1px solid #f0f0f0;
+}
+
+/* 博客图片适配样式 */
+.blog-image-adaptive {
+    max-width: 100%;
+    /* 移除最大高度限制，让图片完整显示 */
+    width: auto;
+    height: auto;
+    object-fit: contain; /* 确保图片完整展示 */
+    object-position: center;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    display: block; /* 确保图片正确显示 */
+    margin: 0 auto; /* 水平居中 */
+    cursor: pointer; /* 添加点击提示 */
+    transition: transform 0.2s ease; /* 添加悬停效果 */
+}
+
+/* 动态高度容器 */
+.blog-info-box.dynamic-height {
+    height: auto;
+    min-height: 500px; /* 增加最小高度 200px * 2.5 = 500px */
+    /* 移除最大高度限制，让图片完整显示 */
+}
+
+/* 轮播图样式优化（新版本，覆盖原有样式） */
+.swiper-item {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: auto;
+    min-height: 500px; /* 增加最小高度 200px * 2.5 = 500px */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+    padding: 10px 0;
+}
+
+/* 图片加载状态和无图片状态 */
+.image-placeholder {
+    height: auto;
+    min-height: 500px; /* 增加最小高度 200px * 2.5 = 500px */
+    /* 移除最大高度限制 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+}
+
+/* ========== 从 user-blog-detail.html 提取的增强样式 ========== */
+
+/* 美化博客标题样式 */
+.blog-title-enhanced {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #333;
+    padding: 15px;
+    padding-left: 20px;
+    margin: 10px 0;
+    line-height: 1.4;
+    position: relative;
+    border-left: 4px solid #ff6633;
+    background-color: #f9f9f9;
+    border-radius: 0 4px 4px 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    animation: slideFadeIn 0.5s ease-out;
+}
+
+@keyframes slideFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.blog-title-enhanced:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.blog-title-enhanced i {
+    margin-right: 10px;
+    color: #ff6633;
+    font-size: 1.2rem;
+}
+
+/* 标题加载状态样式 */
+.blog-title-loading-enhanced {
+    padding: 15px;
+    margin: 10px 0;
+    border-left: 4px solid #e0e0e0;
+    background-color: #f9f9f9;
+    border-radius: 0 4px 4px 0;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .blog-title-enhanced {
+        font-size: 1.5rem;
+        padding: 12px;
+        padding-left: 15px;
+    }
+
+    .blog-title-enhanced i {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .blog-title-enhanced {
+        font-size: 1.3rem;
+        padding: 10px;
+        padding-left: 12px;
+    }
+}
+
+/* ========== 图片点击放大功能样式 ========== */
+
+/* 图片悬停效果 */
+.blog-image-adaptive:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 图片放大查看模态框 */
+.image-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.image-modal-content {
+    max-width: 95%;
+    max-height: 95%;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    animation: zoomIn 0.3s ease-out;
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.image-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+}
+
+.image-modal-close:hover {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .image-modal-content {
+        max-width: 98%;
+        max-height: 98%;
+    }
+
+    .image-modal-close {
+        top: 10px;
+        right: 10px;
+        font-size: 24px;
+        width: 35px;
+        height: 35px;
+    }
 }

@@ -237,6 +237,9 @@
     .product-tag.hot {
       background: #fa541c;
     }
+    .product-tag.promotion {
+      background: #ff6633;
+    }
     .product-description {
       font-size: 13px;
       color: #666;
@@ -455,9 +458,22 @@
       font-size: 14px;
       min-width: 60px;
       text-align: center;
+      margin: 4px;
+      padding: 6px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: #f9f9f9;
+      color: #666;
     }
 
     .spec-value-btn:hover {
+      border-color: #f63 !important;
+      color: #f63 !important;
+      background-color: #fff5f5 !important;
+    }
+
+    .spec-value-btn.selected {
       border-color: #f63 !important;
       color: #f63 !important;
       background-color: #fff5f5 !important;
@@ -913,7 +929,10 @@
         shopId: '',
         orderId: '',
         rating: 5,
-        content: ''
+        content: '',
+        parent_id: 0,    // 修改字段名为parent_id
+        answer_id: 0,    // 修改字段名为answer_id
+        blogId: ''      // 添加blogId字段，将使用shopId的值
       },
       submitting: false,
       // 用户订单
@@ -945,6 +964,9 @@
       // 获取参数
       let shopId = util.getUrlParam("id");
       this.commentForm.shopId = shopId;
+      this.commentForm.blogId = shopId;  // 将blogId也设置为shopId
+      this.commentForm.parent_id = 0;     // 初始化parent_id为0
+      this.commentForm.answer_id = 0;     // 初始化answer_id为0
 
       // 查询酒店信息
       this.queryShopById(shopId);
@@ -979,6 +1001,8 @@
         .then(({data}) => {
           data.images = data.images.split(",")
           this.shop = data
+          // 设置commentForm的blogId
+          this.commentForm.blogId = shopId;
         })
         .catch(this.$message.error)
       },
@@ -1154,14 +1178,30 @@
         
         this.submitting = true;
         
+        // 确保blogId被正确设置
+        if (!this.commentForm.blogId) {
+          this.commentForm.blogId = this.commentForm.shopId;
+        }
+        
+        // 确保parent_id和answer_id被正确设置
+        if (this.commentForm.parent_id === undefined || this.commentForm.parent_id === null) {
+          this.commentForm.parent_id = 0;
+        }
+        if (this.commentForm.answer_id === undefined || this.commentForm.answer_id === null) {
+          this.commentForm.answer_id = 0;
+        }
+        
         // 提交评论
-        axios.post('/shop-comment', this.commentForm)
+        axios.post('/blog-comments', this.commentForm)
         .then(() => {
           this.$message.success('评论发表成功');
           // 重置表单
           this.commentForm.orderId = '';
           this.commentForm.rating = 5;
           this.commentForm.content = '';
+          this.commentForm.parent_id = 0;  // 重置parent_id
+          this.commentForm.answer_id = 0;  // 重置answer_id
+          // 不重置shopId和blogId，因为它们需要保持一致
           // 刷新评论列表
           this.queryComments();
           // 刷新可评论订单
@@ -1270,24 +1310,12 @@
             spec.values.forEach((value, valueIndex) => {
               const specId = spec.id || specIndex;
               const isSelected = this.selectedSpecs[specId] === value;
-              const borderColor = isSelected ? '#f63' : '#ddd';
-              const textColor = isSelected ? '#f63' : '#666';
-              const backgroundColor = isSelected ? '#fff5f5' : 'white';
+              const selectedClass = isSelected ? 'selected' : '';
 
               html += `<button
-                class="spec-value-btn"
+                class="spec-value-btn ${selectedClass}"
                 data-spec-id="${specId}"
                 data-value="${value}"
-                style="
-                  margin: 4px;
-                  padding: 6px 12px;
-                  border: 1px solid ${borderColor};
-                  background: ${backgroundColor};
-                  color: ${textColor};
-                  border-radius: 4px;
-                  cursor: pointer;
-                  transition: all 0.3s;
-                "
                 onclick="app.selectSpecValue('${specId}', '${value}')"
               >${value}</button>`;
             });
@@ -1304,8 +1332,16 @@
 
       // 规格选择相关方法
       selectSpecValue(specId, value) {
-        // 更新选中的规格
-        this.$set(this.selectedSpecs, specId, value);
+        // 检查是否已经选择了该规格值
+        const isAlreadySelected = this.selectedSpecs[specId] === value;
+        
+        if (isAlreadySelected) {
+          // 如果已经选择了该规格值，则取消选择
+          this.$delete(this.selectedSpecs, specId);
+        } else {
+          // 否则选择该规格值
+          this.$set(this.selectedSpecs, specId, value);
+        }
 
         // 重新计算价格
         this.calculateCurrentPrice();
@@ -1349,13 +1385,9 @@
           const isSelected = this.selectedSpecs[specId] === value;
 
           if (isSelected) {
-            btn.style.borderColor = '#f63';
-            btn.style.color = '#f63';
-            btn.style.backgroundColor = '#fff5f5';
+            btn.classList.add('selected');
           } else {
-            btn.style.borderColor = '#ddd';
-            btn.style.color = '#666';
-            btn.style.backgroundColor = 'white';
+            btn.classList.remove('selected');
           }
         });
       },
@@ -1371,13 +1403,22 @@
       validateSpecSelection() {
         if (!this.currentProduct || !this.currentProduct.specs) return true;
 
-        // 检查必选规格是否都已选择
+        let hasRequiredSpecs = false;
+        
+        // 检查是否有必选规格
         for (let spec of this.currentProduct.specs) {
-          if (spec.required && !this.selectedSpecs[spec.id || spec.name]) {
-            this.$message.warning(`请选择${spec.name}`);
-            return false;
+          if (spec.required) {
+            hasRequiredSpecs = true;
+            const specId = spec.id || spec.name;
+            // 检查必选规格是否已选择
+            if (!this.selectedSpecs[specId]) {
+              this.$message.warning(`请选择${spec.name}`);
+              return false;
+            }
           }
         }
+        
+        // 如果没有必选规格，则允许不选择任何规格
         return true;
       },
 
@@ -1392,16 +1433,6 @@
         this.currentProduct = product;
         this.resetSpecSelection();
         this.currentPrice = product.price;
-
-        // 初始化默认选择（选择每个规格的第一个值）
-        if (product.specs && product.specs.length > 0) {
-          product.specs.forEach(spec => {
-            if (spec.values && spec.values.length > 0) {
-              const specId = spec.id || spec.name;
-              this.selectedSpecs[specId] = spec.values[0];
-            }
-          });
-        }
 
         // 使用真实规格数据生成规格选择对话框
         const specsHtml = this.generateSpecsHtml(product.specs);

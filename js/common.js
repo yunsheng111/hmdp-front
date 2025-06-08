@@ -2,7 +2,8 @@
 let commonURL = "/api";
 // 设置后台服务地址
 axios.defaults.baseURL = commonURL;
-axios.defaults.timeout = 2000;
+// 将超时时间从2000ms改为5000ms
+axios.defaults.timeout = 5000;
 // request拦截器，将用户token放入头中
 axios.interceptors.request.use(
   config => {
@@ -18,8 +19,16 @@ axios.interceptors.request.use(
 )
 axios.interceptors.response.use(function (response) {
   // 判断执行结果
+  // 特殊处理 blog-comments 路径，因为它可能有不同的响应格式
+  if (response.config && response.config.url && response.config.url.includes('/blog-comments')) {
+    console.log('处理博客评论API响应:', response.data);
+    return response.data;
+  }
+
+  // 常规API响应处理
   if (!response.data.success) {
-    return Promise.reject(response.data.errorMsg)
+    console.warn('API响应未成功:', response.data);
+    return Promise.reject(response.data.errorMsg || '操作未成功')
   }
   return response.data;
 }, function (error) {

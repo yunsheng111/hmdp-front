@@ -198,6 +198,57 @@
       font-size: 60px;
       margin-bottom: 20px;
     }
+    .dashboard-container {
+      padding: 20px;
+    }
+    .content-section {
+      background-color: #fff;
+      border-radius: 4px;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .voucher-title {
+      display: flex;
+      align-items: center;
+    }
+    .title-text {
+      margin-right: 8px;
+      font-weight: bold;
+    }
+    .discount-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .discount-amount {
+      font-weight: bold;
+      color: #F56C6C;
+      font-size: 16px;
+    }
+    .discount-condition {
+      font-size: 12px;
+      color: #909399;
+      margin-top: 4px;
+    }
+    .pagination-container {
+      margin-top: 20px;
+      text-align: right;
+    }
+    .delete-btn {
+      color: #F56C6C;
+    }
   </style>
 </head>
 <body>
@@ -264,97 +315,150 @@
       </div>
       
       <div class="content-section">
-        <div class="action-bar">
-          <div>
-            <el-radio-group v-model="filterStatus" size="small" @change="filterVouchers">
-              <el-radio-button label="all">全部</el-radio-button>
-              <el-radio-button label="active">进行中</el-radio-button>
-              <el-radio-button label="inactive">未开始</el-radio-button>
-              <el-radio-button label="expired">已结束</el-radio-button>
-            </el-radio-group>
-          </div>
-          <div>
-            <el-button type="primary" @click="showCreateDialog">新增优惠券</el-button>
-          </div>
+        <div class="action-bar" style="margin-bottom: 20px;">
+          <el-row :gutter="20">
+            <el-col :span="5">
+              <el-input placeholder="搜索优惠券" v-model="searchKeyword" @input="filterVouchers" clearable prefix-icon="el-icon-search"></el-input>
+            </el-col>
+            <el-col :span="5">
+              <!-- 状态筛选下拉框 -->
+              <el-select v-model="filterStatus" @change="filterVouchers" placeholder="全部状态" style="width: 100%;">
+                <el-option
+                  v-for="item in statusOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="5">
+              <!-- 类型筛选下拉框 -->
+              <el-select v-model="filterType" @change="filterVouchers" placeholder="全部类型" style="width: 100%;">
+                <el-option
+                  v-for="item in typeOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="3" v-if="filterStatus !== 'all' || filterType !== 'all' || searchKeyword">
+              <el-button @click="resetFilters" size="small" icon="el-icon-refresh">重置筛选</el-button>
+            </el-col>
+            <el-col :span="4" :offset="filterStatus !== 'all' || filterType !== 'all' || searchKeyword ? 0 : 3">
+              <el-button type="primary" @click="showCreateDialog" size="small" icon="el-icon-plus">创建新优惠券</el-button>
+            </el-col>
+          </el-row>
         </div>
         
         <!-- 优惠券列表 -->
-        <div v-if="vouchers.length > 0">
-          <div class="voucher-list">
-            <div v-for="voucher in displayVouchers" :key="voucher.id" class="voucher-card">
-              <div class="voucher-header">
-                <div class="voucher-title">{{ voucher.title }}</div>
-                <div class="voucher-amount" v-if="voucher.type === 1">
-                  ¥{{ voucher.value }}
-                </div>
-                <div class="voucher-amount" v-else-if="voucher.type === 2">
-                  {{ voucher.value }}折
-                </div>
-              </div>
-              <div class="voucher-info">
-                <div class="voucher-info-item">
-                  <i class="el-icon-tickets"></i>
-                  类型：{{ getTypeText(voucher.type) }}
-                </div>
-                <div class="voucher-info-item">
-                  <i class="el-icon-money"></i>
-                  门槛：{{ voucher.threshold === 0 ? '无门槛' : '满' + voucher.threshold + '元可用' }}
-                </div>
-                <div class="voucher-info-item">
-                  <i class="el-icon-time"></i>
-                  有效期：{{ voucher.beginTime }} 至 {{ voucher.endTime }}
-                </div>
-                <div class="voucher-info-item">
-                  <i class="el-icon-shopping-cart-full"></i>
-                  库存：{{ voucher.stock }}
-                </div>
-                <div class="voucher-info-item">
-                  <i class="el-icon-sold-out"></i>
-                  已售：{{ voucher.sold }}
-                </div>
-              </div>
-              <div class="voucher-description" v-if="voucher.description">
-                <i class="el-icon-info-circle"></i> {{ voucher.description }}
-              </div>
-              <div class="voucher-footer">
-                <div>
-                  <span class="voucher-status"
-                        :class="{
-                          'status-active': voucher.status === 'active',
-                          'status-inactive': voucher.status === 'inactive',
-                          'status-expired': voucher.status === 'expired'
-                        }">
-                    {{ getStatusText(voucher.status) }}
-                  </span>
-                </div>
-                <div>
-                  <el-button type="text" size="small" @click="showEditDialog(voucher)">编辑</el-button>
-                  <el-button type="text" size="small" @click="showStockDialog(voucher)" v-if="voucher.status === 'active'">库存管理</el-button>
-                  <el-button type="text" size="small" @click="toggleVoucherStatus(voucher)" v-if="voucher.status !== 'expired'">
-                    {{ voucher.status === 'active' ? '暂停' : '启用' }}
-                  </el-button>
-                  <el-button type="text" size="small" style="color: #F56C6C;" @click="deleteVoucher(voucher)">删除</el-button>
-                </div>
-              </div>
+        <el-table
+          v-loading="loading"
+          :data="filteredVouchers"
+          style="width: 100%"
+          border
+          stripe
+          highlight-current-row>
+          <template slot="empty">
+            <div class="empty-data" style="padding: 30px 0; text-align: center;">
+              <i class="el-icon-tickets" style="font-size: 48px; color: #909399; margin-bottom: 10px;"></i>
+              <p style="color: #909399;">暂无优惠券数据，点击"创建新优惠券"添加</p>
             </div>
-          </div>
-          
-          <!-- 分页 -->
-          <div class="pagination-container">
-            <el-pagination
-              @current-change="handleCurrentChange"
-              :current-page="currentPage"
-              :page-size="pageSize"
-              layout="prev, pager, next, jumper"
-              :total="filteredVouchers.length">
-            </el-pagination>
-          </div>
-        </div>
+          </template>
+          <el-table-column prop="title" label="优惠券名称" width="200">
+            <template slot-scope="scope">
+              <div class="voucher-title">
+                <span class="title-text">{{ scope.row.title }}</span>
+                <el-tag size="mini" type="danger" v-if="scope.row.type === 1">秒杀券</el-tag>
+                <el-tag size="mini" type="success" v-else>普通券</el-tag>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="优惠券类型" width="180">
+            <template slot-scope="scope">
+              <div class="discount-info">
+                <span class="discount-amount">{{ scope.row.value }}元</span>
+                <span class="discount-condition" v-if="scope.row.minAmount > 0">满{{ scope.row.threshold }}元可用</span>
+                <span class="discount-condition" v-else>无门槛</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="stock" label="库存" width="100" sortable>
+            <template slot-scope="scope">
+              <span>{{ scope.row.stock }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="receivedCount" label="已领取" width="100" sortable>
+            <template slot-scope="scope">
+              <span>{{ scope.row.receivedCount || 0 }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="使用期限" width="240">
+            <template slot-scope="scope">
+              <div>
+                <span v-if="scope.row.type === 1">
+                  秒杀时间: {{ formatDate(scope.row.beginTime) }} - {{ formatDate(scope.row.endTime) }}
+                </span>
+                <span v-else>
+                  领取后{{ scope.row.expireDay }}天内有效
+                </span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="statusStr" label="状态" width="100">
+            <template slot-scope="scope">
+              <el-tag :type="getStatusTagType(scope.row.statusStr)">{{ scope.row.statusStr }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="240">
+            <template slot-scope="scope">
+              <el-button
+                @click.native.prevent="showEditDialog(scope.row)"
+                type="text"
+                size="small">
+                编辑
+              </el-button>
+              <el-button
+                v-if="scope.row.type === 1"
+                @click.native.prevent="showStockDialog(scope.row)"
+                type="text"
+                size="small">
+                调整库存
+              </el-button>
+              <el-button
+                v-if="scope.row.status === 1"
+                @click.native.prevent="toggleVoucherStatus(scope.row.id, 2)"
+                type="text"
+                size="small">
+                下架
+              </el-button>
+              <el-button
+                v-if="scope.row.status === 2"
+                @click.native.prevent="toggleVoucherStatus(scope.row.id, 1)"
+                type="text"
+                size="small">
+                上架
+              </el-button>
+              <el-button
+                @click.native.prevent="deleteVoucher(scope.row.id)"
+                type="text"
+                size="small"
+                class="delete-btn">
+                删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
         
-        <!-- 空数据提示 -->
-        <div v-else class="empty-data">
-          <i class="el-icon-tickets"></i>
-          <p>暂无优惠券数据，点击"新增优惠券"添加</p>
+        <!-- 分页 -->
+        <div class="pagination-container">
+          <el-pagination
+            @current-change="handleCurrentChange"
+            :current-page="currentPage"
+            :page-size="pageSize"
+            layout="prev, pager, next, jumper"
+            :total="total">
+          </el-pagination>
         </div>
       </div>
     </div>
@@ -363,35 +467,44 @@
   <!-- 新增/编辑优惠券对话框 -->
   <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="600px">
     <el-form :model="voucherForm" :rules="voucherRules" ref="voucherForm" label-width="100px">
-      <el-form-item label="优惠券名称" prop="title">
-        <el-input v-model="voucherForm.title" placeholder="请输入优惠券名称"></el-input>
-      </el-form-item>
-      
       <el-form-item label="优惠券类型" prop="type">
         <el-radio-group v-model="voucherForm.type">
-          <el-radio :label="1">满减券</el-radio>
-          <el-radio :label="2">折扣券</el-radio>
+          <el-radio :label="0">普通券</el-radio>
+          <el-radio :label="1">秒杀券</el-radio>
         </el-radio-group>
       </el-form-item>
       
-      <el-form-item label="优惠金额" prop="value" v-if="voucherForm.type === 1">
-        <el-input-number v-model="voucherForm.value" :min="1" :precision="2" :step="1"></el-input-number>
-        <span style="margin-left: 10px;">元</span>
+      <el-form-item label="优惠券标题" prop="title">
+        <el-input v-model="voucherForm.title" placeholder="请输入优惠券标题"></el-input>
       </el-form-item>
       
-      <el-form-item label="折扣力度" prop="value" v-if="voucherForm.type === 2">
-        <el-input-number v-model="voucherForm.value" :min="1" :max="9.9" :precision="1" :step="0.1"></el-input-number>
-        <span style="margin-left: 10px;">折</span>
+      <el-form-item label="副标题" prop="subTitle">
+        <el-input v-model="voucherForm.subTitle" placeholder="请输入副标题"></el-input>
       </el-form-item>
       
-      <el-form-item label="使用门槛" prop="threshold">
-        <el-input-number v-model="voucherForm.threshold" :min="0" :precision="2" :step="10"></el-input-number>
-        <span style="margin-left: 10px;">元（0表示无门槛）</span>
+      <el-form-item label="面值金额" prop="payValue">
+        <el-input-number v-model="voucherForm.payValue" :min="0" :step="100" :precision="0"></el-input-number>
+        <span style="margin-left: 10px;">分（100分=1元）</span>
       </el-form-item>
       
-      <el-form-item label="有效期" prop="validTimeRange">
+      <el-form-item label="抵扣金额" prop="actualValue">
+        <el-input-number v-model="voucherForm.actualValue" :min="0" :step="100" :precision="0"></el-input-number>
+        <span style="margin-left: 10px;">分（100分=1元）</span>
+      </el-form-item>
+      
+      <el-form-item label="使用门槛" prop="minAmount">
+        <el-input-number v-model="voucherForm.minAmount" :min="0" :step="100" :precision="0"></el-input-number>
+        <span style="margin-left: 10px;">分（0表示无门槛，100分=1元）</span>
+      </el-form-item>
+      
+      <el-form-item label="有效天数" prop="validDays">
+        <el-input-number v-model="voucherForm.validDays" :min="1" :step="1" :precision="0"></el-input-number>
+        <span style="margin-left: 10px;">天</span>
+      </el-form-item>
+      
+      <el-form-item label="秒杀时间段" prop="seckillTime" v-if="voucherForm.type === 1">
         <el-date-picker
-          v-model="voucherForm.validTimeRange"
+          v-model="voucherForm.seckillTime"
           type="datetimerange"
           range-separator="至"
           start-placeholder="开始日期"
@@ -400,12 +513,17 @@
         </el-date-picker>
       </el-form-item>
       
-      <el-form-item label="库存数量" prop="stock">
-        <el-input-number v-model="voucherForm.stock" :min="1" :step="10"></el-input-number>
+      <el-form-item label="库存数量" prop="stock" v-if="voucherForm.type === 1">
+        <el-input-number v-model="voucherForm.stock" :min="1" :step="10" :precision="0"></el-input-number>
       </el-form-item>
       
-      <el-form-item label="使用说明" prop="description">
-        <el-input type="textarea" v-model="voucherForm.description" placeholder="请输入使用说明" :rows="3"></el-input>
+      <el-form-item label="每人限购" prop="limitPerUser" v-if="voucherForm.type === 1">
+        <el-input-number v-model="voucherForm.limitPerUser" :min="1" :step="1" :precision="0" :max="10"></el-input-number>
+        <span style="margin-left: 10px;">张</span>
+      </el-form-item>
+      
+      <el-form-item label="使用规则" prop="rules">
+        <el-input type="textarea" v-model="voucherForm.rules" placeholder="请输入使用规则" :rows="4"></el-input>
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
@@ -423,14 +541,14 @@
       <el-form-item label="已售数量">
         <span>{{ stockForm.sold }}</span>
       </el-form-item>
-      <el-form-item label="库存操作" prop="action">
-        <el-radio-group v-model="stockForm.action">
+      <el-form-item label="库存操作" prop="operation">
+        <el-radio-group v-model="stockForm.operation">
           <el-radio :label="'add'">增加</el-radio>
           <el-radio :label="'reduce'">减少</el-radio>
         </el-radio-group>
       </el-form-item>
-      <el-form-item label="调整数量" prop="amount">
-        <el-input-number v-model="stockForm.amount" :min="1" :step="10"></el-input-number>
+      <el-form-item label="调整数量" prop="stock">
+        <el-input-number v-model="stockForm.stock" :min="1" :step="10" :precision="0"></el-input-number>
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
@@ -459,11 +577,14 @@
       // 优惠券列表
       vouchers: [],
       filteredVouchers: [],
+      total: 0,
+      loading: false,
       // 分页相关
       currentPage: 1,
       pageSize: 5,
       // 筛选状态
       filterStatus: 'all',
+      filterType: 'all',
       // 对话框控制
       dialogVisible: false,
       dialogTitle: '新增优惠券',
@@ -472,33 +593,48 @@
       // 表单数据
       voucherForm: {
         id: '',
+        shopId: '',
         title: '',
-        type: 1,
-        value: 10,
-        threshold: 0,
-        validTimeRange: [],
+        subTitle: '',
+        type: 0, // 0-普通券，1-秒杀券
+        payValue: 1000, // 支付金额，单位分
+        actualValue: 500, // 抵扣金额，单位分
+        minAmount: 0, // 最低消费金额，单位分
+        validDays: 30, // 有效期天数
+        seckillTime: [], // 秒杀时间范围
         beginTime: '',
         endTime: '',
         stock: 100,
-        description: ''
+        limitPerUser: 1, // 每人限购数量
+        rules: '使用须知：\n1. 满减优惠券\n2. 不可与其他优惠叠加\n3. 有效期内使用有效',
+        status: 2 // 默认下架状态，1-上架，2-下架，3-过期
       },
       // 表单验证规则
       voucherRules: {
         title: [
-          { required: true, message: '请输入优惠券名称', trigger: 'blur' },
+          { required: true, message: '请输入优惠券标题', trigger: 'blur' },
           { min: 2, max: 30, message: '长度在 2 到 30 个字符', trigger: 'blur' }
         ],
         type: [
           { required: true, message: '请选择优惠券类型', trigger: 'change' }
         ],
-        value: [
-          { required: true, message: '请输入优惠金额/折扣', trigger: 'blur' }
+        payValue: [
+          { required: true, message: '请输入面值金额', trigger: 'blur' }
         ],
-        validTimeRange: [
-          { required: true, message: '请选择有效期', trigger: 'change' }
+        actualValue: [
+          { required: true, message: '请输入抵扣金额', trigger: 'blur' }
+        ],
+        validDays: [
+          { required: true, message: '请输入有效天数', trigger: 'blur' }
         ],
         stock: [
           { required: true, message: '请输入库存数量', trigger: 'blur' }
+        ],
+        seckillTime: [
+          { required: true, message: '请选择秒杀时间段', trigger: 'change' }
+        ],
+        rules: [
+          { required: true, message: '请输入使用规则', trigger: 'blur' }
         ]
       },
       // 库存调整表单
@@ -506,9 +642,23 @@
         id: '',
         currentStock: 0,
         sold: 0,
-        action: 'add',
-        amount: 10
-      }
+        operation: 'add',
+        stock: 10
+      },
+      searchKeyword: '',
+      // 状态选项
+      statusOptions: [
+        { value: 'all', label: '全部状态' },
+        { value: 'active', label: '上架中' },
+        { value: 'inactive', label: '已下架' },
+        { value: 'expired', label: '已过期' }
+      ],
+      // 类型选项
+      typeOptions: [
+        { value: 'all', label: '全部类型' },
+        { value: '0', label: '普通券' },
+        { value: '1', label: '秒杀券' }
+      ]
     },
     methods: {
       // 导航到其他页面
@@ -535,6 +685,7 @@
           .then(response => {
             if (response.code === 200) {
               this.merchantInfo = response.data;
+              this.voucherForm.shopId = this.merchantInfo.shopId; // 设置表单中的shopId
               sessionStorage.setItem("merchantInfo", JSON.stringify(response.data));
             } else {
               this.$message.error(response.msg || "获取商家信息失败");
@@ -549,44 +700,96 @@
       // 获取优惠券列表
       loadVouchers() {
         this.loading = true;
-        // 使用merchantAxios发送请求
-        merchantAxios.get("/merchant/vouchers", {
-          params: {
-            page: this.currentPage,
-            size: this.pageSize,
-            status: this.filterStatus
-          }
-        })
-        .then(response => {
-          if (response.code === 200) {
-            this.vouchers = response.data.records;
-            this.total = response.data.total;
-          } else {
-            this.$message.error(response.msg || "获取优惠券列表失败");
-          }
-          this.loading = false;
-        })
-        .catch(error => {
-          console.error("获取优惠券列表失败:", error);
-          this.$message.error("获取优惠券列表失败，请重试");
-          this.loading = false;
-        });
+        // 准备API请求参数
+        let params = {
+          shopId: this.merchantInfo.shopId,
+          current: this.currentPage,
+          size: this.pageSize
+        };
+        
+        // 根据筛选状态设置status参数
+        if (this.filterStatus !== 'all') {
+          params.status = this.convertStatusToApi(this.filterStatus);
+        }
+        
+        // 根据筛选类型设置type参数
+        if (this.filterType !== 'all') {
+          params.type = parseInt(this.filterType);
+        }
+        
+        console.log('筛选参数：', params); // 调试用
+        
+        // 使用merchantAxios发送请求，使用新的API路径
+        merchantAxios.get("/merchant/voucher/list", { params })
+          .then(response => {
+            console.log('API响应:', response); // 调试用
+            // 检查实际响应结构
+            if (response.code === 200) {
+              // 使用返回的数据数组（后端返回的是records数组）
+              this.vouchers = response.data || [];
+              this.total = response.total || 0;
+              
+              // 处理优惠券数据，适配前端显示
+              this.vouchers = this.vouchers.map(voucher => {
+                return {
+                  ...voucher,
+                  // 将分转换为元用于显示
+                  value: (voucher.actualValue / 100).toFixed(2),
+                  threshold: (voucher.minAmount / 100).toFixed(2),
+                  // 设置状态字符串用于前端显示
+                  statusStr: this.convertApiStatusToUi(voucher.status),
+                  // 如果没有receivedCount字段，默认为0
+                  receivedCount: voucher.receivedCount || 0,
+                  // 保留库存字段（对于秒杀券）
+                  stock: voucher.stock || null
+                };
+              });
+              
+              this.filteredVouchers = this.vouchers;
+            } else {
+              this.$message.error(response.msg || "获取优惠券列表失败");
+            }
+            this.loading = false;
+          })
+          .catch(error => {
+            console.error("获取优惠券列表失败:", error);
+            this.$message.error("获取优惠券列表失败，请重试");
+            this.loading = false;
+          });
+      },
+      
+      // 将前端状态转换为API状态
+      convertStatusToApi(uiStatus) {
+        switch(uiStatus) {
+          case 'active': return 1; // 上架
+          case 'inactive': return 2; // 下架
+          case 'expired': return 3; // 过期
+          default: return null;
+        }
+      },
+      
+      // 将API状态转换为前端状态
+      convertApiStatusToUi(apiStatus) {
+        switch(apiStatus) {
+          case 1: return 'active'; // 上架
+          case 2: return 'inactive'; // 下架
+          case 3: return 'expired'; // 过期
+          default: return 'unknown';
+        }
       },
       
       // 筛选优惠券
       filterVouchers() {
-        if (this.filterStatus === 'all') {
-          this.filteredVouchers = [...this.vouchers];
-        } else {
-          this.filteredVouchers = this.vouchers.filter(item => item.status === this.filterStatus);
-        }
-        // 重置分页
+        console.log('筛选触发, 状态:', this.filterStatus, '类型:', this.filterType);
+        // 重新加载数据，让后端处理筛选
         this.currentPage = 1;
+        this.loadVouchers();
       },
       
       // 处理分页变化
       handleCurrentChange(val) {
         this.currentPage = val;
+        this.loadVouchers();
       },
       
       // 显示创建优惠券对话框
@@ -596,15 +799,21 @@
         // 重置表单
         this.voucherForm = {
           id: '',
+          shopId: this.merchantInfo.shopId,
           title: '',
-          type: 1,
-          value: 10,
-          threshold: 0,
-          validTimeRange: [],
+          subTitle: '',
+          type: 0,
+          payValue: 1000,
+          actualValue: 500,
+          minAmount: 0,
+          validDays: 30,
+          seckillTime: [],
           beginTime: '',
           endTime: '',
           stock: 100,
-          description: ''
+          limitPerUser: 1,
+          rules: '使用须知：\n1. 满减优惠券\n2. 不可与其他优惠叠加\n3. 有效期内使用有效',
+          status: 2 // 默认下架状态
         };
         this.dialogVisible = true;
         // 延迟重置表单校验结果
@@ -620,15 +829,21 @@
         // 设置表单数据
         this.voucherForm = {
           id: voucher.id,
+          shopId: voucher.shopId,
           title: voucher.title,
+          subTitle: voucher.subTitle,
           type: voucher.type,
-          value: voucher.value,
-          threshold: voucher.threshold,
-          validTimeRange: [voucher.beginTime, voucher.endTime],
+          payValue: voucher.payValue,
+          actualValue: voucher.actualValue,
+          minAmount: voucher.minAmount,
+          validDays: voucher.validDays,
+          seckillTime: voucher.beginTime && voucher.endTime ? [voucher.beginTime, voucher.endTime] : [],
           beginTime: voucher.beginTime,
           endTime: voucher.endTime,
           stock: voucher.stock,
-          description: voucher.description
+          limitPerUser: voucher.limitPerUser || 1,
+          rules: voucher.rules,
+          status: voucher.status
         };
         this.dialogVisible = true;
         // 延迟重置表单校验结果
@@ -641,10 +856,10 @@
       submitVoucherForm() {
         this.$refs.voucherForm.validate((valid) => {
           if (valid) {
-            // 处理时间范围
-            if (this.voucherForm.validTimeRange && this.voucherForm.validTimeRange.length === 2) {
-              this.voucherForm.beginTime = this.voucherForm.validTimeRange[0];
-              this.voucherForm.endTime = this.voucherForm.validTimeRange[1];
+            // 处理秒杀时间段
+            if (this.voucherForm.type === 1 && this.voucherForm.seckillTime && this.voucherForm.seckillTime.length === 2) {
+              this.voucherForm.beginTime = this.voucherForm.seckillTime[0];
+              this.voucherForm.endTime = this.voucherForm.seckillTime[1];
             }
             
             if (this.isEdit) {
@@ -662,52 +877,102 @@
       createVoucher() {
         this.$refs.voucherForm.validate((valid) => {
           if (valid) {
-            merchantAxios.post("/merchant/voucher/create", this.voucherForm)
-              .then(response => {
-                if (response.code === 200) {
-                  this.$message.success("创建成功");
-                  this.dialogVisible = false;
-                  // 重置表单
-                  this.resetVoucherForm();
-                  // 刷新列表
-                  this.loadVouchers();
-                } else {
-                  this.$message.error(response.msg || "创建失败");
-                }
-              })
-              .catch(error => {
-                console.error("创建优惠券失败:", error);
-                this.$message.error("创建失败，请重试");
-              });
+            const voucherData = { ...this.voucherForm };
+            // 删除表单中不需要的字段
+            delete voucherData.seckillTime;
+            
+            // 判断是普通券还是秒杀券
+            if (voucherData.type === 1) {
+              // 秒杀券需要包含这些字段
+              merchantAxios.post("/merchant/voucher/seckill", voucherData)
+                .then(response => {
+                  this.handleVoucherResponse(response, "创建");
+                })
+                .catch(error => {
+                  console.error("创建秒杀券失败:", error);
+                  this.$message.error("创建失败，请重试");
+                });
+            } else {
+              // 普通券，不需要秒杀相关字段
+              delete voucherData.beginTime;
+              delete voucherData.endTime;
+              delete voucherData.stock;
+              delete voucherData.limitPerUser;
+              
+              merchantAxios.post("/merchant/voucher", voucherData)
+                .then(response => {
+                  this.handleVoucherResponse(response, "创建");
+                })
+                .catch(error => {
+                  console.error("创建优惠券失败:", error);
+                  this.$message.error("创建失败，请重试");
+                });
+            }
           } else {
             return false;
           }
         });
       },
       
+      // 处理优惠券响应
+      handleVoucherResponse(response, action) {
+        if (response.code === 200) {
+          this.$message.success(`${action}成功`);
+          this.dialogVisible = false;
+          // 重置表单
+          this.resetVoucherForm();
+          // 刷新列表
+          this.loadVouchers();
+        } else {
+          this.$message.error(response.msg || `${action}失败`);
+        }
+      },
+      
       // 更新优惠券
       updateVoucher() {
-        // 模拟更新操作
-        const index = this.vouchers.findIndex(item => item.id === this.voucherForm.id);
-        if (index !== -1) {
-          // 保持原状态和已售数量不变
-          const status = this.vouchers[index].status;
-          const sold = this.vouchers[index].sold;
+        this.$confirm('确定要保存修改吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          // 处理表单数据
+          const voucherData = { ...this.voucherForm };
           
-          this.vouchers[index] = {
-            ...this.voucherForm,
-            status,
-            sold
-          };
+          // 处理秒杀时间段
+          if (voucherData.type === 1 && voucherData.seckillTime && voucherData.seckillTime.length === 2) {
+            voucherData.beginTime = voucherData.seckillTime[0];
+            voucherData.endTime = voucherData.seckillTime[1];
+          }
           
-          this.filterVouchers();
-          this.dialogVisible = false;
+          // 删除表单中不需要的字段
+          delete voucherData.seckillTime;
           
-          this.$message({
-            message: '优惠券更新成功！',
-            type: 'success'
-          });
-        }
+          // 根据优惠券类型选择不同的更新接口
+          let updateUrl = "";
+          if (voucherData.type === 1) {
+            // 秒杀券
+            updateUrl = `/merchant/voucher/seckill/${voucherData.id}`;
+          } else {
+            // 普通券，不需要秒杀相关字段
+            delete voucherData.beginTime;
+            delete voucherData.endTime;
+            delete voucherData.stock;
+            delete voucherData.limitPerUser;
+            updateUrl = `/merchant/voucher/${voucherData.id}`;
+          }
+          
+          merchantAxios.put(updateUrl, voucherData)
+            .then(response => {
+              this.handleVoucherResponse(response, "更新");
+            })
+            .catch(error => {
+              console.error("更新优惠券失败:", error);
+              this.$message.error("更新失败，请重试");
+            });
+        }).catch(() => {
+          // 用户取消操作
+          this.$message.info('已取消修改');
+        });
       },
       
       // 显示库存管理对话框
@@ -715,81 +980,104 @@
         this.stockForm = {
           id: voucher.id,
           currentStock: voucher.stock,
-          sold: voucher.sold,
-          action: 'add',
-          amount: 10
+          sold: voucher.receivedCount || 0,
+          operation: 'add',
+          stock: 10
         };
         this.stockDialogVisible = true;
       },
       
       // 提交库存调整
       submitStockAdjustment() {
-        // 模拟库存调整
-        const index = this.vouchers.findIndex(item => item.id === this.stockForm.id);
-        if (index !== -1) {
-          if (this.stockForm.action === 'add') {
-            this.vouchers[index].stock += this.stockForm.amount;
+        merchantAxios.put(`/merchant/voucher/${this.stockForm.id}/stock`, {
+          stock: this.stockForm.stock,
+          operation: this.stockForm.operation
+        })
+        .then(response => {
+          if (response.code === 200) {
+            this.$message.success("库存调整成功");
+            this.stockDialogVisible = false;
+            // 刷新列表
+            this.loadVouchers();
           } else {
-            // 确保库存不会小于已售数量
-            const newStock = Math.max(this.vouchers[index].sold, this.vouchers[index].stock - this.stockForm.amount);
-            this.vouchers[index].stock = newStock;
+            this.$message.error(response.msg || "库存调整失败");
           }
-          
-          this.stockDialogVisible = false;
-          this.$message({
-            message: '库存调整成功！',
-            type: 'success'
-          });
-        }
+        })
+        .catch(error => {
+          console.error("库存调整失败:", error);
+          this.$message.error("库存调整失败，请重试");
+        });
       },
       
       // 切换优惠券状态（启用/暂停）
-      toggleVoucherStatus(voucher) {
-        // 模拟状态切换
-        const index = this.vouchers.findIndex(item => item.id === voucher.id);
-        if (index !== -1) {
-          const newStatus = this.vouchers[index].status === 'active' ? 'inactive' : 'active';
-          this.vouchers[index].status = newStatus;
-          
-          this.$message({
-            message: `优惠券已${newStatus === 'active' ? '启用' : '暂停'}！`,
-            type: 'success'
-          });
-        }
+      toggleVoucherStatus(id, newStatus) {
+        // 根据当前状态确定要切换到的新状态
+        const statusText = newStatus === 1 ? '上架' : '下架';
+        
+        this.$confirm(`确定要${statusText}该优惠券吗？`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          merchantAxios.put(`/merchant/voucher/${id}/status`, {
+            status: newStatus
+          })
+            .then(response => {
+              if (response.code === 200) {
+                this.$message.success(`优惠券已${statusText}！`);
+                // 刷新列表
+                this.loadVouchers();
+              } else {
+                this.$message.error(response.msg || "状态切换失败");
+              }
+            })
+            .catch(error => {
+              console.error("状态切换失败:", error);
+              this.$message.error("状态切换失败，请重试");
+            });
+        }).catch(() => {
+          // 取消操作
+        });
       },
       
       // 删除优惠券
-      deleteVoucher(voucher) {
+      deleteVoucher(id) {
         this.$confirm('确定要删除该优惠券吗？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          // 模拟删除操作
-          const index = this.vouchers.findIndex(item => item.id === voucher.id);
-          if (index !== -1) {
-            this.vouchers.splice(index, 1);
-            this.filterVouchers();
-            
-            this.$message({
-              type: 'success',
-              message: '删除成功！'
+          // 使用批量删除API，只传一个ID
+          merchantAxios.delete("/merchant/voucher/batch", {
+            data: {
+              voucherIds: [id]
+            }
+          })
+            .then(response => {
+              if (response.code === 200) {
+                this.$message.success("删除成功");
+                // 刷新列表
+                this.loadVouchers();
+              } else {
+                this.$message.error(response.msg || "删除失败");
+              }
+            })
+            .catch(error => {
+              console.error("删除优惠券失败:", error);
+              this.$message.error("删除失败，请重试");
             });
-          }
         }).catch(() => {
           // 取消删除操作
         });
       },
       
       // 获取优惠券类型文本
-      getTypeText(type) {
-        switch(type) {
-          case 1:
-            return '满减券';
-          case 2:
-            return '折扣券';
-          default:
-            return '未知类型';
+      getTypeText(voucher) {
+        // 根据数据库type字段：0-普通券，1-秒杀券
+        if (voucher.type === 1) {
+          return '秒杀券';
+        } else {
+          return '普通券';
         }
       },
       
@@ -797,11 +1085,11 @@
       getStatusText(status) {
         switch(status) {
           case 'active':
-            return '进行中';
+            return '上架中';
           case 'inactive':
-            return '未开始';
+            return '已下架';
           case 'expired':
-            return '已结束';
+            return '已过期';
           default:
             return '未知状态';
         }
@@ -820,24 +1108,77 @@
       resetVoucherForm() {
         this.voucherForm = {
           id: '',
+          shopId: this.merchantInfo.shopId,
           title: '',
-          type: 1,
-          value: 10,
-          threshold: 0,
-          validTimeRange: [],
+          subTitle: '',
+          type: 0,
+          payValue: 1000,
+          actualValue: 500,
+          minAmount: 0,
+          validDays: 30,
+          seckillTime: [],
           beginTime: '',
           endTime: '',
           stock: 100,
-          description: ''
+          limitPerUser: 1,
+          rules: '使用须知：\n1. 满减优惠券\n2. 不可与其他优惠叠加\n3. 有效期内使用有效',
+          status: 2 // 默认下架状态
         };
-      }
+      },
+      
+      // 重置筛选条件
+      resetFilters() {
+        console.log('重置筛选');
+        this.filterStatus = 'all';
+        this.filterType = 'all';
+        this.searchKeyword = '';
+        this.currentPage = 1;
+        this.loadVouchers();
+      },
+
+      // 获取状态标签类型
+      getStatusTagType(status) {
+        switch(status) {
+          case '上架中': return 'success';
+          case '已下架': return 'info';
+          case '已过期': return 'danger';
+          default: return 'info';
+        }
+      },
+
+      // 格式化日期
+      formatDate(timestamp) {
+        if (!timestamp) return '无';
+        // 如果是毫秒级时间戳，进行转换
+        const date = new Date(timestamp);
+        return date.toLocaleString('zh-CN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        }).replace(/\//g, '-');
+      },
     },
     computed: {
-      // 当前页的优惠券数据
-      displayVouchers() {
-        const start = (this.currentPage - 1) * this.pageSize;
-        const end = start + this.pageSize;
-        return this.filteredVouchers.slice(start, end);
+      // 过滤后的优惠券列表
+      filteredVouchers() {
+        // 搜索关键词过滤
+        if (this.searchKeyword && this.searchKeyword.trim() !== '') {
+          const keyword = this.searchKeyword.toLowerCase();
+          return this.vouchers.filter(voucher => 
+            voucher.title.toLowerCase().includes(keyword) || 
+            (voucher.subTitle && voucher.subTitle.toLowerCase().includes(keyword))
+          );
+        }
+        
+        // 没有搜索关键词时返回所有优惠券
+        return this.vouchers;
+      },
+      
+      // 是否有数据
+      hasData() {
+        return this.filteredVouchers && this.filteredVouchers.length > 0;
       }
     },
     created() {
@@ -852,6 +1193,7 @@
       const merchantInfoStr = sessionStorage.getItem("merchantInfo");
       if (merchantInfoStr) {
         this.merchantInfo = JSON.parse(merchantInfoStr);
+        this.voucherForm.shopId = this.merchantInfo.shopId; // 设置表单中的shopId
       } else {
         this.fetchMerchantInfo();
       }
