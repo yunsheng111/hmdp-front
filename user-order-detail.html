@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="renderer" content="webkit">
+  <title>订单详情 - 黑马点评</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/info.css" rel="stylesheet">
+
+  <style>
+    /* 订单详情页样式 */
+    .order-detail-container {
+      padding: 15px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .order-status-card {
+      background-color: #ff6633;
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .order-status-card::before {
+      content: '';
+      position: absolute;
+      top: -30px;
+      right: -30px;
+      width: 100px;
+      height: 100px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+    }
+
+    .order-status-title {
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+
+    .order-status-desc {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .order-info-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .order-info-header {
+      background-color: #f8f8f8;
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      font-weight: 500;
+      color: #333;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .order-info-header .subtitle {
+      font-size: 13px;
+      color: #999;
+      font-weight: normal;
+    }
+
+    .order-info-content {
+      padding: 15px;
+    }
+
+    .order-shop-info {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .shop-logo {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+
+    .shop-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .shop-info {
+      flex: 1;
+    }
+
+    .shop-name {
+      font-size: 16px;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .shop-address {
+      font-size: 13px;
+      color: #999;
+    }
+
+    .order-product {
+      display: flex;
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .product-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 4px;
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+
+    .product-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .product-info {
+      flex: 1;
+    }
+
+    .product-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .product-desc {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .product-price {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .price {
+      font-size: 18px;
+      font-weight: 600;
+      color: #ff6633;
+    }
+
+    .quantity {
+      color: #999;
+      font-size: 14px;
+    }
+
+    .order-summary {
+      padding: 15px;
+      background-color: #f8f8f8;
+      border-radius: 0 0 8px 8px;
+    }
+
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .summary-item:last-child {
+      margin-bottom: 0;
+      padding-top: 10px;
+      border-top: 1px dashed #ddd;
+    }
+
+    .summary-label {
+      color: #666;
+    }
+
+    .summary-value {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .summary-value.total {
+      font-size: 18px;
+      color: #ff6633;
+      font-weight: 600;
+    }
+
+    .order-detail-item {
+      display: flex;
+      margin-bottom: 10px;
+    }
+
+    .detail-label {
+      width: 100px;
+      color: #999;
+      flex-shrink: 0;
+    }
+
+    .detail-value {
+      flex: 1;
+      color: #333;
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+      margin-bottom: 40px;
+    }
+
+    .action-buttons .el-button {
+      min-width: 120px;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .order-status-card {
+        padding: 15px;
+      }
+
+      .order-status-title {
+        font-size: 18px;
+      }
+
+      .product-img {
+        width: 60px;
+        height: 60px;
+      }
+
+      .shop-logo {
+        width: 40px;
+        height: 40px;
+      }
+
+      .action-buttons {
+        flex-wrap: wrap;
+      }
+
+      .action-buttons .el-button {
+        margin-bottom: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<div id="app">
+  <div class="header">
+    <div class="header-back-btn" @click="goBack"><i class="el-icon-arrow-left"></i></div>
+    <div class="header-title">订单详情</div>
+    <div class="header-right-btn" @click="toHome">首页</div>
+  </div>
+
+  <div class="order-detail-container">
+    <!-- 加载状态 -->
+    <div v-if="loading" class="loading-container">
+      <i class="el-icon-loading"></i>
+      <p>正在加载订单详情...</p>
+    </div>
+
+    <div v-else>
+      <!-- 订单状态卡片 -->
+      <div class="order-status-card" :style="getStatusCardStyle()">
+        <div class="order-status-title">{{getStatusTitle()}}</div>
+        <div class="order-status-desc">{{getStatusDesc()}}</div>
+      </div>
+
+      <!-- 订单信息卡片 -->
+      <div class="order-info-card">
+        <div class="order-info-header">
+          商品信息
+          <span class="subtitle">订单编号: {{order.orderNo || order.id}}</span>
+        </div>
+        <div class="order-info-content">
+          <!-- 店铺信息 -->
+          <div class="order-shop-info">
+            <div class="shop-logo">
+              <img :src="order.shopLogo || '/imgs/icons/default-shop.png'" alt="">
+            </div>
+            <div class="shop-info">
+              <div class="shop-name">{{order.shopName}}</div>
+              <div class="shop-address">{{order.shopAddress || '暂无地址信息'}}</div>
+            </div>
+          </div>
+
+          <!-- 商品信息 -->
+          <div class="order-product">
+            <div class="product-img">
+              <img :src="order.image || '/imgs/icons/default-order.png'" alt="">
+            </div>
+            <div class="product-info">
+              <div class="product-title">{{order.title}}</div>
+              <div class="product-desc">{{order.desc || '暂无描述'}}</div>
+              <div class="product-price">
+                <div class="price">¥ {{order.amount.toFixed(2)}}</div>
+                <div class="quantity">x{{order.quantity || 1}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 订单摘要 -->
+        <div class="order-summary">
+          <div class="summary-item">
+            <div class="summary-label">商品金额</div>
+            <div class="summary-value">¥ {{order.amount.toFixed(2)}}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">优惠金额</div>
+            <div class="summary-value">- ¥ {{(order.discount || 0).toFixed(2)}}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">实付金额</div>
+            <div class="summary-value total">¥ {{(order.amount - (order.discount || 0)).toFixed(2)}}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 订单详情卡片 -->
+      <div class="order-info-card">
+        <div class="order-info-header">订单详情</div>
+        <div class="order-info-content">
+          <div class="order-detail-item">
+            <div class="detail-label">订单编号</div>
+            <div class="detail-value">{{order.orderNo || order.id}}</div>
+          </div>
+          <div class="order-detail-item">
+            <div class="detail-label">下单时间</div>
+            <div class="detail-value">{{formatTime(order.createTime)}}</div>
+          </div>
+          <div class="order-detail-item" v-if="order.payTime">
+            <div class="detail-label">支付时间</div>
+            <div class="detail-value">{{formatTime(order.payTime)}}</div>
+          </div>
+          <div class="order-detail-item" v-if="order.completeTime">
+            <div class="detail-label">完成时间</div>
+            <div class="detail-value">{{formatTime(order.completeTime)}}</div>
+          </div>
+          <div class="order-detail-item" v-if="order.cancelTime">
+            <div class="detail-label">取消时间</div>
+            <div class="detail-value">{{formatTime(order.cancelTime)}}</div>
+          </div>
+          <div class="order-detail-item">
+            <div class="detail-label">支付方式</div>
+            <div class="detail-value">{{order.paymentMethod || '在线支付'}}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="action-buttons">
+        <el-button 
+          v-if="order.status === 'WAIT_PAY'" 
+          type="primary" 
+          @click="payOrder">
+          立即付款
+        </el-button>
+        <el-button 
+          v-if="order.status === 'WAIT_PAY'" 
+          type="danger" 
+          plain
+          @click="cancelOrder">
+          取消订单
+        </el-button>
+        <el-button 
+          v-if="order.status === 'PAID'" 
+          type="success" 
+          @click="completeOrder">
+          确认收货
+        </el-button>
+        <el-button 
+          v-if="order.status === 'COMPLETED'" 
+          type="warning" 
+          @click="writeReview">
+          评价
+        </el-button>
+        <el-button 
+          v-if="order.status === 'COMPLETED' || order.status === 'PAID'" 
+          type="primary" 
+          plain
+          @click="toShop">
+          再次购买
+        </el-button>
+        <el-button 
+          type="info" 
+          plain
+          @click="contactService">
+          联系客服
+        </el-button>
+      </div>
+    </div>
+  </div>
+
+  <foot-bar :active-btn="4" class="fixed-footer"></foot-bar>
+</div>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/footer.js"></script>
+<script>
+  const app = new Vue({
+    el: "#app",
+    data() {
+      return {
+        orderId: '',
+        order: {
+          id: '',
+          orderNo: '',
+          userId: '',
+          shopId: '',
+          shopName: '',
+          shopLogo: '',
+          shopAddress: '',
+          title: '',
+          desc: '',
+          image: '',
+          status: '',
+          amount: 0,
+          discount: 0,
+          quantity: 1,
+          paymentMethod: '在线支付',
+          createTime: '',
+          payTime: '',
+          completeTime: '',
+          cancelTime: ''
+        },
+        loading: true
+      }
+    },
+    created() {
+      this.getOrderId();
+      this.loadOrderDetail();
+    },
+    methods: {
+      getOrderId() {
+        const urlParams = new URLSearchParams(window.location.search);
+        this.orderId = urlParams.get('id');
+        if (!this.orderId) {
+          this.$message.error('订单ID不能为空');
+          this.goBack();
+        }
+      },
+      loadOrderDetail() {
+        this.loading = true;
+        axios.get(`/user/orders/${this.orderId}`)
+          .then(({data}) => {
+            console.log("订单详情数据:", data);
+            if (data && data.success) {
+              this.order = data.data || this.order;
+            } else {
+              this.$message.error(data.errorMsg || '获取订单详情失败');
+            }
+          })
+          .catch(err => {
+            console.error("获取订单详情失败", err);
+            this.$message.error("获取订单详情失败，请重试");
+          })
+          .finally(() => {
+            this.loading = false;
+          });
+      },
+      formatTime(timestamp) {
+        if (!timestamp) return '暂无';
+        const date = new Date(timestamp);
+        return date.toLocaleString();
+      },
+      getStatusCardStyle() {
+        // 根据订单状态返回不同的背景颜色
+        switch(this.order.status) {
+          case 1: // 待付款
+            return { backgroundColor: '#ff9800' };
+          case 2: // 已付款
+            return { backgroundColor: '#2196f3' };
+          case 3: // 已完成
+            return { backgroundColor: '#4caf50' };
+          case 4: // 已取消
+            return { backgroundColor: '#9e9e9e' };
+          case 5: // 已退款
+            return { backgroundColor: '#f44336' };
+          default:
+            return { backgroundColor: '#ff6633' };
+        }
+      },
+      getStatusTitle() {
+        // 根据订单状态返回不同的标题
+        switch(this.order.status) {
+          case 1:
+            return '等待付款';
+          case 2:
+            return '已付款';
+          case 3:
+            return '订单已完成';
+          case 4:
+            return '订单已取消';
+          case 5:
+            return '已退款';
+          default:
+            return '订单状态未知';
+        }
+      },
+      getStatusDesc() {
+        // 根据订单状态返回不同的描述
+        switch(this.order.status) {
+          case 1:
+            return '请尽快完成支付，超时订单将自动取消';
+          case 2:
+            return '商家正在处理您的订单，请耐心等待';
+          case 3:
+            return '感谢您的购买，欢迎再次光临';
+          case 4:
+            return '订单已取消，期待您的再次惠顾';
+          case 5:
+            return '订单已退款，感谢您的理解';
+          default:
+            return '';
+        }
+      },
+      goBack() {
+        history.back();
+      },
+      toHome() {
+        location.href = "index.html";
+      },
+      payOrder() {
+        this.$confirm('确认支付该订单?', '支付确认', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          axios.post(`/user/orders/${this.orderId}/pay`)
+            .then(({data}) => {
+              if (data && data.success) {
+                this.$message.success('支付成功');
+                // 重新加载订单详情
+                this.loadOrderDetail();
+              } else {
+                this.$message.error(data.errorMsg || '支付失败');
+              }
+            })
+            .catch(err => {
+              console.error("支付失败", err);
+              this.$message.error("支付失败，请重试");
+            });
+        }).catch(() => {
+          this.$message.info('已取消支付');
+        });
+      },
+      cancelOrder() {
+        this.$confirm('确认取消该订单? 取消后将不可恢复', '取消订单', {
+          confirmButtonText: '确定',
+          cancelButtonText: '返回',
+          type: 'warning'
+        }).then(() => {
+          axios.post(`/user/orders/${this.orderId}/cancel`)
+            .then(({data}) => {
+              if (data && data.success) {
+                this.$message.success('订单已取消');
+                // 重新加载订单详情
+                this.loadOrderDetail();
+              } else {
+                this.$message.error(data.errorMsg || '取消订单失败');
+              }
+            })
+            .catch(err => {
+              console.error("取消订单失败", err);
+              this.$message.error("取消订单失败，请重试");
+            });
+        }).catch(() => {
+          this.$message.info('已取消操作');
+        });
+      },
+      completeOrder() {
+        this.$confirm('确认已收到商品?', '确认收货', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'info'
+        }).then(() => {
+          axios.post(`/user/orders/${this.orderId}/confirm`)
+            .then(({data}) => {
+              if (data && data.success) {
+                this.$message.success('订单已完成');
+                // 重新加载订单详情
+                this.loadOrderDetail();
+              } else {
+                this.$message.error(data.errorMsg || '确认收货失败');
+              }
+            })
+            .catch(err => {
+              console.error("确认收货失败", err);
+              this.$message.error("确认收货失败，请重试");
+            });
+        }).catch(() => {
+          this.$message.info('已取消操作');
+        });
+      },
+      writeReview() {
+        location.href = `user-review-edit.html?orderId=${this.orderId}&shopId=${this.order.shopId}`;
+      },
+      toShop() {
+        location.href = `shop.html?id=${this.order.shopId}`;
+      },
+      contactService() {
+        this.$alert('客服电话: 400-123-4567', '联系客服', {
+          confirmButtonText: '确定',
+          callback: action => {
+            this.$message({
+              type: 'info',
+              message: `您可以拨打客服电话获取帮助`
+            });
+          }
+        });
+      }
+    }
+  })
+</script>
+</body>
+
+</html> 

@@ -557,7 +557,8 @@
           <div class="seckill-stock">剩余 <span>{{v.stock}}</span> 张</div>
           <div class="seckill-time">{{formatTime(v)}}</div>
         </div>
-        <div class="voucher-btn" v-else>抢购</div>
+        <div class="voucher-btn" v-else-if="!isVoucherClaimed(v.id)" @click="claimVoucher(v)">领取</div>
+        <div class="voucher-btn disable-btn" v-else>已领取</div>
       </div>
     </div>
   </div>
@@ -915,6 +916,7 @@
       util,
       shop: {},
       vouchers: [],
+      claimedVouchers: [], // 已领取的优惠券ID列表
       // 评论相关数据
       comments: [],
       commentStats: {
@@ -984,6 +986,7 @@
       if (this.checkLoginStatus()) {
         this.queryUserOrders(shopId);
         this.loadCart();
+        this.loadClaimedVouchers(shopId);
       }
     },
     methods: {
@@ -991,6 +994,11 @@
       checkLoginStatus() {
         this.token = sessionStorage.getItem("token") || '';
         return !!this.token;
+      },
+
+      // 检查优惠券是否已领取
+      isVoucherClaimed(voucherId) {
+        return this.claimedVouchers.includes(voucherId);
       },
 
       goBack() {
@@ -1026,12 +1034,15 @@
         return m;
       },
       isNotBegin(v){
-        return new Date(v.beginTime).getTime() > new Date().getTime();
+        console.log("检查优惠券是否未开始:", v.title, "开始时间:", v.beginTime, "当前时间:", new Date());
+        return v.beginTime && new Date(v.beginTime).getTime() > new Date().getTime();
       },
       isEnd(v){
-        return new Date(v.endTime).getTime() < new Date().getTime();
+        console.log("检查优惠券是否结束:", v.title, "结束时间:", v.endTime, "当前时间:", new Date());
+        return v.endTime && new Date(v.endTime).getTime() < new Date().getTime();
       },
       seckill(v){
+        console.log("点击了抢购按钮，优惠券信息:", v);
         if(!this.checkLoginStatus()){
           this.$message.error("请先登录")
           // 未登录，跳转
@@ -1051,15 +1062,68 @@
           return;
         }
         let id = v.id;
-        // 秒杀抢购
+        console.log("准备发送抢购请求，优惠券ID:", id);
+        // 秒杀抢购 - axios已经设置了baseURL为"/api"
         axios.post("/voucher-order/seckill/" + id)
         .then(({data}) => {
+          console.log("抢购请求成功，返回数据:", data);
           // 抢购成功，这里输出订单id，支付功能TODO
           this.$message.success("抢购成功，订单id：" + data)
+          // 刷新优惠券列表
+          this.queryVoucher(this.shop.id);
         })
-        .catch(this.$message.error)
+        .catch(err => {
+          console.error("抢购请求失败:", err);
+          this.$message.error(err)
+        })
       },
-      
+
+      claimVoucher(v){
+        console.log("点击了领取按钮，优惠券信息:", v);
+        if(!this.checkLoginStatus()){
+          this.$message.error("请先登录")
+          // 未登录，跳转
+          this.goToLogin();
+          return;
+        }
+
+        let id = v.id;
+        console.log("准备发送领取请求，优惠券ID:", id);
+        // 普通优惠券领取
+        axios.post("/voucher-order/claim/" + id)
+        .then(({data}) => {
+          console.log("领取请求成功，返回数据:", data);
+          // 领取成功，这里输出订单id
+          this.$message.success("领取成功，订单id：" + data)
+          // 将优惠券ID添加到已领取列表
+          this.claimedVouchers.push(id);
+          // 刷新优惠券列表
+          this.queryVoucher(this.shop.id);
+        })
+        .catch(err => {
+          console.error("领取请求失败:", err);
+          this.$message.error(err)
+        })
+      },
+
+      // 加载用户已领取的优惠券
+      loadClaimedVouchers(shopId) {
+        // 查询用户在该商店已领取的优惠券
+        axios.get('/voucher-order/claimed', {
+          params: { shopId: shopId }
+        })
+        .then(({data}) => {
+          // 提取已领取的优惠券ID列表
+          this.claimedVouchers = (data || []).map(order => order.voucherId);
+          console.log("已领取的优惠券ID列表:", this.claimedVouchers);
+        })
+        .catch(err => {
+          console.error('获取已领取优惠券失败', err);
+          // 如果接口不存在或失败，保持空数组
+          this.claimedVouchers = [];
+        });
+      },
+
       // 评论相关方法
       queryComments() {
         this.commentsLoading = true;

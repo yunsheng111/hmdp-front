@@ -96,6 +96,242 @@
       font-size: 15px;
       line-height: 1.3;
     }
+
+    /* 订单相关样式 */
+    .orders-container {
+      padding: 0 10px;
+    }
+
+    .empty-orders-tip {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+    }
+
+    .empty-orders-tip img {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 15px;
+    }
+
+    .empty-orders-tip .title {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .empty-orders-tip .desc {
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .to-explore-btn {
+      display: inline-block;
+      padding: 8px 16px;
+      background-color: #ff6633;
+      color: white;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .to-explore-btn:hover {
+      background-color: #ff5722;
+      transform: translateY(-2px);
+    }
+
+    .order-filter {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 15px;
+      padding: 10px 15px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      margin-right: 20px;
+      margin-bottom: 10px;
+    }
+
+    .filter-group label {
+      margin-right: 8px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .order-list {
+      margin-bottom: 20px;
+    }
+
+    .order-item {
+      margin-bottom: 15px;
+      border-radius: 8px;
+      background-color: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .order-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 15px;
+      background-color: #f8f8f8;
+      border-bottom: 1px solid #eee;
+    }
+
+    .order-shop {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .order-shop i {
+      margin-right: 5px;
+      color: #ff6633;
+    }
+
+    .shop-name {
+      font-weight: 500;
+    }
+
+    .order-status {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .status-wait_pay {
+      color: #ff9800;
+    }
+
+    .status-paid {
+      color: #2196f3;
+    }
+
+    .status-completed {
+      color: #4caf50;
+    }
+
+    .status-canceled {
+      color: #9e9e9e;
+    }
+
+    .order-content {
+      display: flex;
+      padding: 15px;
+      cursor: pointer;
+    }
+
+    .order-img {
+      width: 80px;
+      height: 80px;
+      margin-right: 15px;
+      border-radius: 4px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .order-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .order-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .order-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .order-desc {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .order-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .order-time {
+      font-size: 13px;
+      color: #999;
+    }
+
+    .order-price {
+      font-size: 16px;
+      font-weight: 600;
+      color: #ff6633;
+    }
+
+    .order-actions {
+      display: flex;
+      justify-content: flex-end;
+      padding: 0 15px 15px;
+      gap: 10px;
+    }
+
+    .order-pagination {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .order-filter {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .filter-group {
+        width: 100%;
+        margin-right: 0;
+      }
+      
+      .order-content {
+        flex-direction: column;
+      }
+      
+      .order-img {
+        width: 100%;
+        height: 150px;
+        margin-right: 0;
+        margin-bottom: 10px;
+      }
+      
+      .order-actions {
+        flex-wrap: wrap;
+      }
+    }
   </style>
 
 </head>
@@ -316,6 +552,142 @@
           </div>
         </div>
       </el-tab-pane>
+      <el-tab-pane label="订单" name="5">
+        <!-- 订单页面内容 -->
+        <div class="orders-container">
+          <!-- 加载状态 -->
+          <div v-if="orderData.loading" class="orders-loading">
+            <i class="el-icon-loading"></i> 加载中...
+          </div>
+
+          <!-- 订单列表 -->
+          <div v-else>
+            <!-- 无订单时显示 -->
+            <div v-if="orderData.list.length === 0" class="empty-orders-tip">
+              <img src="/imgs/empty-orders.png" alt="暂无订单" onerror="this.src='/imgs/icons/default-icon.png'">
+              <div class="title">暂无订单记录</div>
+              <div class="desc">去发现更多好店，享受美好生活<br>您的消费记录将在这里展示！</div>
+              <div class="to-explore-btn" @click="toExplore()">
+                <i class="el-icon-shopping-bag-1"></i> 去逛逛
+              </div>
+            </div>
+
+            <!-- 订单列表 -->
+            <div v-else>
+              <div class="order-filter">
+                <div class="filter-group">
+                  <label>订单状态：</label>
+                  <el-select v-model="orderStatus" placeholder="全部状态" size="small" @change="queryOrders">
+                    <el-option label="全部" value=""></el-option>
+                    <el-option label="待付款" value="WAIT_PAY"></el-option>
+                    <el-option label="已付款" value="PAID"></el-option>
+                    <el-option label="已完成" value="COMPLETED"></el-option>
+                    <el-option label="已取消" value="CANCELED"></el-option>
+                    <el-option label="已退款" value="REFUNDED"></el-option>
+                  </el-select>
+                </div>
+                <div class="filter-group">
+                  <label>时间范围：</label>
+                  <el-date-picker
+                    v-model="dateRange"
+                    type="daterange"
+                    size="small"
+                    range-separator="至"
+                    start-placeholder="开始日期"
+                    end-placeholder="结束日期"
+                    format="yyyy-MM-dd"
+                    value-format="yyyy-MM-dd"
+                    @change="queryOrders">
+                  </el-date-picker>
+                </div>
+                <div class="filter-group" v-if="isDebugMode">
+                  <el-button size="small" type="info" @click="debugOrders">调试订单数据</el-button>
+                  <el-button size="small" type="warning" @click="reloadOrders">强制刷新</el-button>
+                </div>
+              </div>
+
+              <div class="order-list">
+                <div class="order-item" v-for="order in orderData.filteredList" :key="order.id">
+                  <div class="order-header">
+                    <div class="order-shop">
+                      <i class="el-icon-shop"></i>
+                      <span class="shop-name">{{order.shopName || '未知商家'}}</span>
+                    </div>
+                    <div class="order-status" :class="getStatusClass(order.status)">
+                      {{getStatusText(order.status)}}
+                    </div>
+                  </div>
+                  
+                  <div class="order-content" @click="toOrderDetail(order.id)">
+                    <div class="order-img">
+                      <img :src="order.image || '/imgs/icons/default-order.png'" alt="">
+                    </div>
+                    <div class="order-info">
+                      <div class="order-title">{{order.productSummary || order.title || '订单商品'}}</div>
+                      <div class="order-desc">订单号：{{order.orderNo || order.id || '未知订单号'}}</div>
+                      <div class="order-meta">
+                        <div class="order-time">下单时间：{{formatTime(order.createTime)}}</div>
+                        <div class="order-price">¥ {{formatPrice(order.totalAmount)}}</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="order-actions">
+                    <el-button
+                      v-if="order.status === 1"
+                      type="primary"
+                      size="mini"
+                      @click="payOrder(order)">
+                      立即付款
+                    </el-button>
+                    <el-button
+                      v-if="order.status === 1"
+                      type="danger"
+                      size="mini"
+                      plain
+                      @click="cancelOrder(order)">
+                      取消订单
+                    </el-button>
+                    <el-button
+                      v-if="order.status === 2"
+                      type="success"
+                      size="mini"
+                      plain
+                      @click="completeOrder(order)">
+                      确认收货
+                    </el-button>
+                    <el-button
+                      v-if="order.status === 3"
+                      type="warning"
+                      size="mini"
+                      @click="writeReview(order)">
+                      评价
+                    </el-button>
+                    <el-button
+                      type="info"
+                      size="mini"
+                      plain
+                      @click="toOrderDetail(order.id)">
+                      订单详情
+                    </el-button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 订单分页 -->
+              <el-pagination
+                v-if="orderData.total > orderData.pageSize"
+                @current-change="handleOrderPageChange"
+                :current-page="orderData.currentPage"
+                :page-size="orderData.pageSize"
+                :total="orderData.total"
+                layout="prev, pager, next, total"
+                class="order-pagination">
+              </el-pagination>
+            </div>
+          </div>
+        </div>
+      </el-tab-pane>
       <el-tab-pane :label="'粉丝(' + followerCount + ')'" name="3">
         <!-- 添加提示信息 -->
         <div class="follow-tip" v-if="followerData.list.length > 0">
@@ -457,6 +829,7 @@
         resizeObserver: null,
         lastHoveredElement: null,
         mouseMoveRAF: null,
+        isDebugMode: false, // 默认关闭调试模式
 
         // 评论相关数据
         selectedBlogId: null,
@@ -498,12 +871,34 @@
         followUsers: [],
         followerCount: 0,
         followers: [],
+
+        // 新增：订单相关数据
+        orderData: {
+          list: [],
+          filteredList: [], // 过滤后的列表
+          total: 0,
+          currentPage: 1,
+          pageSize: 10,
+          loading: false
+        },
+        orderStatus: '',
+        dateRange: []
       }
     },
     computed: {
+      // 删除未使用的orderDataFilteredList计算属性
     },
     created() {
       this.queryUser();
+      
+      // 监听activeName变化，确保在直接通过URL参数访问标签页时能加载数据
+      this.$watch('activeName', (newVal, oldVal) => {
+        console.log(`标签页从 ${oldVal} 变为 ${newVal}`);
+        if (newVal === '5' && this.orderData.list.length === 0 && !this.orderData.loading) {
+          console.log("标签页变化触发订单数据加载");
+          this.queryOrders();
+        }
+      });
     },
     mounted() {
       this.initScrollListener();
@@ -516,6 +911,14 @@
       window.addEventListener('resize', this.handleWindowResize);
 
       this.clearAllHoveredClasses();
+      
+      // 检查URL参数，如果有tab参数，切换到对应标签页
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      if (tabParam) {
+        this.activeName = tabParam;
+        console.log("从URL参数切换到标签页:", tabParam);
+      }
     },
     beforeDestroy() {
       document.removeEventListener('mousemove', this.handleMouseMove);
@@ -765,6 +1168,7 @@
       },
       handleClick(r) {
         this.activeName = r.name;
+        console.log("切换到标签页:", r.name);
 
         if (r.name === '4') {
           this.queryFollowUsersPaged(1);
@@ -783,6 +1187,12 @@
           this.sortType = 'time';
           // 根据屏幕大小设置侧边栏初始状态
           this.sidebarVisible = window.innerWidth > 768;
+        } else if (r.name === '5') {
+          console.log("准备加载订单数据...");
+          // 确保订单数据为空时显示正确的状态
+          if (this.orderData.list.length === 0 && !this.orderData.loading) {
+            this.queryOrders();
+          }
         }
         this.$nextTick(() => {
           this.clearAllHoveredClasses();
@@ -905,6 +1315,22 @@
         if (!timestamp) return '最近';
         const date = new Date(timestamp);
         return date.toLocaleString();
+      },
+      formatPrice(price) {
+        if (price === undefined || price === null) return '0.00';
+        
+        // 处理可能的不同价格格式
+        if (typeof price === 'string') {
+          // 尝试转换为数字
+          const numPrice = parseFloat(price);
+          if (isNaN(numPrice)) return '0.00';
+          return (numPrice / 100).toFixed(2);
+        } else if (typeof price === 'number') {
+          // 假设价格单位是分，转换为元
+          return (price / 100).toFixed(2);
+        }
+        
+        return '0.00';
       },
       toOtherUserInfo(user) {
         location.href = `user-other-info.html?id=${user.id}`;
@@ -1184,6 +1610,336 @@
         
         // 跳转到博客详情页进行回复
         location.href = `user-blog-detail.html?id=${this.selectedBlogId}&commentId=${comment.id}#comment-section`;
+      },
+
+      // 新增：订单相关方法
+      queryOrders() {
+        this.orderData.loading = true;
+        
+        // 确保用户已登录
+        if (!this.user || !this.user.id) {
+          console.error("用户未登录或用户ID不存在");
+          this.$message.error("请先登录");
+          this.orderData.loading = false;
+          return;
+        }
+        
+        // 构建查询参数
+        const params = {
+          current: this.orderData.currentPage || 1,
+          size: 10
+        };
+
+        // 添加状态筛选
+        if (this.orderStatus) {
+          // 将前端状态转换为后端状态码
+          const statusMap = {
+            'WAIT_PAY': 1,
+            'PAID': 2,
+            'COMPLETED': 3,
+            'CANCELED': 4
+          };
+          params.status = statusMap[this.orderStatus];
+        }
+
+        // 添加日期范围筛选
+        if (this.dateRange && this.dateRange.length === 2) {
+          params.startDate = this.dateRange[0];
+          params.endDate = this.dateRange[1];
+        }
+
+        // 添加详细的调试日志
+        console.log("开始请求订单数据，参数:", params);
+        console.log("当前用户ID:", this.user.id);
+
+        // 使用正确的API路径，确保请求当前用户的订单
+        axios.get("/user/orders", { params })
+          .then((response) => {
+            // 详细记录原始响应
+            console.log("订单API原始响应:", response);
+            
+            // 检查response.data的具体结构
+            const responseData = response.data;
+            console.log("订单数据 (response.data):", responseData);
+            console.log("订单数据类型:", typeof responseData);
+            
+            if (Array.isArray(responseData)) {
+              console.log("订单数据是数组，长度:", responseData.length);
+            } else if (typeof responseData === 'object' && responseData !== null) {
+              console.log("订单数据是对象，属性:", Object.keys(responseData));
+              
+              // 检查常见的分页数据结构
+              if (responseData.records) {
+                console.log("包含records属性，类型:", typeof responseData.records);
+                console.log("records是否为数组:", Array.isArray(responseData.records));
+                console.log("records长度:", responseData.records.length);
+              }
+              
+              if (responseData.data) {
+                console.log("包含data属性，类型:", typeof responseData.data);
+                
+                const nestedData = responseData.data;
+                if (typeof nestedData === 'object' && nestedData !== null) {
+                  console.log("data属性的键:", Object.keys(nestedData));
+                  
+                  if (nestedData.records) {
+                    console.log("data.records是否为数组:", Array.isArray(nestedData.records));
+                    console.log("data.records长度:", nestedData.records.length);
+                  }
+                }
+              }
+            }
+            
+            // 根据实际响应格式处理数据
+            let orderList = [];
+            let totalCount = 0;
+            
+            // 直接检查具体的数据结构并提取订单列表
+            if (responseData && responseData.data && responseData.data.records) {
+              // 结构: {data: {records: [], total: number}}
+              console.log("使用 responseData.data.records 格式");
+              orderList = responseData.data.records;
+              totalCount = responseData.data.total || orderList.length;
+            } 
+            else if (responseData && responseData.records) {
+              // 结构: {records: [], total: number}
+              console.log("使用 responseData.records 格式");
+              orderList = responseData.records;
+              totalCount = responseData.total || orderList.length;
+            }
+            else if (Array.isArray(responseData)) {
+              // 结构: []
+              console.log("使用 数组 格式");
+              orderList = responseData;
+              totalCount = responseData.length;
+            }
+            else if (responseData && responseData.data && Array.isArray(responseData.data)) {
+              // 结构: {data: []}
+              console.log("使用 responseData.data 数组格式");
+              orderList = responseData.data;
+              totalCount = orderList.length;
+            }
+            else {
+              console.warn("未能识别的订单数据格式");
+              // 尝试查找任何可能包含订单数组的属性
+              if (responseData && typeof responseData === 'object') {
+                for (const key in responseData) {
+                  const value = responseData[key];
+                  if (Array.isArray(value)) {
+                    console.log(`找到可能的订单数组，属性名: ${key}, 长度: ${value.length}`);
+                    orderList = value;
+                    totalCount = value.length;
+                    break;
+                  } else if (typeof value === 'object' && value !== null) {
+                    for (const nestedKey in value) {
+                      const nestedValue = value[nestedKey];
+                      if (Array.isArray(nestedValue)) {
+                        console.log(`找到嵌套的可能订单数组，路径: ${key}.${nestedKey}, 长度: ${nestedValue.length}`);
+                        orderList = nestedValue;
+                        totalCount = nestedValue.length;
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            
+            // 记录处理后的数据
+            console.log("处理后的订单列表:", orderList);
+            console.log("订单总数:", totalCount);
+            
+            // 检查订单项的格式
+            if (orderList.length > 0) {
+              console.log("订单项示例:", orderList[0]);
+            }
+            
+            // 更新数据
+            this.orderData.list = orderList || [];
+            this.orderData.total = totalCount || 0;
+            this.orderData.filteredList = [...this.orderData.list];
+            
+            this.$nextTick(() => {
+              this.initBlogHoverEffects();
+            });
+          })
+          .catch(err => {
+            console.error("获取订单列表失败", err);
+            this.$message.error("获取订单列表失败");
+            this.orderData.list = [];
+            this.orderData.total = 0;
+            this.orderData.filteredList = [];
+          })
+          .finally(() => {
+            this.orderData.loading = false;
+          });
+      },
+
+      toOrderDetail(orderId) {
+        location.href = `user-order-detail.html?id=${orderId}`;
+      },
+
+      toExplore() {
+        location.href = "explore.html";
+      },
+
+      getStatusText(status) {
+        switch (status) {
+          case 1:
+            return '待付款';
+          case 2:
+            return '已付款';
+          case 3:
+            return '已完成';
+          case 4:
+            return '已取消';
+          case 5:
+            return '已退款';
+          default:
+            return '未知状态';
+        }
+      },
+
+      getStatusClass(status) {
+        switch (status) {
+          case 1:
+            return 'status-wait_pay';
+          case 2:
+            return 'status-paid';
+          case 3:
+            return 'status-completed';
+          case 4:
+            return 'status-canceled';
+          case 5:
+            return 'status-refunded';
+          default:
+            return '';
+        }
+      },
+
+      payOrder(order) {
+        this.$confirm('确认支付该订单?', '支付确认', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          axios.post(`/user/orders/${order.id}/pay`)
+            .then(({data}) => {
+              if (data && data.success) {
+                this.$message.success('支付成功');
+                // 更新订单状态
+                this.queryOrders();
+              } else {
+                this.$message.error(data.errorMsg || '支付失败');
+              }
+            })
+            .catch(err => {
+              console.error("支付失败", err);
+              this.$message.error("支付失败，请重试");
+            });
+        }).catch(() => {
+          this.$message.info('已取消支付');
+        });
+      },
+
+      cancelOrder(order) {
+        this.$confirm('确认取消该订单? 取消后将不可恢复', '取消订单', {
+          confirmButtonText: '确定',
+          cancelButtonText: '返回',
+          type: 'warning'
+        }).then(() => {
+          axios.post(`/user/orders/${order.id}/cancel`)
+            .then(({data}) => {
+              if (data && data.success) {
+                this.$message.success('订单已取消');
+                // 更新订单状态
+                this.queryOrders();
+              } else {
+                this.$message.error(data.errorMsg || '取消订单失败');
+              }
+            })
+            .catch(err => {
+              console.error("取消订单失败", err);
+              this.$message.error("取消订单失败，请重试");
+            });
+        }).catch(() => {
+          this.$message.info('已取消操作');
+        });
+      },
+
+      completeOrder(order) {
+        this.$confirm('确认已收到商品?', '确认收货', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'info'
+        }).then(() => {
+          axios.post(`/user/orders/${order.id}/confirm`)
+            .then(({data}) => {
+              if (data && data.success) {
+                this.$message.success('订单已完成');
+                // 更新订单状态
+                this.queryOrders();
+              } else {
+                this.$message.error(data.errorMsg || '确认收货失败');
+              }
+            })
+            .catch(err => {
+              console.error("确认收货失败", err);
+              this.$message.error("确认收货失败，请重试");
+            });
+        }).catch(() => {
+          this.$message.info('已取消操作');
+        });
+      },
+
+      writeReview(order) {
+        location.href = `user-review-edit.html?orderId=${order.id}&shopId=${order.shopId}`;
+      },
+
+      handleOrderPageChange(page) {
+        this.orderData.currentPage = page;
+        // 重新查询订单数据
+        this.queryOrders();
+      },
+
+      debugOrders() {
+        // 切换调试模式
+        this.isDebugMode = !this.isDebugMode;
+        
+        console.group('订单数据调试信息');
+        console.log('当前订单数据状态:', {
+          loading: this.orderData.loading,
+          list: this.orderData.list,
+          filteredList: this.orderData.filteredList,
+          total: this.orderData.total
+        });
+        
+        if (this.orderData.list.length > 0) {
+          console.log('第一个订单项:', this.orderData.list[0]);
+          console.log('订单状态类名:', this.getStatusClass(this.orderData.list[0].status));
+        } else {
+          console.log('订单列表为空');
+        }
+        
+        // 检查DOM渲染
+        this.$nextTick(() => {
+          const orderItems = document.querySelectorAll('.order-item');
+          console.log('渲染的订单项数量:', orderItems.length);
+          
+          if (orderItems.length === 0 && this.orderData.list.length > 0) {
+            console.warn('警告: 有订单数据但未渲染到DOM!');
+          }
+        });
+        
+        console.groupEnd();
+      },
+      
+      reloadOrders() {
+        // 清空现有数据并重新加载
+        this.orderData.list = [];
+        this.orderData.filteredList = [];
+        this.orderData.total = 0;
+        this.queryOrders();
       },
     }
   })
