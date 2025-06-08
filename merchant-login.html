@@ -397,6 +397,12 @@
       }
     },
     methods: {
+      // 获取URL参数的方法
+      getUrlParam(name) {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        return urlParams.get(name);
+      },
       // 辅助函数：处理常见的测试账号和密码
       handleTestAccount() {
         // 如果是测试账号，自动填充正确的密码
@@ -461,8 +467,10 @@
             type: "success",
             duration: 1500,
             onClose: () => {
-              // 跳转到商家中心
-              location.href = "/merchant-center.html"
+              // 获取重定向参数
+              const redirect = this.getUrlParam('redirect');
+              // 如果存在重定向参数，跳转到指定页面，否则默认跳转到商家中心
+              location.href = redirect || "/merchant-center.html";
             }
           });
         })
@@ -524,8 +532,10 @@
             type: "success",
             duration: 1500,
             onClose: () => {
-              // 跳转到商家中心
-              location.href = "/merchant-center.html"
+              // 获取重定向参数
+              const redirect = this.getUrlParam('redirect');
+              // 如果存在重定向参数，跳转到指定页面，否则默认跳转到商家中心
+              location.href = redirect || "/merchant-center.html";
             }
           });
         })

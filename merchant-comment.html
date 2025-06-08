@@ -311,7 +311,75 @@
       <div class="content-header">
         <h2>评价管理</h2>
       </div>
-      
+
+      <!-- 统计数据展示 -->
+      <div class="content-section" style="margin-bottom: 20px;">
+        <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);">
+          <h3 style="margin-bottom: 20px; color: #303133;">评论统计</h3>
+          <el-row :gutter="20" v-loading="loadingStatistics">
+            <el-col :span="4">
+              <div style="text-align: center; padding: 20px; background: #f0f9eb; border-radius: 8px;">
+                <div style="font-size: 28px; font-weight: bold; color: #67c23a; margin-bottom: 8px;">
+                  {{ statistics.totalComments }}
+                </div>
+                <div style="color: #606266; font-size: 14px;">总评论数</div>
+              </div>
+            </el-col>
+            <el-col :span="4">
+              <div style="text-align: center; padding: 20px; background: #fcf6ed; border-radius: 8px;">
+                <div style="font-size: 28px; font-weight: bold; color: #e6a23c; margin-bottom: 8px;">
+                  {{ statistics.averageRating.toFixed(1) }}
+                </div>
+                <div style="color: #606266; font-size: 14px;">平均评分</div>
+              </div>
+            </el-col>
+            <el-col :span="4">
+              <div style="text-align: center; padding: 20px; background: #fef0f0; border-radius: 8px;">
+                <div style="font-size: 28px; font-weight: bold; color: #f56c6c; margin-bottom: 8px;">
+                  {{ statistics.pendingReplyCount }}
+                </div>
+                <div style="color: #606266; font-size: 14px;">待回复</div>
+              </div>
+            </el-col>
+            <el-col :span="4">
+              <div style="text-align: center; padding: 20px; background: #ecf5ff; border-radius: 8px;">
+                <div style="font-size: 28px; font-weight: bold; color: #409eff; margin-bottom: 8px;">
+                  {{ statistics.replyRate.toFixed(1) }}%
+                </div>
+                <div style="color: #606266; font-size: 14px;">回复率</div>
+              </div>
+            </el-col>
+            <el-col :span="8">
+              <div style="padding: 20px; background: #f5f7fa; border-radius: 8px;">
+                <div style="color: #303133; font-weight: bold; margin-bottom: 15px;">评分分布</div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #606266;">5星</span>
+                    <span style="color: #67c23a; font-weight: bold;">{{ statistics.ratingDistribution.rating5 }}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #606266;">4星</span>
+                    <span style="color: #67c23a; font-weight: bold;">{{ statistics.ratingDistribution.rating4 }}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #606266;">3星</span>
+                    <span style="color: #e6a23c; font-weight: bold;">{{ statistics.ratingDistribution.rating3 }}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #606266;">2星</span>
+                    <span style="color: #f56c6c; font-weight: bold;">{{ statistics.ratingDistribution.rating2 }}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #606266;">1星</span>
+                    <span style="color: #f56c6c; font-weight: bold;">{{ statistics.ratingDistribution.rating1 }}</span>
+                  </div>
+                </div>
+              </div>
+            </el-col>
+          </el-row>
+        </div>
+      </div>
+
       <!-- 评价列表 -->
       <div class="content-section">
         <div class="action-bar">
@@ -337,7 +405,7 @@
             <el-button class="comment-filter-btn" size="small" :type="filterRating === 'medium' ? 'primary' : ''" @click="filterByRating('medium')">中评</el-button>
             <el-button class="comment-filter-btn" size="small" :type="filterRating === 'bad' ? 'primary' : ''" @click="filterByRating('bad')">差评</el-button>
             <el-button class="comment-filter-btn" size="small" :type="filterReplied === 'unreplied' ? 'primary' : ''" @click="filterByReplied('unreplied')">未回复</el-button>
-            <el-button class="comment-filter-btn" size="small" :type="viewMode === 'reports' ? 'primary' : ''" @click="toggleViewMode">查看举报</el-button>
+            <el-button class="comment-filter-btn" size="small" disabled>查看举报（开发中）</el-button>
           </div>
           <div>
             <el-input
@@ -407,8 +475,14 @@
                   </span>
                 </div>
                 <div>
-                  <el-button type="text" size="small" @click="showReplyDialog(comment)">
-                    {{ comment.reply ? '修改回复' : '回复' }}
+                  <el-button type="text" size="small" @click="showReplyDialog(comment)" v-if="!comment.reply">
+                    回复
+                  </el-button>
+                  <el-button type="text" size="small" @click="showReplyDialog(comment)" v-if="comment.reply">
+                    修改回复
+                  </el-button>
+                  <el-button type="text" size="small" @click="deleteReply(comment.id)" v-if="comment.reply" style="color: #f56c6c;">
+                    删除回复
                   </el-button>
                   <el-button type="text" size="small" @click="showCommentDetail(comment)">查看详情</el-button>
                   <el-button type="text" size="small" @click="reportComment(comment.id)" v-if="!comment.isReported">举报</el-button>
@@ -439,22 +513,31 @@
   </div>
   
   <!-- 回复评价对话框 -->
-  <el-dialog title="回复评价" :visible.sync="replyDialogVisible" width="500px">
+  <el-dialog :title="currentComment && currentComment.reply ? '修改回复' : '回复评价'" :visible.sync="replyDialogVisible" width="500px">
     <div v-if="currentComment">
       <div style="margin-bottom: 20px;">
         <div style="font-weight: bold; margin-bottom: 10px;">用户评价：</div>
         <div style="background-color: #f5f7fa; padding: 10px; border-radius: 4px;">{{ currentComment.content }}</div>
       </div>
-      
+
       <el-form :model="replyForm" ref="replyForm" :rules="replyRules">
         <el-form-item label="回复内容" prop="content">
-          <el-input type="textarea" v-model="replyForm.content" :rows="4" placeholder="请输入回复内容"></el-input>
+          <el-input
+            type="textarea"
+            v-model="replyForm.content"
+            :rows="4"
+            placeholder="请输入回复内容（最多500字符）"
+            show-word-limit
+            maxlength="500">
+          </el-input>
         </el-form-item>
       </el-form>
     </div>
     <div slot="footer" class="dialog-footer">
       <el-button @click="replyDialogVisible = false">取 消</el-button>
-      <el-button type="primary" @click="submitReply">确 定</el-button>
+      <el-button type="primary" @click="currentComment && currentComment.reply ? updateReply() : submitReply()">
+        {{ currentComment && currentComment.reply ? '修改' : '确定' }}
+      </el-button>
     </div>
   </el-dialog>
   
@@ -631,7 +714,7 @@
       replyRules: {
         content: [
           { required: true, message: '请输入回复内容', trigger: 'blur' },
-          { min: 2, max: 200, message: '长度在 2 到 200 个字符', trigger: 'blur' }
+          { min: 2, max: 500, message: '长度在 2 到 500 个字符', trigger: 'blur' }
         ]
       },
       // 查看模式：comments 或 reports
@@ -641,7 +724,22 @@
       reportPage: 1,
       reportPageSize: 5,
       reportTotal: 0,
-      loadingReports: false
+      loadingReports: false,
+      // 统计数据
+      statistics: {
+        totalComments: 0,
+        averageRating: 0,
+        ratingDistribution: {
+          rating5: 0,
+          rating4: 0,
+          rating3: 0,
+          rating2: 0,
+          rating1: 0
+        },
+        pendingReplyCount: 0,
+        replyRate: 0
+      },
+      loadingStatistics: false
     },
     methods: {
       // 导航到其他页面
@@ -666,11 +764,11 @@
       fetchMerchantInfo() {
         merchantAxios.get("/merchant/info")
           .then(response => {
-            if (response.code === 200) {
+            if (response.success) {
               this.merchantInfo = response.data;
               sessionStorage.setItem("merchantInfo", JSON.stringify(response.data));
             } else {
-              this.$message.error(response.msg || "获取商家信息失败");
+              this.$message.error(response.errorMsg || "获取商家信息失败");
             }
           })
           .catch(error => {
@@ -683,10 +781,10 @@
       loadShops() {
         merchantAxios.get("/merchant/shop/list")
           .then(response => {
-            if (response.data.success) {
-              this.shops = response.data.data || [];
+            if (response.success) {
+              this.shops = response.data || [];
             } else {
-              console.error("获取店铺列表失败:", response.data.errorMsg);
+              console.error("获取店铺列表失败:", response.errorMsg);
               this.$message.error("获取店铺列表失败");
             }
           })
@@ -700,6 +798,7 @@
       handleShopChange() {
         this.currentPage = 1; // 重置分页
         this.loadComments(); // 重新加载评论
+        this.loadStatistics(); // 重新加载统计数据
       },
 
       // 获取评价列表
@@ -719,11 +818,11 @@
         // 使用merchantAxios发送请求
         merchantAxios.get("/merchant/comment/list", { params })
         .then(response => {
-          if (response.data.success) {
-            this.comments = response.data.data.records || [];
-            this.total = response.data.data.total || 0;
+          if (response.success) {
+            this.comments = response.data.records || [];
+            this.total = response.data.total || 0;
           } else {
-            this.$message.error(response.data.errorMsg || "获取评论列表失败");
+            this.$message.error(response.errorMsg || "获取评论列表失败");
           }
           this.loading = false;
         })
@@ -732,6 +831,103 @@
           this.$message.error("获取评论列表失败，请重试");
           this.loading = false;
         });
+      },
+
+      // 加载评论统计数据
+      loadStatistics() {
+        this.loadingStatistics = true;
+        merchantAxios.get("/merchant/comment/statistics")
+        .then(response => {
+          if (response.success) {
+            this.statistics = response.data || this.statistics;
+          } else {
+            console.error("获取统计数据失败:", response.errorMsg);
+          }
+          this.loadingStatistics = false;
+        })
+        .catch(error => {
+          console.error("获取统计数据失败:", error);
+          this.loadingStatistics = false;
+        });
+      },
+
+      // 修改回复
+      updateReply() {
+        this.$refs.replyForm.validate((valid) => {
+          if (valid) {
+            // 调用修改回复API
+            merchantAxios.put(`/merchant/comment/${this.replyForm.commentId}/reply`, {
+              content: this.replyForm.content
+            })
+            .then(response => {
+              if(response.success){
+                // 更新本地评论数据
+                const index = this.comments.findIndex(item => item.id === this.replyForm.commentId);
+                if (index !== -1) {
+                  this.comments[index].reply = this.replyForm.content;
+                  this.comments[index].replyTime = new Date().toISOString();
+                }
+
+                this.filterComments();
+                this.replyDialogVisible = false;
+
+                this.$message({
+                  type: 'success',
+                  message: '修改回复成功'
+                });
+
+                // 刷新统计数据
+                this.loadStatistics();
+              } else {
+                this.$message.error(response.errorMsg || "修改回复失败");
+              }
+            })
+            .catch(err => {
+              console.error(err);
+              this.$message.error("修改回复失败: " + err);
+            });
+          } else {
+            return false;
+          }
+        });
+      },
+
+      // 删除回复
+      deleteReply(commentId) {
+        this.$confirm('确定要删除这条回复吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          // 调用删除回复API
+          merchantAxios.delete(`/merchant/comment/${commentId}/reply`)
+          .then(response => {
+            if(response.success){
+              // 更新本地评论数据
+              const index = this.comments.findIndex(item => item.id === commentId);
+              if (index !== -1) {
+                this.comments[index].reply = null;
+                this.comments[index].replyTime = null;
+              }
+
+              this.filterComments();
+
+              this.$message({
+                type: 'success',
+                message: '删除回复成功'
+              });
+
+              // 刷新统计数据
+              this.loadStatistics();
+            } else {
+              this.$message.error(response.errorMsg || "删除回复失败");
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            this.$message.error("删除回复失败: " + err);
+          });
+        }).catch(() => {});
       },
       
       // 按评分筛选评价
@@ -859,25 +1055,31 @@
       submitReply() {
         this.$refs.replyForm.validate((valid) => {
           if (valid) {
-            // 提交回复到API
-            merchantAxios.post("/merchant/comment/reply", this.replyForm)
+            // 提交回复到API - 使用新的API路径
+            merchantAxios.post(`/merchant/comment/${this.replyForm.commentId}/reply`, {
+              content: this.replyForm.content
+            })
             .then(response => {
-              if(response.data.success){
+              if(response.success){
                 // 更新本地评论数据
                 const index = this.comments.findIndex(item => item.id === this.replyForm.commentId);
                 if (index !== -1) {
                   this.comments[index].reply = this.replyForm.content;
+                  this.comments[index].replyTime = new Date().toISOString();
                 }
-                
+
                 this.filterComments();
                 this.replyDialogVisible = false;
-                
+
                 this.$message({
                   type: 'success',
                   message: '回复成功'
                 });
+
+                // 刷新统计数据
+                this.loadStatistics();
               } else {
-                this.$message.error(response.data.errorMsg || "回复失败");
+                this.$message.error(response.errorMsg || "回复失败");
               }
             })
             .catch(err => {
@@ -894,26 +1096,33 @@
       submitReplyFromDetail() {
         this.$refs.detailReplyForm.validate((valid) => {
           if (valid) {
-            // 提交回复到API
-            merchantAxios.post("/merchant/comment/reply", this.replyForm)
+            // 提交回复到API - 使用新的API路径
+            merchantAxios.post(`/merchant/comment/${this.replyForm.commentId}/reply`, {
+              content: this.replyForm.content
+            })
             .then(response => {
-              if(response.data.success){
+              if(response.success){
                 // 更新本地评论数据
                 const index = this.comments.findIndex(item => item.id === this.replyForm.commentId);
                 if (index !== -1) {
                   this.comments[index].reply = this.replyForm.content;
+                  this.comments[index].replyTime = new Date().toISOString();
                   // 同步更新当前查看的评价数据
                   this.currentComment.reply = this.replyForm.content;
+                  this.currentComment.replyTime = new Date().toISOString();
                 }
-                
+
                 this.filterComments();
-                
+
                 this.$message({
                   type: 'success',
                   message: '回复成功'
                 });
+
+                // 刷新统计数据
+                this.loadStatistics();
               } else {
-                this.$message.error(response.data.errorMsg || "回复失败");
+                this.$message.error(response.errorMsg || "回复失败");
               }
             })
             .catch(err => {
@@ -956,11 +1165,11 @@
           }
         })
         .then(response => {
-          if (response.data.success) {
-            this.reports = response.data.data.records || [];
-            this.reportTotal = response.data.data.total || 0;
+          if (response.success) {
+            this.reports = response.data.records || [];
+            this.reportTotal = response.data.total || 0;
           } else {
-            this.$message.error(response.data.errorMsg || '获取举报列表失败');
+            this.$message.error(response.errorMsg || '获取举报列表失败');
           }
           this.loadingReports = false;
         })
@@ -989,7 +1198,7 @@
             params: { approveReport }
           })
           .then(response => {
-            if (response.data.success) {
+            if (response.success) {
               this.$message.success(`已${action}举报`);
               // 重新加载举报列表
               this.loadReports();
@@ -998,7 +1207,7 @@
                 this.loadComments();
               }
             } else {
-              this.$message.error(response.data.errorMsg || `${action}举报失败`);
+              this.$message.error(response.errorMsg || `${action}举报失败`);
             }
           })
           .catch(error => {
@@ -1013,19 +1222,28 @@
         this.$prompt('请输入举报原因', '举报评论', {
           confirmButtonText: '提交',
           cancelButtonText: '取消',
-          inputPlaceholder: '例如：内容不实、广告信息等'
+          inputPlaceholder: '例如：内容不实、广告信息等',
+          inputValidator: (value) => {
+            if (!value) {
+              return '请输入举报原因';
+            }
+            if (value.length > 200) {
+              return '举报原因不能超过200个字符';
+            }
+            return true;
+          }
         }).then(({ value }) => {
           if (!value) {
             this.$message.warning('请输入举报原因');
             return;
           }
-          
-          merchantAxios.post('/merchant/comment/report', {
-            commentId: commentId,
+
+          // 使用新的API路径
+          merchantAxios.post(`/merchant/comment/${commentId}/report`, {
             reason: value
           })
           .then(response => {
-            if(response.data.success) {
+            if(response.success) {
               this.$message.success('举报已提交，感谢您的反馈');
               // 标记该评论已被举报
               const index = this.comments.findIndex(item => item.id === commentId);
@@ -1033,7 +1251,7 @@
                 this.$set(this.comments[index], 'isReported', true);
               }
             } else {
-              this.$message.error(response.data.errorMsg || '举报失败');
+              this.$message.error(response.errorMsg || '举报失败');
             }
           })
           .catch(err => {
@@ -1069,6 +1287,9 @@
 
       // 加载评论列表
       this.loadComments();
+
+      // 加载统计数据
+      this.loadStatistics();
     },
   });
 </script>

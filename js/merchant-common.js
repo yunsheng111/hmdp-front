@@ -20,15 +20,22 @@ merchantAxios.interceptors.request.use(
       // 添加authorization头，与后端认证机制保持一致
       config.headers['authorization'] = merchantToken;
     }
+    
+    // 增加调试日志，查看发送的请求详情
+    console.log("商家请求:", config.url, config);
+    
     return config
   },
   error => {
-    console.log(error)
+    console.log("请求拦截器错误:", error)
     return Promise.reject(error)
   }
 )
 
 merchantAxios.interceptors.response.use(function (response) {
+  // 增加调试日志，查看响应数据
+  console.log("商家响应数据:", response.config.url, response.data);
+
   // 判断执行结果 - 兼容不同的响应格式
   const data = response.data;
 
@@ -41,29 +48,14 @@ merchantAxios.interceptors.response.use(function (response) {
     return Promise.reject(data.errorMsg || data.msg || "请求失败");
   }
 
-  // 统一格式转换：将后端的 {success: true, data: {...}} 转换为前端期望的 {code: 200, data: {...}}
-  let normalizedResponse;
-
-  if (data.success === true) {
-    // 后端返回格式：{success: true, data: {...}}
-    normalizedResponse = {
-      code: 200,
-      data: data.data,
-      msg: data.msg || "操作成功"
-    };
-  } else {
-    // 已经是前端期望格式：{code: 200, data: {...}}
-    normalizedResponse = data;
-  }
-
   // 对于登录接口特殊处理
-  if (normalizedResponse.data && (normalizedResponse.data.token || normalizedResponse.data.merchantInfo)) {
+  if (data.data && (data.data.token || data.data.merchantInfo)) {
     console.log("检测到登录响应数据，返回特殊处理后的格式");
-    return normalizedResponse.data; // 返回包含token和merchantInfo的data子对象
+    return data.data; // 返回包含token和merchantInfo的data子对象
   }
 
-  // 其他接口返回统一格式的响应对象
-  return normalizedResponse;
+  // 其他接口直接返回原始响应，保持success字段
+  return data;
 }, function (error) {
   // 一般是服务端异常或者网络异常
   console.log("请求错误详情:", error);
@@ -76,6 +68,15 @@ merchantAxios.interceptors.response.use(function (response) {
     // 处理401未授权错误 - 但不自动跳转，让页面决定
     if(error.response.status == 401){
       console.warn("商家认证失败，需要重新登录");
+      // 增加调试，但不自动跳转
+      console.log("商家认证失败，请重新登录");
+      // 清除无效的商家token
+      sessionStorage.removeItem("merchantToken");
+      sessionStorage.removeItem("merchantInfo");
+      // 重定向到商家登录页
+      setTimeout(() => {
+        location.href = "/merchant-login.html?redirect=" + encodeURIComponent(location.href);
+      }, 200);
       return Promise.reject("认证失败，请重新登录");
     }
 
