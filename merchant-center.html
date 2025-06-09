@@ -380,11 +380,15 @@
         location.href = "/merchant-login.html";
         return;
       }
-      
+
       // 获取商家信息
       const merchantInfoStr = sessionStorage.getItem("merchantInfo");
       if (merchantInfoStr) {
         this.merchantInfo = JSON.parse(merchantInfoStr);
+        // 加载统计数据
+        this.loadDashboardStats();
+        // 加载待处理订单
+        this.loadPendingOrders();
       } else {
         this.fetchMerchantInfo();
       }
@@ -394,9 +398,6 @@
       
       // 获取仪表盘数据
       this.fetchDashboardData();
-      
-      // 获取待处理订单
-      this.fetchPendingOrders();
     },
     methods: {
       // 切换菜单
@@ -572,6 +573,129 @@
         sessionStorage.removeItem("merchantInfo");
         // 跳转到登录页
         location.href = "/merchant-login.html";
+      },
+      
+      // 导航到其他页面
+      navigateTo(page) {
+        // 检查商家是否有关联的店铺
+        if (!this.merchantInfo.shopId && page !== 'account') {
+          this.$message.warning('您尚未创建店铺，请先在账号设置中创建店铺');
+          // 导航到账号设置页面
+          location.href = "/merchant-account.html";
+          return;
+        }
+        
+        if (page === 'dashboard') {
+          location.href = "/merchant-center.html";
+        } else {
+          location.href = `/merchant-${page}.html`;
+        }
+      },
+      
+      // 加载统计数据
+      loadDashboardStats() {
+        // 实现加载统计数据的逻辑
+        this.fetchDashboardData();
+      },
+      
+      // 加载待处理订单
+      loadPendingOrders() {
+        // 实现加载待处理订单的逻辑
+        this.fetchPendingOrders();
+      },
+      
+      // 获取仪表盘数据
+      fetchDashboardData() {
+        // 模拟数据，实际项目中应从后端获取
+        this.dashboardData = {
+          todayOrders: 18,
+          todaySales: 1580.50,
+          orderTrend: 5.2,
+          saleTrend: 3.8,
+          monthOrders: 356,
+          monthSales: 32560.80,
+          orderCompletion: 95,
+          monthSaleTrend: 12.5
+        };
+        
+        // 实际项目中的API调用
+        /*
+        axios.get("/api/merchant/dashboard", {
+          headers: {
+            Authorization: sessionStorage.getItem("merchantToken")
+          }
+        })
+        .then(({data}) => {
+          if(data.code === 200){
+            this.dashboardData = data.data;
+          } else {
+            this.$message.error(data.msg || "获取控制台数据失败");
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          this.$message.error("获取控制台数据失败");
+        });
+        */
+      },
+      
+      // 获取待处理订单
+      fetchPendingOrders() {
+        // 模拟数据，实际项目中应从后端获取
+        this.pendingOrders = [
+          {
+            id: "O2023051001",
+            userName: "张三",
+            item: "黄焖鸡米饭套餐",
+            amount: 28.00,
+            status: "待接单",
+            createTime: "2023-05-10 12:30:45"
+          },
+          {
+            id: "O2023051002",
+            userName: "李四",
+            item: "麻辣香锅",
+            amount: 45.50,
+            status: "制作中",
+            createTime: "2023-05-10 12:45:22"
+          },
+          {
+            id: "O2023051003",
+            userName: "王五",
+            item: "水煮肉片+米饭",
+            amount: 36.00,
+            status: "待配送",
+            createTime: "2023-05-10 13:10:05"
+          },
+          {
+            id: "O2023051004",
+            userName: "赵六",
+            item: "酸菜鱼套餐",
+            amount: 58.00,
+            status: "配送中",
+            createTime: "2023-05-10 13:15:30"
+          }
+        ];
+        
+        // 实际项目中的API调用
+        /*
+        axios.get("/api/merchant/orders/pending", {
+          headers: {
+            Authorization: sessionStorage.getItem("merchantToken")
+          }
+        })
+        .then(({data}) => {
+          if(data.code === 200){
+            this.pendingOrders = data.data;
+          } else {
+            this.$message.error(data.msg || "获取待处理订单失败");
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          this.$message.error("获取待处理订单失败");
+        });
+        */
       }
     }
   })

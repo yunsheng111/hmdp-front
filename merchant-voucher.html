@@ -663,6 +663,14 @@
     methods: {
       // 导航到其他页面
       navigateTo(page) {
+        // 检查商家是否有关联的店铺
+        if (!this.merchantInfo.shopId && page !== 'account') {
+          this.$message.warning('您尚未创建店铺，请先在账号设置中创建店铺');
+          // 导航到账号设置页面
+          location.href = "/merchant-account.html";
+          return;
+        }
+        
         if (page === 'dashboard') {
           location.href = "/merchant-center.html";
         } else {
@@ -724,7 +732,7 @@
           .then(response => {
             console.log('API响应:', response); // 调试用
             // 检查实际响应结构
-            if (response.code === 200) {
+            if (response.success || response.code === 200) {
               // 使用返回的数据数组（后端返回的是records数组）
               this.vouchers = response.data || [];
               this.total = response.total || 0;
@@ -747,7 +755,7 @@
               
               this.filteredVouchers = this.vouchers;
             } else {
-              this.$message.error(response.msg || "获取优惠券列表失败");
+              this.$message.error(response.msg || response.errorMsg || "获取优惠券列表失败");
             }
             this.loading = false;
           })
@@ -1193,6 +1201,17 @@
       const merchantInfoStr = sessionStorage.getItem("merchantInfo");
       if (merchantInfoStr) {
         this.merchantInfo = JSON.parse(merchantInfoStr);
+        
+        // 检查商家是否有关联的店铺
+        if (!this.merchantInfo.shopId) {
+          this.$message.warning('您尚未创建店铺，请先在账号设置中创建店铺');
+          // 导航到账号设置页面
+          setTimeout(() => {
+            location.href = "/merchant-account.html";
+          }, 1500);
+          return;
+        }
+        
         this.voucherForm.shopId = this.merchantInfo.shopId; // 设置表单中的shopId
       } else {
         this.fetchMerchantInfo();

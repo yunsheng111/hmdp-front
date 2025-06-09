@@ -45,7 +45,14 @@ merchantAxios.interceptors.response.use(function (response) {
   if (!isSuccess) {
     // 不要自动跳转，让页面自己处理错误
     console.warn("API响应失败:", data);
-    return Promise.reject(data.errorMsg || data.msg || "请求失败");
+    // 修改：返回包含错误信息的对象，而不是直接拒绝Promise
+    // 这样页面可以通过检查response.success来统一处理
+    return {
+      success: false,
+      code: data.code || 500,
+      errorMsg: data.errorMsg || data.msg || "请求失败",
+      msg: data.msg || data.errorMsg || "请求失败"
+    };
   }
 
   // 对于登录接口特殊处理
@@ -55,6 +62,20 @@ merchantAxios.interceptors.response.use(function (response) {
   }
 
   // 其他接口直接返回原始响应，保持success字段
+  // 修改: 统一响应格式，将code格式转换为success格式
+  if (data.code === 200) {
+    // 如果是code格式的成功响应，转换为兼容的格式
+    return {
+      success: true,
+      code: 200,
+      data: data.data,
+      msg: data.msg,
+      // 如果存在total字段，添加到返回数据中，优惠券管理页面需要这个字段
+      total: data.total || (data.data && data.data.total ? data.data.total : 0)
+    };
+  }
+  
+  // 如果已经是success格式，直接返回
   return data;
 }, function (error) {
   // 一般是服务端异常或者网络异常

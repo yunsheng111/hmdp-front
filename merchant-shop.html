@@ -685,6 +685,17 @@
       const merchantInfoStr = sessionStorage.getItem("merchantInfo");
       if (merchantInfoStr) {
         this.merchantInfo = JSON.parse(merchantInfoStr);
+        
+        // 检查商家是否有关联的店铺
+        if (!this.merchantInfo.shopId) {
+          this.$message.warning('您尚未创建店铺，请先在账号设置中创建店铺');
+          // 导航到账号设置页面
+          setTimeout(() => {
+            location.href = "/merchant-account.html";
+          }, 1500);
+          return;
+        }
+        
         // 初始化店铺表单
         this.initShopForm();
         // 获取商品列表
@@ -696,6 +707,14 @@
     methods: {
       // 导航到其他页面
       navigateTo(page) {
+        // 检查商家是否有关联的店铺
+        if (!this.merchantInfo.shopId && page !== 'account') {
+          this.$message.warning('您尚未创建店铺，请先在账号设置中创建店铺');
+          // 导航到账号设置页面
+          location.href = "/merchant-account.html";
+          return;
+        }
+        
         if (page === 'dashboard') {
           location.href = "/merchant-center.html";
         } else {
@@ -716,7 +735,7 @@
       fetchMerchantInfo() {
         merchantAxios.get("/merchant/info")
           .then(response => {
-            if (response.code === 200) {
+            if (response.success || response.code === 200) {
               this.merchantInfo = response.data;
               sessionStorage.setItem("merchantInfo", JSON.stringify(response.data));
               // 初始化店铺表单
@@ -724,7 +743,7 @@
               // 获取商品列表
               this.fetchProductList();
             } else {
-              this.$message.error(response.msg || "获取商家信息失败");
+              this.$message.error(response.msg || response.errorMsg || "获取商家信息失败");
               // 使用模拟数据作为后备
               this.createMockMerchantInfo();
             }
@@ -790,15 +809,30 @@
       fetchShopInfo() {
         merchantAxios.get("/merchant/shop/info")
           .then(response => {
-            if (response.code === 200) {
+            if (response.success || response.code === 200) {
               this.shopInfo = response.data;
             } else {
-              this.$message.error(response.msg || "获取店铺信息失败");
+              this.$message.error(response.msg || response.errorMsg || "获取店铺信息失败");
             }
           })
           .catch(error => {
             console.error("获取店铺信息失败:", error);
-            this.$message.error("获取店铺信息失败，请重试");
+            // 检查是否是认证错误
+            if (error.includes && error.includes("认证失败")) {
+              this.$message.error("登录已过期，请重新登录");
+              // 清除登录信息并跳转
+              setTimeout(() => {
+                sessionStorage.removeItem("merchantToken");
+                sessionStorage.removeItem("merchantInfo");
+                location.href = "/merchant-login.html";
+              }, 1500);
+            } else {
+              this.$message.warning("获取店铺信息失败，使用默认数据");
+              // 使用商家信息中的店铺数据或设置默认值
+              if (this.merchantInfo && this.merchantInfo.shop) {
+                this.shopInfo = { ...this.merchantInfo.shop };
+              }
+            }
           });
       },
       
@@ -808,7 +842,7 @@
           if (valid) {
             merchantAxios.put("/merchant/shop/update", this.shopInfo)
               .then(response => {
-                if (response.code === 200) {
+                if (response.success || response.code === 200) {
                   this.$message.success("店铺信息更新成功");
                   // 更新本地商家信息
                   if (this.merchantInfo) {
@@ -816,7 +850,7 @@
                     sessionStorage.setItem("merchantInfo", JSON.stringify(this.merchantInfo));
                   }
                 } else {
-                  this.$message.error(response.msg || "更新失败");
+                  this.$message.error(response.msg || response.errorMsg || "更新失败");
                 }
               })
               .catch(error => {
@@ -979,7 +1013,7 @@
 
         merchantAxios.get("/product/list", { params })
           .then(response => {
-            if (response.code === 200) {
+            if (response.success || response.code === 200) {
               // 处理规格信息，确保specs是数组，values是字符串
               this.productList = (response.data.records || []).map(product => {
                 // 确保specs是数组
@@ -1010,7 +1044,7 @@
               });
               this.productTotal = response.data.total || 0;
             } else {
-              this.$message.error(response.msg || "获取商品列表失败");
+              this.$message.error(response.msg || response.errorMsg || "获取商品列表失败");
               // 设置空数据，避免页面显示异常
               this.productList = [];
               this.productTotal = 0;
@@ -1073,10 +1107,10 @@
         // 始终重新获取完整的商品信息，确保规格数据正确
         merchantAxios.get(`/product/${product.id}`)
           .then(response => {
-            if (response.code === 200) {
+            if (response.success || response.code === 200) {
               this.setupProductForm(response.data);
             } else {
-              this.$message.error(response.msg || "获取商品详情失败");
+              this.$message.error(response.msg || response.errorMsg || "获取商品详情失败");
             }
           })
           .catch(error => {
@@ -1148,13 +1182,13 @@
 
             apiCall
               .then(response => {
-                if (response.code === 200) {
+                if (response.success || response.code === 200) {
                   // 商品和规格一起保存成功
                   this.$message.success(isEdit ? '商品更新成功' : '商品添加成功');
                   this.productDialogVisible = false;
                   this.fetchProductList();
                 } else {
-                  this.$message.error(response.msg || (isEdit ? '更新失败' : '添加失败'));
+                  this.$message.error(response.msg || response.errorMsg || (isEdit ? '更新失败' : '添加失败'));
                 }
                 this.productSaving = false;
               })
@@ -1179,11 +1213,11 @@
         }).then(() => {
           merchantAxios.put(`/product/${product.id}/status`, { status: newStatus })
             .then(response => {
-              if (response.code === 200) {
+              if (response.success || response.code === 200) {
                 this.$message.success(`商品${statusText}成功`);
                 product.status = newStatus;
               } else {
-                this.$message.error(response.msg || `${statusText}失败`);
+                this.$message.error(response.msg || response.errorMsg || `${statusText}失败`);
               }
             })
             .catch(error => {
@@ -1202,11 +1236,11 @@
         }).then(() => {
           merchantAxios.delete(`/product/${product.id}`)
             .then(response => {
-              if (response.code === 200) {
+              if (response.success || response.code === 200) {
                 this.$message.success('商品删除成功');
                 this.fetchProductList();
               } else {
-                this.$message.error(response.msg || '删除失败');
+                this.$message.error(response.msg || response.errorMsg || '删除失败');
               }
             })
             .catch(error => {
