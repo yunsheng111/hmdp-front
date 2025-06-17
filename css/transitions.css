@@ -1,0 +1,360 @@
+/**
+ * 页面切换过渡动画 - 管理员后台性能优化
+ * 提供流畅的页面切换体验和加载状态指示
+ * 
+ * @author yate
+ * @date 2025-06-18
+ */
+
+/* ==================== 页面切换动画 ==================== */
+
+/* 页面容器基础样式 */
+.page-container {
+    position: relative;
+    min-height: 100vh;
+    /* 移除 overflow: hidden，允许正常滚动 */
+}
+
+/* 页面切换时临时隐藏溢出（仅在切换动画期间使用） */
+.page-container.transitioning {
+    overflow: hidden;
+}
+
+/* 页面切换过渡效果 */
+.page-transition {
+    opacity: 0;
+    transform: translateX(20px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: opacity, transform;
+}
+
+.page-transition.active {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* 页面淡入效果 */
+.page-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 页面滑入效果 */
+.page-slide-in {
+    animation: slideIn 0.3s ease-out forwards;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ==================== 加载状态指示器 ==================== */
+
+/* 全局加载遮罩 */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.loading-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 加载动画 */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #409eff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 加载文本 */
+.loading-text {
+    margin-top: 15px;
+    color: #666;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* ==================== 进度条 ==================== */
+
+/* 顶部进度条 */
+.progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: linear-gradient(90deg, #409eff, #67c23a);
+    z-index: 10000;
+    transition: width 0.3s ease;
+    opacity: 0;
+}
+
+.progress-bar.show {
+    opacity: 1;
+}
+
+.progress-bar.complete {
+    width: 100% !important;
+    transition: width 0.2s ease, opacity 0.3s ease 0.2s;
+    opacity: 0;
+}
+
+/* ==================== 组件加载动画 ==================== */
+
+/* 表格加载骨架屏 */
+.table-skeleton {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.table-skeleton .skeleton-row {
+    height: 40px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    margin-bottom: 8px;
+    border-radius: 4px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* 卡片加载动画 */
+.card-loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    animation: cardShimmer 1.5s infinite;
+}
+
+@keyframes cardShimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+/* ==================== 按钮加载状态 ==================== */
+
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.btn-loading::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: btnSpin 1s linear infinite;
+}
+
+@keyframes btnSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ==================== 响应式优化 ==================== */
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+    .page-transition {
+        transform: translateY(20px);
+    }
+    
+    .page-transition.active {
+        transform: translateY(0);
+    }
+    
+    .loading-spinner {
+        width: 32px;
+        height: 32px;
+        border-width: 2px;
+    }
+    
+    .progress-bar {
+        height: 2px;
+    }
+}
+
+/* 减少动画效果（用户偏好） */
+@media (prefers-reduced-motion: reduce) {
+    .page-transition,
+    .page-fade-in,
+    .page-slide-in,
+    .loading-overlay,
+    .progress-bar {
+        transition: none;
+        animation: none;
+    }
+    
+    .loading-spinner {
+        animation: none;
+        border-top-color: transparent;
+    }
+}
+
+/* ==================== 工具类 ==================== */
+
+/* 隐藏元素 */
+.hidden {
+    display: none !important;
+}
+
+/* 透明元素 */
+.invisible {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* 禁用过渡 */
+.no-transition {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* 快速过渡 */
+.fast-transition {
+    transition-duration: 0.15s !important;
+}
+
+/* 慢速过渡 */
+.slow-transition {
+    transition-duration: 0.6s !important;
+}
+
+/* ==================== 特殊效果 ==================== */
+
+/* 页面切换时的背景模糊 */
+.page-blur {
+    filter: blur(2px);
+    transition: filter 0.3s ease;
+}
+
+/* 页面切换时的缩放效果 */
+.page-scale {
+    transform: scale(0.98);
+    transition: transform 0.3s ease;
+}
+
+.page-scale.active {
+    transform: scale(1);
+}
+
+/* 悬停预加载提示 */
+.preload-hint {
+    position: relative;
+}
+
+.preload-hint::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #409eff;
+    transition: width 0.3s ease;
+}
+
+.preload-hint.preloading::after {
+    width: 100%;
+    background: linear-gradient(90deg, #409eff, #67c23a);
+    animation: preloadProgress 2s ease-in-out;
+}
+
+@keyframes preloadProgress {
+    0% { width: 0; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
+/* ==================== 深色主题支持 ==================== */
+
+@media (prefers-color-scheme: dark) {
+    .loading-overlay {
+        background: rgba(0, 0, 0, 0.9);
+    }
+    
+    .loading-text {
+        color: #ccc;
+    }
+    
+    .table-skeleton .skeleton-row {
+        background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    }
+    
+    .card-loading::before {
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    }
+}

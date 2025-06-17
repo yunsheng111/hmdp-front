@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="./css/element.css">
   <link href="./css/main.css" rel="stylesheet">
   <link href="./css/loading.css" rel="stylesheet">
+  <link href="./css/transitions.css" rel="stylesheet">
   <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
@@ -182,8 +183,8 @@
     }
   </style>
 </head>
-<body>
-<div id="app">
+<body class="page-container">
+<div id="app" class="page-transition">
   <div class="admin-container">
     <!-- 侧边栏导航 -->
     <div class="admin-sidebar">
@@ -201,27 +202,27 @@
           <i class="el-icon-s-home"></i>
           <span slot="title">控制台</span>
         </el-menu-item>
-        <el-menu-item index="2" @click="navigateTo('admin-users.html')">
+        <el-menu-item index="2" class="preload-hint" @click="navigateTo('admin-users.html')">
           <i class="el-icon-user"></i>
           <span slot="title">用户管理</span>
         </el-menu-item>
-        <el-menu-item index="3" @click="navigateTo('admin-merchants.html')">
+        <el-menu-item index="3" class="preload-hint" @click="navigateTo('admin-merchants.html')">
           <i class="el-icon-s-shop"></i>
           <span slot="title">商户管理</span>
         </el-menu-item>
-        <el-menu-item index="4" @click="navigateTo('admin-merchant-shops.html')">
+        <el-menu-item index="4" class="preload-hint" @click="navigateTo('admin-merchant-shops.html')">
           <i class="el-icon-s-goods"></i>
           <span slot="title">商户店铺管理</span>
         </el-menu-item>
-        <el-menu-item index="5" @click="navigateTo('admin-shop-types.html')">
+        <el-menu-item index="5" class="preload-hint" @click="navigateTo('admin-shop-types.html')">
           <i class="el-icon-s-grid"></i>
           <span slot="title">店铺分类管理</span>
         </el-menu-item>
-        <el-menu-item index="6" @click="navigateTo('admin-content.html')">
+        <el-menu-item index="6" class="preload-hint" @click="navigateTo('admin-content.html')">
           <i class="el-icon-document-checked"></i>
           <span slot="title">内容审核</span>
         </el-menu-item>
-        <el-menu-item index="7" @click="navigateTo('admin-statistics.html')">
+        <el-menu-item index="7" class="preload-hint" @click="navigateTo('admin-statistics.html')">
           <i class="el-icon-data-line"></i>
           <span slot="title">系统监控</span>
         </el-menu-item>
@@ -392,9 +393,27 @@
         console.error('解析管理员信息失败', e);
         this.adminInfo = {};
       }
-      
+
       // 加载统计数据
       this.loadStats();
+    },
+    mounted() {
+      // 激活页面过渡动画
+      this.$nextTick(() => {
+        const appElement = document.getElementById('app');
+        if (appElement) {
+          setTimeout(() => {
+            appElement.classList.add('active');
+          }, 100);
+        }
+      });
+
+      // 初始化性能优化（如果可用）
+      if (typeof initAdminPerformanceOptimization === 'function') {
+        initAdminPerformanceOptimization().catch(err => {
+          console.warn('性能优化初始化失败:', err);
+        });
+      }
     },
     methods: {
       loadStats() {
@@ -457,7 +476,19 @@
       navigateTo(path) {
         // 实现导航到指定页面的逻辑
         console.log(`导航到 ${path} 页面`);
-        window.location.href = path;
+
+        // 尝试使用性能优化的导航
+        const performanceManager = typeof getAdminPerformanceManager === 'function' ? getAdminPerformanceManager() : null;
+        if (performanceManager && performanceManager.initialized) {
+          // 使用性能优化导航（实际会被admin-common.js中的事件处理器拦截）
+          const link = document.createElement('a');
+          link.href = path;
+          link.textContent = path;
+          link.click();
+        } else {
+          // 降级到普通导航
+          window.location.href = path;
+        }
       }
     }
   });
