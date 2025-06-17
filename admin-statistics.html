@@ -204,29 +204,22 @@
                     <div v-if="summaryDataLoading" v-loading="summaryDataLoading" style="min-height: 200px;"></div>
                     
                     <div v-if="!summaryDataLoading && summaryData">
-                        <el-descriptions class="margin-top" title="数据概览" :column="3" border>
-                            <template slot="extra">
-                                <el-tag size="small">{{ summaryData.date }} ({{ summaryData.period === 'daily' ? '日度' : summaryData.period === 'weekly' ? '周度' : '月度'}})</el-tag>
-                            </template>
+                        <el-descriptions class="margin-top" title="数据概览" :column="4" border>
                             <el-descriptions-item>
-                                <template slot="label"><i class="el-icon-view"></i> UV数量</template>
-                                {{ summaryData.uvCount | formatNumber }}
+                                <template slot="label"><i class="el-icon-user"></i> 用户总数</template>
+                                {{ summaryData.userCount | formatNumber }}
                             </el-descriptions-item>
                             <el-descriptions-item>
-                                <template slot="label"><i class="el-icon-user"></i> DAU</template>
-                                {{ summaryData.userActivity ? summaryData.userActivity.dau : 'N/A' | formatNumber }}
+                                <template slot="label"><i class="el-icon-s-shop"></i> 商户总数</template>
+                                {{ summaryData.merchantCount | formatNumber }}
                             </el-descriptions-item>
                             <el-descriptions-item>
-                                <template slot="label"><i class="el-icon-s-custom"></i> 新增用户</template>
-                                {{ summaryData.userActivity ? summaryData.userActivity.newUserCount : 'N/A' | formatNumber }}
+                                <template slot="label"><i class="el-icon-s-order"></i> 今日订单</template>
+                                {{ summaryData.todayOrders | formatNumber }}
                             </el-descriptions-item>
                             <el-descriptions-item>
-                                <template slot="label"><i class="el-icon-s-order"></i> 总订单数</template>
-                                {{ summaryData.transactionSummary ? summaryData.transactionSummary.totalOrders : 'N/A' | formatNumber }}
-                            </el-descriptions-item>
-                            <el-descriptions-item :span="2">
-                                <template slot="label"><i class="el-icon-money"></i> 总交易额</template>
-                                ¥ {{ summaryData.transactionSummary ? summaryData.transactionSummary.totalAmount : 'N/A' | formatNumber(2) }}
+                                <template slot="label"><i class="el-icon-message-solid"></i> 待处理举报</template>
+                                {{ summaryData.pendingReports | formatNumber }}
                             </el-descriptions-item>
                         </el-descriptions>
                         <!-- 可以根据需要添加更多卡片或图表来展示其他核心指标 -->
@@ -367,16 +360,18 @@
 <script src="./js/message.js"></script>
 <script src="./js/performance.js"></script>
 <script src="./js/common.js"></script>
+<script src="./js/admin-common.js"></script>
 <script>
   const adminToken = sessionStorage.getItem("adminToken");
   const adminInfoStr = sessionStorage.getItem("adminInfo");
-  
+
   if (!adminToken) {
-    // if (window.util && window.util.navigateTo) {
-          window.util.navigateTo("admin-login.html");
-        } else {
-          location.href = "admin-login.html";
-        } 
+    // 未登录，跳转到登录页
+    if (window.util && window.util.navigateTo) {
+      window.util.navigateTo("admin-login.html");
+    } else {
+      location.href = "admin-login.html";
+    }
   }
   
   const app = new Vue({
@@ -440,7 +435,6 @@
         }
     },
     created() {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${adminToken}`;
       if(this.activeStatTab === 'summaryStats'){
         this.fetchSummaryStats();
       }
@@ -464,8 +458,8 @@
       fetchSummaryStats(){
         this.summaryDataLoading = true;
         this.summaryData = null; // 查询前清空旧数据
-        axios.get("/api/admin/stats/summary", { params: this.summaryParams })
-            .then(({data}) => {
+        adminAxios.get("/admin/stats/summary", { params: this.summaryParams })
+            .then(data => {
                 if(data.success && data.data){
                     this.summaryData = data.data;
                 } else {
@@ -558,8 +552,8 @@
         if(params.severity === '') delete params.severity;
         if(params.timeRange === '') delete params.timeRange;
 
-        axios.get("/api/admin/alerts/history", { params })
-            .then(({data}) => {
+        adminAxios.get("/admin/alerts/history", { params })
+            .then(data => {
                 if(data.success && data.data){
                     this.alertHistoryList = data.data.list || [];
                     this.alertHistoryTotal = data.data.total || 0;
@@ -596,25 +590,25 @@
       // --- 预警历史 END ---
 
       logout() {
-        axios.post("/api/admin/logout")
-          .then(() => {
+        adminAxios.post("/admin/logout")
+          .then(data => {
             sessionStorage.removeItem("adminToken");
             sessionStorage.removeItem("adminInfo");
             if (window.util && window.util.navigateTo) {
-          window.util.navigateTo("admin-login.html");
-        } else {
-          location.href = "admin-login.html";
-        }
+              window.util.navigateTo("admin-login.html");
+            } else {
+              location.href = "admin-login.html";
+            }
           })
           .catch(err => {
             console.error("退出失败", err);
             sessionStorage.removeItem("adminToken");
             sessionStorage.removeItem("adminInfo");
             if (window.util && window.util.navigateTo) {
-          window.util.navigateTo("admin-login.html");
-        } else {
-          location.href = "admin-login.html";
-        }
+              window.util.navigateTo("admin-login.html");
+            } else {
+              location.href = "admin-login.html";
+            }
           });
       }
     }

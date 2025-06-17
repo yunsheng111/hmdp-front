@@ -97,6 +97,8 @@
       height: 40px;
       border-radius: 50%;
       margin-right: 10px;
+      object-fit: cover;
+      background-color: #e0e0e0;
     }
     .user-dropdown {
       cursor: pointer;
@@ -200,7 +202,7 @@
           <i class="el-icon-s-fold" style="font-size: 20px; cursor: pointer;"></i>
         </div>
         <div class="merchant-info">
-          <img class="merchant-avatar" :src="merchantInfo.avatar || './imgs/avatar.jpg'" alt="商家头像">
+          <img class="merchant-avatar" :src="merchantInfo.avatar" alt="商家头像" @error="handleAvatarError">
           <el-dropdown trigger="click" @command="handleCommand">
             <span class="el-dropdown-link user-dropdown">
               {{ merchantInfo.name }}<i class="el-icon-arrow-down el-icon--right"></i>
@@ -408,6 +410,12 @@
       this.fetchDashboardData();
     },
     methods: {
+      // 处理头像加载错误
+      handleAvatarError(e) {
+        console.log("头像加载失败，重新获取商家信息");
+        this.fetchMerchantInfo();
+      },
+      
       // 切换菜单
       switchMenu(menu) {
         if (menu === 'dashboard') {
@@ -439,7 +447,11 @@
           .then(response => {
             if (response.code === 200) {
               this.merchantInfo = response.data;
-              sessionStorage.setItem("merchantInfo", JSON.stringify(response.data));
+              // 确保头像URL是完整的
+              if (this.merchantInfo.avatar && !this.merchantInfo.avatar.startsWith('http') && !this.merchantInfo.avatar.startsWith('/')) {
+                this.merchantInfo.avatar = '/' + this.merchantInfo.avatar;
+              }
+              sessionStorage.setItem("merchantInfo", JSON.stringify(this.merchantInfo));
             } else {
               this.$message.error(response.msg || "获取商家信息失败");
             }
@@ -626,100 +638,6 @@
       loadPendingOrders() {
         // 实现加载待处理订单的逻辑
         this.fetchPendingOrders();
-      },
-      
-      // 获取仪表盘数据
-      fetchDashboardData() {
-        // 模拟数据，实际项目中应从后端获取
-        this.dashboardData = {
-          todayOrders: 18,
-          todaySales: 1580.50,
-          orderTrend: 5.2,
-          saleTrend: 3.8,
-          monthOrders: 356,
-          monthSales: 32560.80,
-          orderCompletion: 95,
-          monthSaleTrend: 12.5
-        };
-        
-        // 实际项目中的API调用
-        /*
-        axios.get("/api/merchant/dashboard", {
-          headers: {
-            Authorization: sessionStorage.getItem("merchantToken")
-          }
-        })
-        .then(({data}) => {
-          if(data.code === 200){
-            this.dashboardData = data.data;
-          } else {
-            this.$message.error(data.msg || "获取控制台数据失败");
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          this.$message.error("获取控制台数据失败");
-        });
-        */
-      },
-      
-      // 获取待处理订单
-      fetchPendingOrders() {
-        // 模拟数据，实际项目中应从后端获取
-        this.pendingOrders = [
-          {
-            id: "O2023051001",
-            userName: "张三",
-            item: "黄焖鸡米饭套餐",
-            amount: 28.00,
-            status: "待接单",
-            createTime: "2023-05-10 12:30:45"
-          },
-          {
-            id: "O2023051002",
-            userName: "李四",
-            item: "麻辣香锅",
-            amount: 45.50,
-            status: "制作中",
-            createTime: "2023-05-10 12:45:22"
-          },
-          {
-            id: "O2023051003",
-            userName: "王五",
-            item: "水煮肉片+米饭",
-            amount: 36.00,
-            status: "待配送",
-            createTime: "2023-05-10 13:10:05"
-          },
-          {
-            id: "O2023051004",
-            userName: "赵六",
-            item: "酸菜鱼套餐",
-            amount: 58.00,
-            status: "配送中",
-            createTime: "2023-05-10 13:15:30"
-          }
-        ];
-        
-        // 实际项目中的API调用
-        /*
-        axios.get("/api/merchant/orders/pending", {
-          headers: {
-            Authorization: sessionStorage.getItem("merchantToken")
-          }
-        })
-        .then(({data}) => {
-          if(data.code === 200){
-            this.pendingOrders = data.data;
-          } else {
-            this.$message.error(data.msg || "获取待处理订单失败");
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          this.$message.error("获取待处理订单失败");
-        });
-        */
       }
     }
   })

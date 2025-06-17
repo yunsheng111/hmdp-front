@@ -509,18 +509,19 @@
 <script src="./js/message.js"></script>
 <script src="./js/performance.js"></script>
 <script src="./js/common.js"></script>
+<script src="./js/admin-common.js"></script>
 <script>
   // 检查管理员登录状态
   const adminToken = sessionStorage.getItem("adminToken");
   const adminInfoStr = sessionStorage.getItem("adminInfo");
-  
+
   if (!adminToken) {
     // 未登录，跳转到登录页
-    //if (window.util && window.util.navigateTo) {
-          window.util.navigateTo("admin-login.html");
-        } else {
-          location.href = "admin-login.html";
-        }
+    if (window.util && window.util.navigateTo) {
+      window.util.navigateTo("admin-login.html");
+    } else {
+      location.href = "admin-login.html";
+    }
   }
   
   const app = new Vue({
@@ -573,19 +574,20 @@
       },
       fetchUserList() {
         this.tableLoading = true;
-        
-        // 配置请求头，添加管理员token
-        axios.defaults.headers.common['Authorization'] = `Bearer ${adminToken}`;
-        
+
         const params = {
           ...this.pageParams,
           ...this.searchForm
         };
-        
-        axios.get("/admin/users", { params })
-          .then(({data}) => {
-            this.userList = data.list || [];
-            this.total = data.total || 0;
+
+        adminAxios.get("/admin/users", { params })
+          .then(data => {
+            if(data.success){
+              this.userList = data.data.list || [];
+              this.total = data.data.total || 0;
+            } else {
+              this.$message.error(data.msg || "获取用户列表失败");
+            }
           })
           .catch(err => {
             console.error("获取用户列表失败", err);
@@ -620,9 +622,13 @@
         this.userDetailVisible = true;
         
         // 获取用户详细信息
-        axios.get(`/admin/users/${user.id}/details`)
-          .then(({data}) => {
-            this.userDetail = data || { orders: [], signIns: [], follows: [] };
+        adminAxios.get(`/admin/users/${user.id}/details`)
+          .then(data => {
+            if(data.success){
+              this.userDetail = data.data || { orders: [], signIns: [], follows: [] };
+            } else {
+              this.$message.error(data.msg || "获取用户详情失败");
+            }
           })
           .catch(err => {
             console.error("获取用户详情失败", err);
@@ -645,11 +651,15 @@
           type: 'warning'
         }).then(() => {
           // 调用修改用户状态接口
-          axios.put(`/admin/users/${user.id}/status`, { status: newStatus })
-            .then(() => {
-              this.$message.success(`${statusText}用户成功`);
-              // 更新本地数据
-              user.status = newStatus;
+          adminAxios.put(`/admin/users/${user.id}/status`, { status: newStatus })
+            .then(data => {
+              if(data.success){
+                this.$message.success(`${statusText}用户成功`);
+                // 更新本地数据
+                user.status = newStatus;
+              } else {
+                this.$message.error(data.msg || `${statusText}用户失败`);
+              }
             })
             .catch(err => {
               console.error(`${statusText}用户失败`, err);
@@ -679,17 +689,17 @@
       },
       logout() {
         // 退出登录
-        axios.post("/admin/logout")
-          .then(() => {
+        adminAxios.post("/admin/logout")
+          .then(data => {
             // 清除登录信息
             sessionStorage.removeItem("adminToken");
             sessionStorage.removeItem("adminInfo");
             // 跳转到登录页
             if (window.util && window.util.navigateTo) {
-          window.util.navigateTo("admin-login.html");
-        } else {
-          location.href = "admin-login.html";
-        }
+              window.util.navigateTo("admin-login.html");
+            } else {
+              location.href = "admin-login.html";
+            }
           })
           .catch(err => {
             console.error("退出失败", err);
@@ -697,10 +707,10 @@
             sessionStorage.removeItem("adminToken");
             sessionStorage.removeItem("adminInfo");
             if (window.util && window.util.navigateTo) {
-          window.util.navigateTo("admin-login.html");
-        } else {
-          location.href = "admin-login.html";
-        }
+              window.util.navigateTo("admin-login.html");
+            } else {
+              location.href = "admin-login.html";
+            }
           });
       },
       handleAvatarError(e) {
@@ -718,16 +728,16 @@
             this.saveLoading = true;
             
             // 调用API保存用户信息
-            axios.put(`/admin/users/${this.userForm.id}`, this.userForm)
-              .then(({data}) => {
+            adminAxios.put(`/admin/users/${this.userForm.id}`, this.userForm)
+              .then(data => {
                 // 调试输出
                 console.log('保存用户信息返回数据:', data);
                 console.log('data.data:', data.data);
-                
+
                 if (data.success) {
                   // 保存成功
                   this.$message.success('用户信息更新成功');
-                  
+
                   // 更新本地数据，使用后端返回的用户对象
                   const index = this.userList.findIndex(item => item.id === this.userForm.id);
                   if (index !== -1 && data.data) {
@@ -737,17 +747,17 @@
                   } else {
                     console.warn('无法更新用户数据，index:', index, 'data.data:', data.data);
                   }
-                  
+
                   // 关闭编辑弹窗
                   this.userEditVisible = false;
-                  
+
                   // 延迟刷新列表，确保显示最新数据
                   setTimeout(() => {
                     this.fetchUserList();
                   }, 100);
                 } else {
                   // 服务器返回错误
-                  this.$message.error(data.message || '保存失败，请重试');
+                  this.$message.error(data.msg || '保存失败，请重试');
                 }
               })
               .catch(err => {

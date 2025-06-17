@@ -254,29 +254,77 @@
       text-decoration: underline;
     }
     
-    .login-radio {
-      margin-top: 30px;
+    /* 自定义复选框样式 */
+    .agreement-container {
+      margin-top: 20px;
       display: flex;
       align-items: flex-start;
       font-size: 13px;
-      color: var(--light-text);
-      padding: 10px;
-      background-color: var(--bg-color);
-      border-radius: var(--radius);
+      padding: 12px 15px;
+      background: rgba(255, 102, 51, 0.05);
+      border-radius: 6px;
+      border: 1px solid rgba(255, 102, 51, 0.1);
     }
-    
-    .login-radio input[type="radio"] {
-      margin-right: 8px;
-      margin-top: 3px;
+
+    .custom-checkbox {
+      margin-right: 10px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .custom-checkbox input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .custom-checkbox label {
+      position: relative;
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border-radius: 3px;
+      border: 2px solid var(--border-color);
+      background-color: #fff;
       cursor: pointer;
+      transition: var(--transition);
     }
-    
-    .login-radio a {
+
+    .custom-checkbox input[type="checkbox"]:checked + label {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    .custom-checkbox input[type="checkbox"]:checked + label:after {
+      content: '';
+      position: absolute;
+      left: 6px;
+      top: 2px;
+      width: 4px;
+      height: 8px;
+      border: solid #fff;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    .custom-checkbox input[type="checkbox"]:focus + label {
+      box-shadow: 0 0 0 2px rgba(255, 102, 51, 0.2);
+    }
+
+    .custom-checkbox label:hover {
+      border-color: var(--primary-color);
+    }
+
+    .agreement-text {
+      color: var(--text-regular);
+      line-height: 1.5;
+    }
+
+    .agreement-text a {
       color: var(--primary-color);
       text-decoration: none;
     }
-    
-    .login-radio a:hover {
+
+    .agreement-text a:hover {
       text-decoration: underline;
     }
     
@@ -297,6 +345,26 @@
     
     .el-tab-pane {
       animation: slideIn 0.4s ease;
+    }
+
+    /* 移动端适配 */
+    @media (max-width: 768px) {
+      .agreement-container {
+        padding: 10px;
+        font-size: 12px;
+      }
+
+      .custom-checkbox label {
+        width: 16px;
+        height: 16px;
+      }
+
+      .custom-checkbox input[type="checkbox"]:checked + label:after {
+        left: 5px;
+        top: 1px;
+        width: 3px;
+        height: 7px;
+      }
     }
   </style>
 </head>
@@ -338,6 +406,18 @@
               </el-input>
             </div>
             <el-button @click="loginByAccount" type="primary" style="width: 100%;">登录</el-button>
+            <div class="agreement-container">
+              <div class="custom-checkbox">
+                <input type="checkbox" id="agreement-account" name="readed" v-model="radio" value="1">
+                <label for="agreement-account"></label>
+              </div>
+              <div class="agreement-text">
+                我已阅读并同意
+                <a href="javascript:void(0)">《黑马点评商家服务协议》</a>、
+                <a href="javascript:void(0)">《隐私政策》</a>
+                等，接受免除或者限制责任、诉讼管辖约定等粗体标示条款
+              </div>
+            </div>
           </el-tab-pane>
           <el-tab-pane label="手机号登录" name="phone">
             <div class="login-form-item phone-input-group">
@@ -350,22 +430,22 @@
               </el-input>
             </div>
             <el-button @click="loginByPhone" type="primary" style="width: 100%;">登录</el-button>
+            <div class="agreement-container">
+              <div class="custom-checkbox">
+                <input type="checkbox" id="agreement-phone" name="readed" v-model="radio" value="1">
+                <label for="agreement-phone"></label>
+              </div>
+              <div class="agreement-text">
+                我已阅读并同意
+                <a href="javascript:void(0)">《黑马点评商家服务协议》</a>、
+                <a href="javascript:void(0)">《隐私政策》</a>
+                等，接受免除或者限制责任、诉讼管辖约定等粗体标示条款
+              </div>
+            </div>
           </el-tab-pane>
         </el-tabs>
         <div class="register-link">
           还没有商家账号？<a href="merchant-register.html">立即注册</a>
-        </div>
-      </div>
-      <div class="login-radio">
-        <div>
-          <input type="radio" id="agreement" name="readed" v-model="radio" value="1">
-          <label for="agreement"></label>
-        </div>
-        <div>
-          我已阅读并同意
-          <a href="javascript:void(0)">《黑马点评商家服务协议》</a>、
-          <a href="javascript:void(0)">《隐私政策》</a>
-          等，接受免除或者限制责任、诉讼管辖约定等粗体标示条款
         </div>
       </div>
       <div class="footer">

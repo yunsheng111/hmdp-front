@@ -292,16 +292,18 @@
 <script src="./js/message.js"></script>
 <script src="./js/performance.js"></script>
 <script src="./js/common.js"></script>
+<script src="./js/admin-common.js"></script>
 <script>
   const adminToken = sessionStorage.getItem("adminToken");
   const adminInfoStr = sessionStorage.getItem("adminInfo");
-  
+
   if (!adminToken) {
-    // if (window.util && window.util.navigateTo) {
-          window.util.navigateTo("admin-login.html");
-        } else {
-          location.href = "admin-login.html";
-        } // 实际项目中应启用
+    // 未登录，跳转到登录页
+    if (window.util && window.util.navigateTo) {
+      window.util.navigateTo("admin-login.html");
+    } else {
+      location.href = "admin-login.html";
+    }
   }
   
   const app = new Vue({
@@ -343,7 +345,6 @@
         }
     },
     created() {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${adminToken}`;
       this.fetchShopTypes();
     },
     methods: {
@@ -373,28 +374,18 @@
         this.tableLoading = true;
         console.log("🔍 [DEBUG] 开始获取店铺分类列表，请求参数：", this.pageParams);
 
-        axios.get("/admin/shop-types", { params: this.pageParams })
-          .then((response) => {
-            console.log("🔍 [DEBUG] API响应完整对象：", response);
-            console.log("🔍 [DEBUG] API响应数据：", response.data);
+        adminAxios.get("/admin/shop-types", { params: this.pageParams })
+          .then(data => {
+            console.log("🔍 [DEBUG] API响应数据：", data);
 
-            const { data } = response;
-            console.log("🔍 [DEBUG] 解构后的data：", data);
+            if(data.success && data.data){
+                this.shopTypeList = data.data.list || data.data;
+                this.total = data.data.total || data.data.length || 0;
 
-            // 修复：直接使用response.data，因为后端返回的就是{total, list}格式
-            if(data && data.list){
-                console.log("🔍 [DEBUG] 成功分支 - data.list：", data.list);
-                console.log("🔍 [DEBUG] 成功分支 - data.total：", data.total);
-
-                this.shopTypeList = data.list || [];
-                this.total = data.total || 0;
-
-                console.log("🔍 [DEBUG] 赋值后 - this.shopTypeList：", this.shopTypeList);
-                console.log("🔍 [DEBUG] 赋值后 - this.total：", this.total);
-                console.log("🔍 [DEBUG] 赋值后 - shopTypeList长度：", this.shopTypeList.length);
+                console.log("🔍 [DEBUG] 成功分支 - 赋值后 this.shopTypeList：", this.shopTypeList);
             } else {
                 console.log("🔍 [DEBUG] 失败分支 - 数据格式不正确");
-                this.$message.error("获取店铺分类列表失败：数据格式不正确");
+                this.$message.error(data.msg || "获取店铺分类列表失败：数据格式不正确");
             }
           })
           .catch(err => {
@@ -438,12 +429,15 @@
             if (this.dialogStatus === 'create') {
               // 新增逻辑
               const { name, icon, sort } = this.shopTypeForm;
-              axios.post("/admin/shop-types", { name, icon, sort })
-                .then((response) => {
-                  // axios响应拦截器已经处理了success判断，能到这里说明成功了
-                  this.$message.success("新增分类成功");
-                  this.dialogVisible = false;
-                  this.fetchShopTypes(); // 刷新列表
+              adminAxios.post("/admin/shop-types", { name, icon, sort })
+                .then(data => {
+                  if(data.success){
+                    this.$message.success("新增分类成功");
+                    this.dialogVisible = false;
+                    this.fetchShopTypes(); // 刷新列表
+                  } else {
+                    this.$message.error(data.msg || "新增分类失败");
+                  }
                 })
                 .catch(err => {
                   console.error("新增分类失败", err);
@@ -452,12 +446,15 @@
             } else {
               // 更新逻辑
               const { id, name, icon, sort } = this.shopTypeForm;
-              axios.put(`/admin/shop-types/${id}`, { name, icon, sort })
-                .then((response) => {
-                  // axios响应拦截器已经处理了success判断，能到这里说明成功了
-                  this.$message.success("更新分类成功");
-                  this.dialogVisible = false;
-                  this.fetchShopTypes(); // 刷新列表
+              adminAxios.put(`/admin/shop-types/${id}`, { name, icon, sort })
+                .then(data => {
+                  if(data.success){
+                    this.$message.success("更新分类成功");
+                    this.dialogVisible = false;
+                    this.fetchShopTypes(); // 刷新列表
+                  } else {
+                    this.$message.error(data.msg || "更新分类失败");
+                  }
                 })
                 .catch(err => {
                   console.error("更新分类失败", err);
@@ -476,11 +473,14 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          axios.delete(`/admin/shop-types/${row.id}`)
-            .then((response) => {
-              // axios响应拦截器已经处理了success判断，能到这里说明成功了
-              this.$message.success("删除分类成功");
-              this.fetchShopTypes(); // 刷新列表
+          adminAxios.delete(`/admin/shop-types/${row.id}`)
+            .then(data => {
+              if(data.success){
+                this.$message.success("删除分类成功");
+                this.fetchShopTypes(); // 刷新列表
+              } else {
+                this.$message.error(data.msg || "删除分类失败");
+              }
             })
             .catch(err => {
               console.error("删除分类失败", err);
@@ -491,15 +491,15 @@
         });
       },
       logout() {
-        axios.post("/admin/logout")
-          .then(() => {
+        adminAxios.post("/admin/logout")
+          .then(data => {
             sessionStorage.removeItem("adminToken");
             sessionStorage.removeItem("adminInfo");
             if (window.util && window.util.navigateTo) {
-          window.util.navigateTo("admin-login.html");
-        } else {
-          location.href = "admin-login.html";
-        }
+              window.util.navigateTo("admin-login.html");
+            } else {
+              location.href = "admin-login.html";
+            }
           })
           .catch(err => {
             console.error("退出失败", err);
@@ -507,10 +507,10 @@
             sessionStorage.removeItem("adminToken");
             sessionStorage.removeItem("adminInfo");
             if (window.util && window.util.navigateTo) {
-          window.util.navigateTo("admin-login.html");
-        } else {
-          location.href = "admin-login.html";
-        }
+              window.util.navigateTo("admin-login.html");
+            } else {
+              location.href = "admin-login.html";
+            }
           });
       }
     }
