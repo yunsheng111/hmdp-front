@@ -7,6 +7,7 @@
   <!-- 引入样式 -->
   <link rel="stylesheet" href="./css/element.css">
   <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/loading.css" rel="stylesheet">
   <style type="text/css">
     body {
       margin: 0;
@@ -562,6 +563,9 @@
 <script src="./js/axios.min.js"></script>
 <!-- 引入组件库 -->
 <script src="./js/element.js"></script>
+<script src="./js/loading.js"></script>
+<script src="./js/message.js"></script>
+<script src="./js/performance.js"></script>
 <script src="./js/common.js"></script>
 <script src="./js/merchant-common.js"></script>
 <script>
@@ -667,12 +671,20 @@
         if (!this.merchantInfo.shopId && page !== 'account') {
           this.$message.warning('您尚未创建店铺，请先在账号设置中创建店铺');
           // 导航到账号设置页面
+          if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("/merchant-account.html");
+        } else {
           location.href = "/merchant-account.html";
+        }
           return;
         }
         
         if (page === 'dashboard') {
+          if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("/merchant-center.html");
+        } else {
           location.href = "/merchant-center.html";
+        }
         } else {
           location.href = `/merchant-${page}.html`;
         }
@@ -1109,7 +1121,11 @@
         sessionStorage.removeItem("merchantToken");
         sessionStorage.removeItem("merchantInfo");
         // 跳转到登录页
-        location.href = "/merchant-login.html";
+        if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("/merchant-login.html");
+        } else {
+          location.href = "/merchant-login.html";
+        }
       },
       
       // 重置表单
@@ -1193,7 +1209,11 @@
       // 检查是否登录
       const merchantToken = sessionStorage.getItem("merchantToken");
       if (!merchantToken) {
-        location.href = "/merchant-login.html";
+        if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("/merchant-login.html");
+        } else {
+          location.href = "/merchant-login.html";
+        }
         return;
       }
       
@@ -1207,7 +1227,11 @@
           this.$message.warning('您尚未创建店铺，请先在账号设置中创建店铺');
           // 导航到账号设置页面
           setTimeout(() => {
-            location.href = "/merchant-account.html";
+            if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("/merchant-account.html");
+        } else {
+          location.href = "/merchant-account.html";
+        }
           }, 1500);
           return;
         }

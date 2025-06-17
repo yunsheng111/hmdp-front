@@ -9,6 +9,8 @@
 
   <link href="./css/shop-detail.css" rel="stylesheet">
   <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/loading.css" rel="stylesheet">
+  <link href="./css/message.css" rel="stylesheet">
 
   <style type="text/css">
     /* 评论相关样式 */
@@ -488,6 +490,244 @@
       font-size: 18px;
       color: #f63;
     }
+
+    /* 购物车弹窗相关样式 */
+    .cart-bottom-dialog {
+      margin: 0 !important;
+      position: fixed !important;
+      bottom: 0 !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: 100% !important;
+      max-width: 500px !important;
+      border-radius: 12px 12px 0 0 !important;
+      overflow: hidden !important;
+      animation: slideUp 0.3s ease-out !important;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateX(-50%) translateY(100%);
+      }
+      to {
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    .cart-dialog .el-dialog {
+      border-radius: 12px 12px 0 0;
+      overflow: hidden;
+      margin: 0;
+    }
+
+    .cart-dialog .el-dialog__header {
+      background-color: #f9f9f9;
+      padding: 15px 20px;
+      border-bottom: 1px solid #f1f1f1;
+    }
+
+    .cart-dialog .el-dialog__title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .shopping-cart-content {
+      padding: 0;
+    }
+
+    /* 购物车为空时的样式 */
+    .cart-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+    }
+
+    .cart-empty-icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+      color: #ddd;
+    }
+
+    .cart-empty-text {
+      font-size: 16px;
+      margin-bottom: 8px;
+      color: #666;
+    }
+
+    .cart-empty-subtext {
+      font-size: 14px;
+      color: #999;
+    }
+
+    /* 购物车项目样式调整 */
+    .cart-dialog .cart-items {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .cart-dialog .cart-item {
+      display: flex;
+      align-items: center;
+      padding: 15px 20px;
+      border-bottom: 1px solid #f1f1f1;
+    }
+
+    .cart-dialog .cart-item:last-child {
+      border-bottom: none;
+    }
+
+    .cart-dialog .item-image {
+      width: 50px;
+      height: 50px;
+      margin-right: 12px;
+      overflow: hidden;
+      border-radius: 6px;
+    }
+
+    .cart-dialog .item-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .cart-dialog .item-info {
+      flex: 1;
+      margin-right: 12px;
+    }
+
+    .cart-dialog .item-title {
+      font-size: 14px;
+      margin-bottom: 6px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #333;
+    }
+
+    .cart-dialog .item-price {
+      font-size: 13px;
+      color: #f63;
+      font-weight: bold;
+    }
+
+    .cart-dialog .item-quantity {
+      display: flex;
+      align-items: center;
+      margin-right: 12px;
+    }
+
+    .cart-dialog .item-quantity .quantity {
+      margin: 0 8px;
+      font-weight: bold;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    .cart-dialog .cart-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background-color: #f9f9f9;
+      border-top: 1px solid #f1f1f1;
+    }
+
+    .cart-dialog .cart-total {
+      font-size: 16px;
+      font-weight: bold;
+      color: #f63;
+    }
+
+    .cart-dialog .cart-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* 购物车浮动按钮样式 */
+    .cart-float-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 20px;
+      width: 56px;
+      height: 56px;
+      background-color: #f63;
+      border-radius: 50%;
+      box-shadow: 0 4px 12px rgba(255, 102, 51, 0.3);
+      cursor: pointer;
+      z-index: 1000;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cart-float-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(255, 102, 51, 0.4);
+    }
+
+    .cart-float-btn:active {
+      transform: scale(0.95);
+    }
+
+    .cart-icon {
+      position: relative;
+      color: white;
+      font-size: 24px;
+    }
+
+    .cart-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background-color: #ff4757;
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid white;
+      min-width: 20px;
+    }
+
+    /* 移动端适配 */
+    @media screen and (max-width: 768px) {
+      .cart-bottom-dialog {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 12px 12px 0 0 !important;
+      }
+
+      .cart-dialog .el-dialog {
+        width: 100% !important;
+        margin: 0 !important;
+        border-radius: 12px 12px 0 0 !important;
+      }
+
+      .cart-float-btn {
+        bottom: 20px;
+        right: 15px;
+        width: 50px;
+        height: 50px;
+      }
+
+      .cart-icon {
+        font-size: 22px;
+      }
+
+      .cart-badge {
+        width: 18px;
+        height: 18px;
+        font-size: 11px;
+        top: -6px;
+        right: -6px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -678,54 +918,78 @@
       </div>
     </div>
 
-    <!-- 购物车区域 -->
-    <div class="shopping-cart" v-if="cartItems.length > 0">
-      <div class="cart-header">
-        <h4>购物车 ({{cartTotalQuantity}})</h4>
-        <el-button type="text" @click="clearCart" size="small">清空</el-button>
-      </div>
-      <div class="cart-items">
-        <div
-          v-for="item in cartItems"
-          :key="item.id"
-          class="cart-item"
-        >
-          <div class="item-image">
-            <img :src="getProductImage(item.productImage)" :alt="item.productTitle">
+    <!-- 购物车弹窗 -->
+    <el-dialog
+      :visible.sync="cartVisible"
+      :title="cartDialogTitle + (cartTotalQuantity > 0 ? ' (' + cartTotalQuantity + ')' : '')"
+      width="90%"
+      :close-on-click-modal="true"
+      :close-on-press-escape="true"
+      class="cart-dialog"
+      :modal-append-to-body="false"
+      :append-to-body="true"
+      custom-class="cart-bottom-dialog"
+    >
+      <!-- 购物车内容 -->
+      <div class="shopping-cart-content">
+        <!-- 购物车为空时的提示 -->
+        <div v-if="cartItems.length === 0" class="cart-empty">
+          <div class="cart-empty-icon">
+            <i class="el-icon-shopping-cart-2"></i>
           </div>
-          <div class="item-info">
-            <div class="item-title">{{item.productTitle}}</div>
-            <div class="item-price">¥{{formatPrice(item.productPrice)}}</div>
+          <div class="cart-empty-text">购物车还是空的</div>
+          <div class="cart-empty-subtext">快去选购商品吧~</div>
+        </div>
+
+        <!-- 购物车有商品时显示 -->
+        <div v-else>
+          <div class="cart-items">
+            <div
+              v-for="item in cartItems"
+              :key="item.id"
+              class="cart-item"
+            >
+              <div class="item-image">
+                <img :src="getProductImage(item.productImage)" :alt="item.productTitle">
+              </div>
+              <div class="item-info">
+                <div class="item-title">{{item.productTitle}}</div>
+                <div class="item-price">¥{{formatPrice(item.productPrice)}}</div>
+              </div>
+              <div class="item-quantity">
+                <el-button
+                  size="mini"
+                  @click="updateCartItemQuantity(item.id, item.quantity - 1)"
+                  :disabled="item.quantity <= 1"
+                >-</el-button>
+                <span class="quantity">{{item.quantity}}</span>
+                <el-button
+                  size="mini"
+                  @click="updateCartItemQuantity(item.id, item.quantity + 1)"
+                  :disabled="item.quantity >= item.productStock"
+                >+</el-button>
+              </div>
+              <div class="item-actions">
+                <el-button
+                  type="text"
+                  size="mini"
+                  @click="removeFromCart(item.id)"
+                >删除</el-button>
+              </div>
+            </div>
           </div>
-          <div class="item-quantity">
-            <el-button
-              size="mini"
-              @click="updateCartItemQuantity(item.id, item.quantity - 1)"
-              :disabled="item.quantity <= 1"
-            >-</el-button>
-            <span class="quantity">{{item.quantity}}</span>
-            <el-button
-              size="mini"
-              @click="updateCartItemQuantity(item.id, item.quantity + 1)"
-              :disabled="item.quantity >= item.productStock"
-            >+</el-button>
-          </div>
-          <div class="item-actions">
-            <el-button
-              type="text"
-              size="mini"
-              @click="removeFromCart(item.id)"
-            >删除</el-button>
+          <div class="cart-footer">
+            <div class="cart-total">
+              总计: ¥{{formatPrice(cartTotalPrice)}}
+            </div>
+            <div class="cart-actions">
+              <el-button @click="clearCart" size="small">清空</el-button>
+              <el-button type="primary" @click="checkout">结算</el-button>
+            </div>
           </div>
         </div>
       </div>
-      <div class="cart-footer">
-        <div class="cart-total">
-          总计: ¥{{formatPrice(cartTotalPrice)}}
-        </div>
-        <el-button type="primary" @click="checkout">结算</el-button>
-      </div>
-    </div>
+    </el-dialog>
   </div>
 
   <div class="shop-divider"></div>
@@ -902,14 +1166,24 @@
   <div class="copyright">
     copyright ©2024 hmdp.com
   </div>
+
+  <!-- 购物车浮动按钮 -->
+  <div class="cart-float-btn" @click="showCart" v-if="checkLoginStatus()">
+    <div class="cart-icon">
+      <i class="el-icon-shopping-cart-2"></i>
+      <div class="cart-badge" v-if="cartTotalQuantity > 0">{{cartTotalQuantity}}</div>
+    </div>
+  </div>
 </div>
 <script src="./js/vue.js"></script>
 <script src="./js/axios.min.js"></script>
 <!-- 引入组件库 -->
 <script src="./js/element.js"></script>
+<script src="./js/loading.js"></script>
+<script src="./js/message.js"></script>
+<script src="./js/performance.js"></script>
 <script src="./js/common.js"></script>
 <script>
-
   const app = new Vue({
     el: "#app",
     data: {
@@ -955,6 +1229,8 @@
       cartItems: [],
       cartTotalPrice: 0,
       cartTotalQuantity: 0,
+      cartVisible: false, // 控制购物车弹窗显示
+      cartDialogTitle: '购物车', // 购物车弹窗标题
 
       // 规格选择相关数据
       currentProduct: null, // 当前选择规格的商品
@@ -1006,20 +1282,36 @@
       },
       queryShopById(shopId) {
         axios.get("/shop/" + shopId)
-        .then(({data}) => {
-          data.images = data.images.split(",")
-          this.shop = data
+        .then((data) => {
+          console.log("店铺数据响应:", data);
+          // 处理API响应格式：{success: true, data: Object}
+          const shopData = (data && data.data) ? data.data : data;
+
+          if (shopData && shopData.images) {
+            shopData.images = shopData.images.split(",")
+          }
+          this.shop = shopData || {};
+
           // 设置commentForm的blogId
           this.commentForm.blogId = shopId;
         })
-        .catch(this.$message.error)
+        .catch(err => {
+          this.$message.error("获取店铺信息失败");
+          console.error("获取店铺信息失败:", err);
+        })
       },
       queryVoucher(shopId) {
         axios.get("/voucher/list/" + shopId)
-        .then(({data}) => {
-          this.vouchers = data;
+        .then((data) => {
+          console.log("优惠券数据响应:", data);
+          // 处理API响应格式：{success: true, data: Array}
+          const voucherList = (data && data.data) ? data.data : (Array.isArray(data) ? data : []);
+          this.vouchers = voucherList;
         })
-        .catch(this.$message.error)
+        .catch(err => {
+          this.$message.error("获取优惠券信息失败");
+          console.error("获取优惠券信息失败:", err);
+        })
       },
       formatTime(v){
         let b = new Date(v.beginTime);
@@ -1065,7 +1357,7 @@
         console.log("准备发送抢购请求，优惠券ID:", id);
         // 秒杀抢购 - axios已经设置了baseURL为"/api"
         axios.post("/voucher-order/seckill/" + id)
-        .then(({data}) => {
+        .then((data) => {
           console.log("抢购请求成功，返回数据:", data);
           // 抢购成功，这里输出订单id，支付功能TODO
           this.$message.success("抢购成功，订单id：" + data)
@@ -1091,7 +1383,7 @@
         console.log("准备发送领取请求，优惠券ID:", id);
         // 普通优惠券领取
         axios.post("/voucher-order/claim/" + id)
-        .then(({data}) => {
+        .then((data) => {
           console.log("领取请求成功，返回数据:", data);
           // 领取成功，这里输出订单id
           this.$message.success("领取成功，订单id：" + data)
@@ -1112,9 +1404,12 @@
         axios.get('/voucher-order/claimed', {
           params: { shopId: shopId }
         })
-        .then(({data}) => {
+        .then((data) => {
+          console.log("已领取优惠券数据响应:", data);
+          // 处理API响应格式：{success: true, data: Array}
+          const claimedList = (data && data.data) ? data.data : (Array.isArray(data) ? data : []);
           // 提取已领取的优惠券ID列表
-          this.claimedVouchers = (data || []).map(order => order.voucherId);
+          this.claimedVouchers = claimedList.map(order => order.voucherId);
           console.log("已领取的优惠券ID列表:", this.claimedVouchers);
         })
         .catch(err => {
@@ -1136,9 +1431,12 @@
             order: this.order
           }
         })
-        .then(({data}) => {
-          this.comments = data.records || [];
-          this.commentStats.total = data.total || 0;
+        .then((data) => {
+          console.log("评论数据响应:", data);
+          // 处理API响应格式：{success: true, data: {records: Array, total: Number}}
+          const commentData = (data && data.data) ? data.data : data;
+          this.comments = (commentData && commentData.records) ? commentData.records : [];
+          this.commentStats.total = (commentData && commentData.total) ? commentData.total : 0;
           this.commentsLoading = false;
         })
         .catch(err => {
@@ -1171,7 +1469,8 @@
           type: 'warning'
         }).then(() => {
           axios.delete(`/shop-comment/${commentId}`)
-          .then(() => {
+          .then((data) => {
+            console.log("删除评论响应:", data);
             this.$message.success('评论已删除');
             this.queryComments();
           })
@@ -1196,7 +1495,8 @@
             commentId: commentId,
             reason: value
           })
-          .then(() => {
+          .then((data) => {
+            console.log("举报评论响应:", data);
             this.$message.success('举报已提交，感谢您的反馈');
           })
           .catch(err => {
@@ -1210,8 +1510,11 @@
         axios.get('/order/user/completed', {
           params: { shopId: shopId }
         })
-        .then(({data}) => {
-          this.userOrders = data || [];
+        .then((data) => {
+          console.log("用户订单数据响应:", data);
+          // 处理API响应格式：{success: true, data: Array}
+          const orderList = (data && data.data) ? data.data : (Array.isArray(data) ? data : []);
+          this.userOrders = orderList;
         })
         .catch(err => {
           console.error('获取订单失败', err);
@@ -1257,7 +1560,8 @@
         
         // 提交评论
         axios.post('/blog-comments', this.commentForm)
-        .then(() => {
+        .then((data) => {
+          console.log("提交评论响应:", data);
           this.$message.success('评论发表成功');
           // 重置表单
           this.commentForm.orderId = '';
@@ -1286,14 +1590,22 @@
       },
       
       goToLogin() {
-        location.href = "/user-login.html?redirect=" + encodeURIComponent(location.href);
+        const redirectUrl = "/user-login.html?redirect=" + encodeURIComponent(location.href);
+        if (window.util && window.util.navigateTo) {
+          window.util.navigateTo(redirectUrl);
+        } else {
+          location.href = redirectUrl;
+        }
       },
 
       // 商品相关方法
       loadProductCategories(shopId) {
         axios.get(`/product/categories/${shopId}`)
-        .then(({data}) => {
-          this.productCategories = data || [];
+        .then((data) => {
+          console.log("商品分类数据响应:", data);
+          // 处理API响应格式：{success: true, data: Array}
+          const categoryList = (data && data.data) ? data.data : (Array.isArray(data) ? data : []);
+          this.productCategories = categoryList;
         })
         .catch(err => {
           console.error('获取商品分类失败', err);
@@ -1313,9 +1625,12 @@
         }
 
         axios.get(`/product/shop/${shopId}`, { params })
-        .then(({data}) => {
+        .then((data) => {
+          console.log("商品列表数据响应:", data);
+          // 处理API响应格式：{success: true, data: {records: Array, total: Number}}
+          const productData = (data && data.data) ? data.data : data;
           // 使用后端返回的真实商品数据，添加一些展示数据
-          this.products = (data.records || []).map(product => ({
+          this.products = ((productData && productData.records) ? productData.records : []).map(product => ({
             ...product,
             isNew: Math.random() > 0.7, // 30% 概率显示新品标签
             isHot: Math.random() > 0.8, // 20% 概率显示热销标签
@@ -1325,7 +1640,7 @@
             originalPrice: product.price + Math.floor(Math.random() * 2000) + 500 // 原价
             // 移除hasSpecs模拟数据，使用后端返回的真实specs数据
           }));
-          this.productTotal = data.total || 0;
+          this.productTotal = (productData && productData.total) ? productData.total : 0;
           this.productsLoading = false;
         })
         .catch(err => {
@@ -1542,10 +1857,18 @@
         if (!this.checkLoginStatus()) return;
 
         axios.get('/cart')
-        .then(({data}) => {
-          this.cartItems = data.items || [];
-          this.cartTotalPrice = data.totalPrice || 0;
-          this.cartTotalQuantity = data.totalQuantity || 0;
+        .then((response) => {
+          console.log("购物车数据响应:", response);
+          // 处理API响应格式：{success: true, data: CartDTO}
+          const cartData = (response && response.data) ? response.data : response;
+          this.cartItems = (cartData && cartData.items) ? cartData.items : [];
+          this.cartTotalPrice = (cartData && cartData.totalPrice) ? cartData.totalPrice : 0;
+          this.cartTotalQuantity = (cartData && cartData.totalQuantity) ? cartData.totalQuantity : 0;
+          console.log("解析后的购物车数据:", {
+            items: this.cartItems,
+            totalPrice: this.cartTotalPrice,
+            totalQuantity: this.cartTotalQuantity
+          });
         })
         .catch(err => {
           console.error('获取购物车失败', err);
@@ -1570,9 +1893,12 @@
         };
 
         axios.post('/cart/item', cartData)
-        .then(() => {
+        .then((data) => {
+          console.log("添加购物车响应:", data);
           this.$message.success('已添加到购物车');
           this.loadCart();
+          // 自动弹出购物车弹窗
+          this.showCart();
         })
         .catch(err => {
           this.$message.error('添加失败：' + (err.response?.data?.msg || '未知错误'));
@@ -1600,10 +1926,13 @@
         };
 
         axios.post('/cart/item', cartData)
-        .then(() => {
+        .then((data) => {
+          console.log("添加购物车响应(规格):", data);
           this.$message.success('已添加到购物车');
           this.loadCart();
           this.resetSpecSelection(); // 重置规格选择状态
+          // 自动弹出购物车弹窗
+          this.showCart();
         })
         .catch(err => {
           this.$message.error('添加失败：' + (err.response?.data?.msg || '未知错误'));
@@ -1617,7 +1946,8 @@
         }
 
         axios.put(`/cart/item/${itemId}`, { quantity: newQuantity })
-        .then(() => {
+        .then((data) => {
+          console.log("更新购物车响应:", data);
           this.loadCart();
         })
         .catch(err => {
@@ -1627,7 +1957,8 @@
 
       removeFromCart(itemId) {
         axios.delete(`/cart/item/${itemId}`)
-        .then(() => {
+        .then((data) => {
+          console.log("删除购物车项响应:", data);
           this.$message.success('已从购物车删除');
           this.loadCart();
         })
@@ -1643,7 +1974,8 @@
           type: 'warning'
         }).then(() => {
           axios.delete('/cart')
-          .then(() => {
+          .then((data) => {
+            console.log("清空购物车响应:", data);
             this.$message.success('购物车已清空');
             this.loadCart();
           })
@@ -1679,12 +2011,15 @@
           };
 
           axios.post('/order/checkout', orderData)
-          .then(({data}) => {
+          .then((data) => {
+            console.log("订单创建响应:", data);
             this.$message.success('订单创建成功！');
             // 清空本地购物车数据
             this.cartItems = [];
             this.cartTotalPrice = 0;
             this.cartTotalQuantity = 0;
+            // 关闭购物车弹窗
+            this.hideCart();
 
             // 可以跳转到订单列表页面
             this.$confirm('订单创建成功，是否查看订单详情？', '提示', {
@@ -1693,7 +2028,11 @@
               type: 'success'
             }).then(() => {
               // 跳转到订单列表页面（如果有的话）
-              // window.location.href = '/user-orders.html';
+              if (window.util && window.util.navigateTo) {
+                window.util.navigateTo("/user-orders.html");
+              } else {
+                location.href = "/user-orders.html";
+              }
               this.$message.info('订单列表页面开发中...');
             }).catch(() => {
               // 用户选择继续购物，不做任何操作
@@ -1707,6 +2046,19 @@
         }).catch(() => {
           // 用户取消结算
         });
+      },
+
+      // 购物车弹窗控制方法
+      showCart() {
+        this.cartVisible = true;
+      },
+
+      hideCart() {
+        this.cartVisible = false;
+      },
+
+      toggleCart() {
+        this.cartVisible = !this.cartVisible;
       }
     }
   })

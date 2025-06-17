@@ -11,6 +11,7 @@
   <!-- 引入样式 -->
   <link rel="stylesheet" href="./css/element.css">
   <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/loading.css" rel="stylesheet">
   <link href="./css/info.css" rel="stylesheet">
   <link href="./css/user-info.css" rel="stylesheet">
 
@@ -813,6 +814,9 @@
 <script src="./js/axios.min.js"></script>
 <!-- 引入组件库 -->
 <script src="./js/element.js"></script>
+<script src="./js/loading.js"></script>
+<script src="./js/message.js"></script>
+<script src="./js/performance.js"></script>
 <script src="./js/common.js"></script>
 <script src="./js/footer.js"></script>
 <script>
@@ -1108,7 +1112,11 @@
         location.href = `user-blogs.html?userId=${this.user.id}`;
       },
       toPublishBlog() {
-        location.href = "user-blog-edit.html";
+        if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("user-blog-edit.html");
+        } else {
+          location.href = "user-blog-edit.html";
+        }
       },
       queryUser() {
         axios.get("/user/me")
@@ -1780,7 +1788,11 @@
       },
 
       toExplore() {
-        location.href = "explore.html";
+        if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("explore.html");
+        } else {
+          location.href = "explore.html";
+        }
       },
 
       getStatusText(status) {

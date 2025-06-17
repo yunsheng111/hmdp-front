@@ -7,6 +7,8 @@
   <!-- 引入样式 -->
   <link rel="stylesheet" href="./css/element.css">
   <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/loading.css" rel="stylesheet">
+  <link href="./css/message.css" rel="stylesheet">
   <link href="./css/login.css" rel="stylesheet">
   <!-- 引入字体图标 -->
   <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" rel="stylesheet">
@@ -376,6 +378,9 @@
 <script src="./js/axios.min.js"></script>
 <!-- 引入组件库 -->
 <script src="./js/element.js"></script>
+<script src="./js/loading.js"></script>
+<script src="./js/message.js"></script>
+<script src="./js/performance.js"></script>
 <script src="./js/common.js"></script>
 <script src="./js/merchant-common.js"></script>
 <script src="./js/footer.js"></script>
@@ -462,7 +467,11 @@
             duration: 1500,
             onClose: () => {
               // 跳转到商家中心
-              location.href = "/merchant-center.html"
+              if (window.util && window.util.navigateTo) {
+                window.util.navigateTo("/merchant-center.html");
+              } else {
+                location.href = "/merchant-center.html";
+              }
             }
           });
         })
@@ -479,8 +488,12 @@
             this.$message.error(err.response.data.errorMsg || "服务器异常，请稍后重试");
           } 
           // 其他情况显示通用错误
+          else if(err.errorMsg) {
+            // 处理Promise.reject({errorMsg: ...})的情况
+            this.$message.error(err.errorMsg);
+          }
           else {
-            this.$message.error("登录请求失败，请检查网络连接");
+            this.$message.error("登录失败，请重试");
           }
         })
       },
@@ -525,18 +538,39 @@
             duration: 1500,
             onClose: () => {
               // 跳转到商家中心
-              location.href = "/merchant-center.html"
+              if (window.util && window.util.navigateTo) {
+                window.util.navigateTo("/merchant-center.html");
+              } else {
+                location.href = "/merchant-center.html";
+              }
             }
           });
         })
         .catch(err => {
           loading.close();
           console.error("手机登录失败:", err);
-          this.$message.error(typeof err === 'string' ? err : "服务器异常，请稍后重试");
+          if(typeof err === 'string') {
+            this.$message.error(err);
+          } 
+          else if(err.response && err.response.data) {
+            console.error("服务器返回的错误:", err.response.data);
+            this.$message.error(err.response.data.errorMsg || "服务器异常，请稍后重试");
+          }
+          else if(err.errorMsg) {
+            // 处理Promise.reject({errorMsg: ...})的情况
+            this.$message.error(err.errorMsg);
+          }
+          else {
+            this.$message.error("登录失败，请重试");
+          }
         })
       },
       goBack(){
-        location.href = "/index.html";
+        if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("/index.html");
+        } else {
+          location.href = "/index.html";
+        }
       },
       sendCode(){
         if (!this.phoneForm.phone) {

@@ -7,6 +7,7 @@
   <!-- 引入样式 -->
   <link rel="stylesheet" href="./css/element.css">
   <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/loading.css" rel="stylesheet">
   <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
@@ -504,6 +505,9 @@
 <script src="./js/axios.min.js"></script>
 <!-- 引入组件库 -->
 <script src="./js/element.js"></script>
+<script src="./js/loading.js"></script>
+<script src="./js/message.js"></script>
+<script src="./js/performance.js"></script>
 <script src="./js/common.js"></script>
 <script>
   // 检查管理员登录状态
@@ -512,7 +516,11 @@
   
   if (!adminToken) {
     // 未登录，跳转到登录页
-    //location.href = "admin-login.html";
+    //if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("admin-login.html");
+        } else {
+          location.href = "admin-login.html";
+        }
   }
   
   const app = new Vue({
@@ -677,14 +685,22 @@
             sessionStorage.removeItem("adminToken");
             sessionStorage.removeItem("adminInfo");
             // 跳转到登录页
-            location.href = "admin-login.html";
+            if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("admin-login.html");
+        } else {
+          location.href = "admin-login.html";
+        }
           })
           .catch(err => {
             console.error("退出失败", err);
             // 即使请求失败，也清除本地存储并跳转
             sessionStorage.removeItem("adminToken");
             sessionStorage.removeItem("adminInfo");
-            location.href = "admin-login.html";
+            if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("admin-login.html");
+        } else {
+          location.href = "admin-login.html";
+        }
           });
       },
       handleAvatarError(e) {

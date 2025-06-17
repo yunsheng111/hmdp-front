@@ -1,0 +1,287 @@
+/**
+ * HMDP 全局加载指示器样式
+ * 提供美观的加载动画和响应式设计
+ * @version 1.0.0
+ * @author Claude 4.0 Sonnet
+ */
+
+/* 加载遮罩层 */
+.hmdp-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* 显示状态 */
+.hmdp-loading-overlay.hmdp-loading-show {
+    opacity: 1;
+    visibility: visible;
+    display: flex;
+}
+
+/* 隐藏状态 */
+.hmdp-loading-overlay.hmdp-loading-hide {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* 加载器容器 */
+.hmdp-loading-spinner {
+    background: white;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    min-width: 150px;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.hmdp-loading-show .hmdp-loading-spinner {
+    transform: scale(1);
+}
+
+/* 旋转动画 */
+@keyframes hmdp-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* 脉冲动画 */
+@keyframes hmdp-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* 弹跳动画 */
+@keyframes hmdp-bounce {
+    0%, 20%, 53%, 80%, 100% {
+        transform: translate3d(0, 0, 0);
+    }
+    40%, 43% {
+        transform: translate3d(0, -8px, 0);
+    }
+    70% {
+        transform: translate3d(0, -4px, 0);
+    }
+    90% {
+        transform: translate3d(0, -2px, 0);
+    }
+}
+
+/* Bootstrap风格的旋转器 */
+.spinner-border {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    vertical-align: text-bottom;
+    border: 0.25em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: hmdp-spin 0.75s linear infinite;
+    color: #007bff;
+    margin-bottom: 15px;
+}
+
+/* 自定义旋转器样式 */
+.hmdp-custom-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    animation: hmdp-spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+/* 点状加载器 */
+.hmdp-dots-spinner {
+    display: inline-block;
+    position: relative;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 15px;
+}
+
+.hmdp-dots-spinner div {
+    position: absolute;
+    top: 27px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #007bff;
+    animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+
+.hmdp-dots-spinner div:nth-child(1) {
+    left: 6px;
+    animation: hmdp-dots1 0.6s infinite;
+}
+
+.hmdp-dots-spinner div:nth-child(2) {
+    left: 6px;
+    animation: hmdp-dots2 0.6s infinite;
+}
+
+.hmdp-dots-spinner div:nth-child(3) {
+    left: 26px;
+    animation: hmdp-dots2 0.6s infinite;
+}
+
+.hmdp-dots-spinner div:nth-child(4) {
+    left: 45px;
+    animation: hmdp-dots3 0.6s infinite;
+}
+
+@keyframes hmdp-dots1 {
+    0% {
+        transform: scale(0);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes hmdp-dots3 {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(0);
+    }
+}
+
+@keyframes hmdp-dots2 {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(19px, 0);
+    }
+}
+
+/* 加载文本 */
+.hmdp-loading-text {
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 10px;
+    animation: hmdp-pulse 1.5s ease-in-out infinite;
+}
+
+/* 屏幕阅读器隐藏 */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .hmdp-loading-spinner {
+        padding: 20px;
+        min-width: 120px;
+    }
+    
+    .hmdp-loading-text {
+        font-size: 13px;
+    }
+    
+    .spinner-border {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .hmdp-loading-spinner {
+        padding: 15px;
+        min-width: 100px;
+    }
+    
+    .hmdp-loading-text {
+        font-size: 12px;
+    }
+    
+    .spinner-border {
+        width: 1.2rem;
+        height: 1.2rem;
+    }
+}
+
+/* 深色主题支持 */
+@media (prefers-color-scheme: dark) {
+    .hmdp-loading-overlay {
+        background-color: rgba(0, 0, 0, 0.7);
+    }
+    
+    .hmdp-loading-spinner {
+        background: #2d3748;
+        color: #e2e8f0;
+    }
+    
+    .hmdp-loading-text {
+        color: #e2e8f0;
+    }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+    .hmdp-loading-overlay {
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+    
+    .hmdp-loading-spinner {
+        border: 2px solid #000;
+    }
+    
+    .spinner-border {
+        border-width: 0.3em;
+    }
+}
+
+/* 减少动画偏好支持 */
+@media (prefers-reduced-motion: reduce) {
+    .hmdp-loading-overlay,
+    .hmdp-loading-spinner,
+    .spinner-border,
+    .hmdp-loading-text {
+        animation: none;
+        transition: none;
+    }
+    
+    .spinner-border {
+        border-right-color: currentColor;
+    }
+}
+
+/* 打印样式 */
+@media print {
+    .hmdp-loading-overlay {
+        display: none !important;
+    }
+}

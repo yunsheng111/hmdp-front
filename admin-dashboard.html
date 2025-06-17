@@ -7,6 +7,7 @@
   <!-- 引入样式 -->
   <link rel="stylesheet" href="./css/element.css">
   <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/loading.css" rel="stylesheet">
   <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
@@ -339,6 +340,9 @@
 <script src="./js/axios.min.js"></script>
 <!-- 引入组件库 -->
 <script src="./js/element.js"></script>
+<script src="./js/loading.js"></script>
+<script src="./js/message.js"></script>
+<script src="./js/performance.js"></script>
 <script src="./js/common.js"></script>
 <script src="./js/admin-common.js"></script>
 <script>
@@ -347,7 +351,11 @@
     const adminToken = sessionStorage.getItem('adminToken');
     if (!adminToken) {
       // 未登录，跳转到登录页
-      location.href = "admin-login.html";
+      if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("admin-login.html");
+        } else {
+          location.href = "admin-login.html";
+        }
       return;
     }
     
@@ -426,7 +434,11 @@
             
             // 跳转到登录页
             setTimeout(() => {
-              location.href = "admin-login.html";
+              if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("admin-login.html");
+        } else {
+          location.href = "admin-login.html";
+        }
             }, 500);
           })
           .catch(err => {
@@ -435,7 +447,11 @@
             // 即使接口调用失败，也清除本地token并跳转
             sessionStorage.removeItem('adminToken');
             sessionStorage.removeItem('adminInfo');
-            location.href = "admin-login.html";
+            if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("admin-login.html");
+        } else {
+          location.href = "admin-login.html";
+        }
           });
       },
       navigateTo(path) {

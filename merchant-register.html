@@ -7,6 +7,7 @@
   <!-- 引入样式 -->
   <link rel="stylesheet" href="./css/element.css">
   <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/loading.css" rel="stylesheet">
   <link href="./css/login.css" rel="stylesheet">
 
   <style type="text/css">
@@ -240,6 +241,9 @@
 <script src="./js/axios.min.js"></script>
 <!-- 引入组件库 -->
 <script src="./js/element.js"></script>
+<script src="./js/loading.js"></script>
+<script src="./js/message.js"></script>
+<script src="./js/performance.js"></script>
 <script src="./js/common.js"></script>
 <script src="./js/footer.js"></script>
 <script src="./js/merchant-common.js"></script>
@@ -326,7 +330,11 @@
         if (this.active > 0 && this.active < 2) {
           this.active--;
         } else {
+          if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("/index.html");
+        } else {
           location.href = "/index.html";
+        }
         }
       },
       nextStep() {
@@ -381,7 +389,11 @@
         });
       },
       goToLogin() {
-        location.href = "/merchant-login.html";
+        if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("/merchant-login.html");
+        } else {
+          location.href = "/merchant-login.html";
+        }
       },
       sendCode() {
         if (!this.registerForm.phone) {

@@ -3,7 +3,7 @@ let merchantCommonURL = "/api";
 // 设置后台服务地址
 const merchantAxios = axios.create({
   baseURL: merchantCommonURL,
-  timeout: 2000
+  timeout: 8000 // 从2000ms调整为8000ms以减少超时错误
 });
 
 // 获取商家token
@@ -15,15 +15,15 @@ merchantAxios.interceptors.request.use(
     // 每次请求前重新获取最新token
     merchantToken = sessionStorage.getItem("merchantToken");
     if(merchantToken) {
-      // 使用两种header确保兼容性
+      // 只使用merchant-token头，确保与用户token完全隔离
       config.headers['merchant-token'] = merchantToken;
-      // 添加authorization头，与后端认证机制保持一致
-      config.headers['authorization'] = merchantToken;
+      // 移除authorization头，避免与用户认证机制混淆
+      delete config.headers['authorization'];
     }
-    
+
     // 增加调试日志，查看发送的请求详情
     console.log("商家请求:", config.url, config);
-    
+
     return config
   },
   error => {
@@ -45,14 +45,13 @@ merchantAxios.interceptors.response.use(function (response) {
   if (!isSuccess) {
     // 不要自动跳转，让页面自己处理错误
     console.warn("API响应失败:", data);
-    // 修改：返回包含错误信息的对象，而不是直接拒绝Promise
-    // 这样页面可以通过检查response.success来统一处理
-    return {
+    // 修改：使用Promise.reject返回错误，确保进入catch块
+    return Promise.reject({
       success: false,
       code: data.code || 500,
       errorMsg: data.errorMsg || data.msg || "请求失败",
       msg: data.msg || data.errorMsg || "请求失败"
-    };
+    });
   }
 
   // 对于登录接口特殊处理

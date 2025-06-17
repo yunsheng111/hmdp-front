@@ -7,6 +7,7 @@
   <!-- 引入样式 -->
   <link rel="stylesheet" href="./css/element.css">
   <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/loading.css" rel="stylesheet">
   <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
@@ -287,13 +288,20 @@
 <script src="./js/vue.js"></script>
 <script src="./js/axios.min.js"></script>
 <script src="./js/element.js"></script>
+<script src="./js/loading.js"></script>
+<script src="./js/message.js"></script>
+<script src="./js/performance.js"></script>
 <script src="./js/common.js"></script>
 <script>
   const adminToken = sessionStorage.getItem("adminToken");
   const adminInfoStr = sessionStorage.getItem("adminInfo");
   
   if (!adminToken) {
-    // location.href = "admin-login.html"; // 实际项目中应启用
+    // if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("admin-login.html");
+        } else {
+          location.href = "admin-login.html";
+        } // 实际项目中应启用
   }
   
   const app = new Vue({
@@ -487,14 +495,22 @@
           .then(() => {
             sessionStorage.removeItem("adminToken");
             sessionStorage.removeItem("adminInfo");
-            location.href = "admin-login.html";
+            if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("admin-login.html");
+        } else {
+          location.href = "admin-login.html";
+        }
           })
           .catch(err => {
             console.error("退出失败", err);
             // 即使退出接口失败，也清理前端会话并跳转
             sessionStorage.removeItem("adminToken");
             sessionStorage.removeItem("adminInfo");
-            location.href = "admin-login.html";
+            if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("admin-login.html");
+        } else {
+          location.href = "admin-login.html";
+        }
           });
       }
     }

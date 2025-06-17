@@ -7,6 +7,7 @@
   <!-- 引入样式 -->
   <link rel="stylesheet" href="./css/element.css">
   <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/loading.css" rel="stylesheet">
   <link href="./css/login.css" rel="stylesheet">
   <!-- 引入字体图标 -->
   <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
@@ -229,6 +230,9 @@
 <script src="./js/axios.min.js"></script>
 <!-- 引入组件库 -->
 <script src="./js/element.js"></script>
+<script src="./js/loading.js"></script>
+<script src="./js/message.js"></script>
+<script src="./js/performance.js"></script>
 <script src="./js/common.js"></script>
 <script src="./js/admin-common.js"></script>
 <script>
@@ -240,7 +244,11 @@
       adminAxios.get('/admin/info')
         .then((data) => {
           if (data && data.success) {
-            location.href = 'admin-dashboard.html';
+            if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("admin-dashboard.html");
+        } else {
+          location.href = "admin-dashboard.html";
+        }
           }
         })
         .catch((err) => {
@@ -321,7 +329,11 @@
               
               // 跳转到管理员首页
               setTimeout(() => {
-                location.href = "admin-dashboard.html";
+                if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("admin-dashboard.html");
+        } else {
+          location.href = "admin-dashboard.html";
+        }
               }, 800);
             } else {
               this.$message.error('登录失败，请检查用户名和密码');

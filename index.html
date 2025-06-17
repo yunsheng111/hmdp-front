@@ -3,10 +3,12 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-  <title>黑马点评 - 专业点评平台</title>
+  <title>点评商城 - 专业点评平台</title>
   <!-- 引入样式 -->
   <link rel="stylesheet" href="./css/element.css">
   <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/loading.css" rel="stylesheet">
+  <link href="./css/message.css" rel="stylesheet">
   
   <style type="text/css">
     .landing-container {
@@ -203,10 +205,10 @@
 <div id="app">
   <div class="landing-container">
     <div class="hero-section">
-      <div class="logo">黑马点评</div>
+      <div class="logo">点评商城</div>
       <div class="tagline">发现好店，分享好评</div>
       <div class="description">
-        黑马点评是一个专业的点评平台，汇集海量用户真实评价，帮助您发现城市中的美食、购物、休闲娱乐好去处。
+        点评商城是一个专业的点评平台，汇集海量用户真实评价，帮助您发现城市中的美食、购物、休闲娱乐好去处。
         商家可以展示特色服务，用户可以分享真实体验，打造诚信透明的消费环境。
       </div>
     </div>
@@ -289,7 +291,7 @@
     </div>
     
     <div class="footer">
-      © 2023 黑马点评 | 粤ICP备XXXXXXXX号
+      © 2023 点评商城 | 粤ICP备XXXXXXXX号
     </div>
   </div>
 </div>
@@ -297,24 +299,34 @@
 <script src="./js/vue.js"></script>
 <script src="./js/axios.min.js"></script>
 <script src="./js/element.js"></script>
+<script src="./js/loading.js"></script>
+<script src="./js/message.js"></script>
+<script src="./js/performance.js"></script>
+<script src="./js/common.js"></script>
 <script>
   const app = new Vue({
     el: "#app",
     methods: {
       toUserLogin() {
-        location.href = "user-login.html";
+        if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("user-login.html");
+        } else {
+          location.href = "user-login.html";
+        }
       },
       toMerchantLogin() {
-        location.href = "merchant-login.html";
+        if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("merchant-login.html");
+        } else {
+          location.href = "merchant-login.html";
+        }
       },
       toAdminLogin() {
-        // 假设管理员登录页面
-        // this.$message({
-        //   message: '管理员登录功能即将上线',
-        //   type: 'info'
-        // });
-        // 后续可以添加管理员登录页面的链接
-        location.href = "admin-login.html";
+        if (window.util && window.util.navigateTo) {
+          window.util.navigateTo("admin-login.html");
+        } else {
+          location.href = "admin-login.html";
+        }
       }
     }
   });
